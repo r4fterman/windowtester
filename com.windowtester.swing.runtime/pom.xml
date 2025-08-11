@@ -10,6 +10,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>com.windowtester.swing.runtime</artifactId>
 
+  <description>The runtime library provides base functionality so WindowTester can operate on Java/Swing.</description>
+
   <scm>
     <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
     <developerConnection>scm:git:https://github.com/r4fterman/windowtester.git</developerConnection>
