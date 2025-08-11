@@ -417,7 +417,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
       Log.log("Recording failed when saving action: " + e);
       // 1/3/07 kp: change message to windowtester message
       // String msg = Strings.get("editor.recording.exception");
-      String msg = "Windowtester recording exception";
+      String msg = "WindowTester recording exception";
       //     throw new RecordingFailedException(new BugReport(msg, e));
       throw new com.windowtester.swing.recorder.RecordingFailedException(new BugReport(msg, e));
     }
