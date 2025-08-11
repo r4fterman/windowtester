@@ -9,8 +9,8 @@
   <version>4.13.2.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Windowtester</name>
-  <description>Windowtester is a library for Java/Swing UI test automation.</description>
+  <name>WindowTester</name>
+  <description>WindowTester is a library for Java/Swing UI test automation.</description>
   <url>https://github.com/r4fterman/windowtester</url>
 
   <developers>

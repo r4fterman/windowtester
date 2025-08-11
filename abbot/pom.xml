@@ -10,6 +10,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>abbot</artifactId>
 
+  <description>The robot to navigate automatically on the UI.</description>
+
   <scm>
     <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
     <developerConnection>scm:git:https://github.com/r4fterman/windowtester.git</developerConnection>
