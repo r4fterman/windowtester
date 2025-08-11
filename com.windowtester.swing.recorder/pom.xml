@@ -10,6 +10,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>com.windowtester.swing.recorder</artifactId>
 
+  <description>The artifact to control the recorder and replay recorded scenarios.</description>
+
   <scm>
     <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
     <developerConnection>scm:git:https://github.com/r4fterman/windowtester.git</developerConnection>
