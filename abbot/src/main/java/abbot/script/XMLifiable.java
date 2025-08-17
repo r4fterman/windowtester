@@ -1,6 +1,6 @@
 package abbot.script;
 
-import org.jdom.Element;
+import org.dom4j.Element;
 
 public interface XMLifiable {
   /**

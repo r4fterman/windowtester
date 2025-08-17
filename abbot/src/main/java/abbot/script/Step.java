@@ -3,25 +3,22 @@ package abbot.script;
 import abbot.Log;
 import abbot.i18n.Strings;
 import abbot.tester.ComponentTester;
-import java.awt.*;
+import java.awt.Component;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 /**
  * Provides access to one step (line) from a script.  A Step is the basic unit of execution.
@@ -47,7 +44,7 @@ import org.jdom.output.XMLOutputter;
  */
 public abstract class Step implements XMLConstants, XMLifiable, Serializable {
 
-  private String description = null;
+  private String description;
   private final Resolver resolver;
 
   /**
@@ -55,13 +52,11 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
    */
   private Throwable invalidScriptError = null;
 
-  public Step(Resolver resolver, Map attributes) {
+  public Step(Resolver resolver, Map<String, String> attributes) {
     this(resolver, "");
     Log.debug("Instantiating " + getClass());
     if (Log.expectDebugOutput) {
-      Iterator iter = attributes.keySet().iterator();
-      while (iter.hasNext()) {
-        String key = (String) iter.next();
+      for (String key : attributes.keySet()) {
         Log.debug(key + "=" + attributes.get(key));
       }
     }
@@ -85,7 +80,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     this.description = description;
   }
 
-  protected final void parseStepAttributes(Map attributes) {
+  protected final void parseStepAttributes(Map<String, String> attributes) {
     Log.debug("Parsing attributes for " + getClass());
     description = (String) attributes.get(TAG_DESC);
   }
@@ -139,8 +134,8 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     setScriptError(new InvalidScriptException(msg));
   }
 
-  public Map getAttributes() {
-    Map map = new HashMap();
+  public Map<String, String> getAttributes() {
+    Map<String, String> map = new HashMap<>();
     if (description != null && !description.equals(getDefaultDescription())) {
       map.put(TAG_DESC, description);
     }
@@ -157,16 +152,14 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
 
   protected Element addAttributes(Element el) {
     // Use a TreeMap to keep the attributes sorted on output
-    Map atts = new TreeMap(getAttributes());
-    Iterator iter = atts.keySet().iterator();
-    while (iter.hasNext()) {
-      String key = (String) iter.next();
-      String value = (String) atts.get(key);
+    Map<String, String> atts = new TreeMap<>(getAttributes());
+    for (String key : atts.keySet()) {
+      String value = atts.get(key);
       if (value == null) {
         Log.warn("Attribute '" + key + "' value was null in step " + getXMLTag());
         value = "";
       }
-      el.setAttribute(key, value);
+      el.addAttribute(key, value);
     }
     return el;
   }
@@ -183,8 +176,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     Element el = obj.toXML();
     StringWriter writer = new StringWriter();
     try {
-      XMLOutputter outputter = new XMLOutputter();
-      outputter.output(el, writer);
+      el.write(writer);
     } catch (IOException io) {
       Log.warn(io);
     }
@@ -192,28 +184,25 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
   }
 
   public Element toXML() {
-    return addAttributes(addContent(new Element(getXMLTag())));
+    Element el = DocumentHelper.createElement(getXMLTag());
+    return addAttributes(addContent(el));
   }
 
   public static Step createStep(Resolver resolver, String str)
       throws InvalidScriptException, IOException {
-    StringReader reader = new StringReader(str);
     try {
-      SAXBuilder builder = new SAXBuilder();
-      Document doc = builder.build(reader);
+      Document doc = DocumentHelper.parseText(str);
       Element el = doc.getRootElement();
       return createStep(resolver, el);
-    } catch (JDOMException e) {
+    } catch (DocumentException e) {
       throw new InvalidScriptException(e.getMessage());
     }
   }
 
-  protected static Map createAttributeMap(Element el) {
+  protected static Map<String, String> createAttributeMap(Element el) {
     Log.debug("Creating attribute map for " + el);
-    Map attributes = new HashMap();
-    Iterator iter = el.getAttributes().iterator();
-    while (iter.hasNext()) {
-      Attribute att = (Attribute) iter.next();
+    Map<String,  String> attributes = new HashMap<>();
+    for (Attribute att : el.attributes()) {
       attributes.put(att.getName(), att.getValue());
     }
     return attributes;
@@ -221,7 +210,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
 
   public static Step createStep(Resolver resolver, Element el) throws InvalidScriptException {
     String tag = el.getName();
-    Map attributes = createAttributeMap(el);
+    Map<String, String> attributes = createAttributeMap(el);
     String name = tag.substring(0, 1).toUpperCase() + tag.substring(1);
     if (tag.equals(TAG_WAIT)) {
       attributes.put(TAG_WAIT, "true");
@@ -230,16 +219,16 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     try {
       name = "abbot.script." + name;
       Log.debug("Instantiating " + name);
-      Class cls = Class.forName(name);
+      Class<?> cls = Class.forName(name);
       try {
         // Steps with contents require access to the XML element
-        Class[] argTypes = new Class[] {Resolver.class, Element.class, Map.class};
-        Constructor ctor = cls.getConstructor(argTypes);
+        Class<?>[] argTypes = new Class[] {Resolver.class, Element.class, Map.class};
+        Constructor<?> ctor = cls.getDeclaredConstructor(argTypes);
         return (Step) ctor.newInstance(new Object[] {resolver, el, attributes});
       } catch (NoSuchMethodException nsm) {
         // All steps must support this ctor
-        Class[] argTypes = new Class[] {Resolver.class, Map.class};
-        Constructor ctor = cls.getConstructor(argTypes);
+        Class<?>[] argTypes = new Class[] {Resolver.class, Map.class};
+        Constructor<?> ctor = cls.getDeclaredConstructor(argTypes);
         return (Step) ctor.newInstance(new Object[] {resolver, attributes});
       }
     } catch (ClassNotFoundException cnf) {
@@ -254,7 +243,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     }
   }
 
-  protected String simpleClassName(Class cls) {
+  protected String simpleClassName(Class<?> cls) {
     return ComponentTester.simpleClassName(cls);
   }
 
@@ -262,7 +251,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
     return getDescription();
   }
 
-  public Class resolveClass(String className) throws ClassNotFoundException {
+  public Class<?> resolveClass(String className) throws ClassNotFoundException {
     ClassLoader cl = getResolver().getContextClassLoader();
     return Class.forName(className, true, cl);
   }
@@ -270,7 +259,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
   /**
    * Look up an appropriate ComponentTester given an arbitrary Component-derived class. If the class is derived from
    * abbot.tester.ComponentTester, instantiate one; if it is derived from java.awt.Component, return a matching
-   * Tester. Otherwise return abbot.tester.ComponentTester.
+   * Tester. Otherwise, return abbot.tester.ComponentTester.
    *
    * @param className class name
    * @return component tester
@@ -279,12 +268,12 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
    * @throws IllegalArgumentException If the tester cannot be instantiated.
    */
   protected ComponentTester resolveTester(String className) throws ClassNotFoundException {
-    Class testedClass = resolveClass(className);
+    Class<?> testedClass = resolveClass(className);
     if (Component.class.isAssignableFrom(testedClass)) {
       return ComponentTester.getTester(testedClass);
     } else if (ComponentTester.class.isAssignableFrom(testedClass)) {
       try {
-        return (ComponentTester) testedClass.newInstance();
+        return (ComponentTester) testedClass.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
         String msg =
             "Custom ComponentTesters must provide "

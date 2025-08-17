@@ -31,10 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 /**
  * Provide a structure to encapsulate actions invoked on GUI components and tests performed on those components. Scripts
@@ -268,9 +267,8 @@ public class Script extends Sequence implements Resolver {
     formatForSave = false;
     el.setName(TAG_AWTTESTSCRIPT);
 
-    Document doc = new Document(el);
-    XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-    outputter.output(doc, writer);
+    Document doc = DocumentHelper.createDocument(el);
+    doc.write(writer);
   }
 
   @Override
@@ -452,8 +450,8 @@ public class Script extends Sequence implements Resolver {
     if (formatForSave) {
       synchReferenceIDs();
       Collection<ComponentReference> values = refs.values();
-      for (ComponentReference cref : (Iterable<ComponentReference>) new TreeSet(values)) {
-        el.addContent(cref.toXML());
+      for (ComponentReference cref : new TreeSet<>(values)) {
+        el.add(cref.toXML());
       }
       // Now collect our child steps
       return super.addContent(el);
