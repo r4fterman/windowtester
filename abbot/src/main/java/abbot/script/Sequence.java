@@ -5,18 +5,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.jdom.Element;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
- * Script step which groups a sequence of other Steps.  The sub-Steps have a fixed order and are executed in the order
- * contained in the sequence. Events sent by sub-Steps are propagated by this one.
+ * Script step which groups a sequence of other Steps.  The sub-Steps have a fixed order and are
+ * executed in the order contained in the sequence. Events sent by sub-Steps are propagated by this
+ * one.
  */
 public class Sequence extends Step {
 
   private static final String USAGE = "<sequence ...>...</sequence>";
   private final ArrayList<Step> sequence = new ArrayList<>();
 
-  public Sequence(Resolver resolver, Element el, Map atts) {
+  public Sequence(Resolver resolver, Element el, Map<String, String> atts) {
     super(resolver, atts);
     try {
       parseChildren(el);
@@ -25,7 +28,7 @@ public class Sequence extends Step {
     }
   }
 
-  public Sequence(Resolver resolver, Map atts) {
+  public Sequence(Resolver resolver, Map<String, String> atts) {
     super(resolver, atts);
   }
 
@@ -33,13 +36,13 @@ public class Sequence extends Step {
     this(resolver, desc, null);
   }
 
-  public Sequence(Resolver resolver, String desc, List steps) {
+  public Sequence(Resolver resolver, String desc, List<Step> steps) {
     super(resolver, desc);
     if (steps != null) {
-      Iterator iter = steps.iterator();
+      Iterator<Step> iter = steps.iterator();
       synchronized (sequence) {
         while (iter.hasNext()) {
-          addStep((Step) iter.next());
+          addStep(iter.next());
         }
       }
     }
@@ -52,13 +55,13 @@ public class Sequence extends Step {
 
   protected void parseChildren(Element el) throws InvalidScriptException {
     synchronized (sequence) {
-      Iterator iter = el.getContent().iterator();
+      Iterator<Node> iter = el.nodeIterator();
       while (iter.hasNext()) {
-        Object obj = iter.next();
+        Node obj = iter.next();
         if (obj instanceof Element) {
           parseChild((Element) obj);
-        } else if (obj instanceof org.jdom.Comment) {
-          String text = ((org.jdom.Comment) obj).getText();
+        } else if (obj instanceof org.dom4j.Comment) {
+          String text = obj.getText();
           addStep(new abbot.script.Comment(getResolver(), text));
         }
       }
@@ -66,7 +69,7 @@ public class Sequence extends Step {
   }
 
   public String getDefaultDescription() {
-    return Strings.get("sequence.desc", new Object[] {String.valueOf(size())});
+    return Strings.get("sequence.desc", new Object[]{String.valueOf(size())});
   }
 
   public String getXMLTag() {
@@ -74,17 +77,16 @@ public class Sequence extends Step {
   }
 
   protected Element addContent(Element el) {
-    ArrayList seq;
+    List<Sequence> seq;
     synchronized (sequence) {
       seq = (ArrayList) sequence.clone();
     }
-    Iterator iter = seq.iterator();
-    while (iter.hasNext()) {
-      Step step = (Step) iter.next();
-      if (step instanceof abbot.script.Comment) {
-        el.addContent(new org.jdom.Comment(step.getDescription()));
+
+    for (Sequence value : seq) {
+      if (value instanceof org.dom4j.Comment) {
+        el.add(DocumentHelper.createComment(value.getDescription()));
       } else {
-        el.addContent(step.toXML());
+        el.add(value.toXML());
       }
     }
     return el;
@@ -103,9 +105,9 @@ public class Sequence extends Step {
   }
 
   protected void runStep(StepRunner runner) throws Throwable {
-    Iterator iter;
+    Iterator<Sequence> iter;
     synchronized (sequence) {
-      iter = ((ArrayList) sequence.clone()).iterator();
+      iter = ((ArrayList<Sequence>) sequence.clone()).iterator();
     }
     if (runner != null) {
       while (iter.hasNext() && !runner.stopped()) {
@@ -113,7 +115,7 @@ public class Sequence extends Step {
       }
     } else {
       while (iter.hasNext()) {
-        ((Step) iter.next()).run();
+        iter.next().run();
       }
     }
   }

@@ -2,8 +2,10 @@ package abbot.script;
 
 import java.util.Iterator;
 import java.util.Map;
-import org.jdom.CDATA;
-import org.jdom.Element;
+import org.dom4j.CDATA;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * Provides evaluation of arbitrary Java expressions.  Any Java expression is supported, with a more loose syntax if
@@ -20,11 +22,11 @@ public class Expression extends Step {
   private static final String USAGE = "<expression>{java/beanshell expression}</expression>";
   private String expression = "";
 
-  public Expression(Resolver resolver, Element el, Map attributes) {
+  public Expression(Resolver resolver, Element el, Map<String, String> attributes) {
     super(resolver, attributes);
 
     String expr = null;
-    Iterator iter = el.getContent().iterator();
+    Iterator<Node> iter = el.nodeIterator();
     while (iter.hasNext()) {
       Object o = iter.next();
       if (o instanceof CDATA) {
@@ -55,7 +57,8 @@ public class Expression extends Step {
   }
 
   protected Element addContent(Element el) {
-    return el.addContent(new CDATA(getExpression()));
+    el.add(DocumentHelper.createCDATA(getExpression()));
+    return el;
   }
 
   public void setExpression(String text) {
