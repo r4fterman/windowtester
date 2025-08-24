@@ -4,7 +4,14 @@ import abbot.Log;
 import abbot.finder.ComponentSearchException;
 import abbot.i18n.Strings;
 import abbot.util.Properties;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -13,20 +20,26 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.Map;
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import org.jdom.CDATA;
-import org.jdom.Element;
+import org.dom4j.CDATA;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
- * Provides a method for communicating a message on the display.  May display for a reasonable delay or require user
- * input to continue.<p> Usage:<br>
+ * Provides a method for communicating a message on the display.  May display for a reasonable delay
+ * or require user input to continue.<p> Usage:<br>
  * <blockquote><code>
  * &lt;annotation [userDismiss="true"] &gt;Text or HTML message&lt;/annotation&gt;<br>
  * </code></blockquote>
  * <p>
- * Properties:<br> abbot.annotation.min_delay: minimum time to display an annotation<br> abbot.annotation.delay:
- * per-word time to display an annotation<br>
+ * Properties:<br> abbot.annotation.min_delay: minimum time to display an annotation<br>
+ * abbot.annotation.delay: per-word time to display an annotation<br>
  */
 public class Annotation extends Step {
 
@@ -54,7 +67,9 @@ public class Annotation extends Step {
   private int width = -1;
   private int height = -1;
 
-  class WindowLock {}
+  class WindowLock {
+
+  }
 
   private final transient Object WINDOW_LOCK = new WindowLock();
   private transient volatile Frame frame;
@@ -67,13 +82,13 @@ public class Annotation extends Step {
     delayUnit = Properties.getProperty("abbot.annotation.delay_unit", delayUnit, 1, 5000);
   }
 
-  public Annotation(Resolver resolver, Element el, Map attributes) {
+  public Annotation(Resolver resolver, Element el, Map<String, String> attributes) {
     super(resolver, attributes);
-    componentID = (String) attributes.get(TAG_COMPONENT);
+    componentID = attributes.get(TAG_COMPONENT);
     userDismiss = attributes.get(TAG_USER_DISMISS) != null;
-    setTitle((String) attributes.get(TAG_TITLE));
-    String xs = (String) attributes.get(TAG_X);
-    String ys = (String) attributes.get(TAG_Y);
+    setTitle(attributes.get(TAG_TITLE));
+    String xs = attributes.get(TAG_X);
+    String ys = attributes.get(TAG_Y);
     if (xs != null && ys != null) {
       try {
         x = Integer.parseInt(xs);
@@ -82,8 +97,8 @@ public class Annotation extends Step {
         x = y = -1;
       }
     }
-    String ws = (String) attributes.get(TAG_WIDTH);
-    String hs = (String) attributes.get(TAG_HEIGHT);
+    String ws = attributes.get(TAG_WIDTH);
+    String hs = attributes.get(TAG_HEIGHT);
     if (ws != null & hs != null) {
       try {
         width = Integer.parseInt(ws);
@@ -94,7 +109,7 @@ public class Annotation extends Step {
     }
 
     String text = null;
-    Iterator iter = el.getContent().iterator();
+    Iterator<Node> iter = el.nodeIterator();
     while (iter.hasNext()) {
       Object obj = iter.next();
       if (obj instanceof CDATA) {
@@ -148,16 +163,9 @@ public class Annotation extends Step {
       showAnnotationWindow();
     } else {
       try {
-        SwingUtilities.invokeAndWait(
-            new Runnable() {
-              public void run() {
-                showAnnotationWindow();
-              }
-            });
-        SwingUtilities.invokeAndWait(
-            new Runnable() {
-              public void run() {}
-            });
+        SwingUtilities.invokeAndWait((Runnable) this::showAnnotationWindow);
+        SwingUtilities.invokeAndWait((Runnable) () -> {
+        });
       } catch (Exception e) {
         Log.warn(e);
       }
@@ -216,8 +224,8 @@ public class Annotation extends Step {
         w =
             (parent instanceof Dialog)
                 ? (title != null
-                    ? new AnnotationWindow((Dialog) parent, title)
-                    : new AnnotationWindow((Dialog) parent))
+                ? new AnnotationWindow((Dialog) parent, title)
+                : new AnnotationWindow((Dialog) parent))
                 : (title != null
                     ? new AnnotationWindow((Frame) parent, title)
                     : new AnnotationWindow((Frame) parent));
@@ -342,11 +350,12 @@ public class Annotation extends Step {
   }
 
   protected Element addContent(Element el) {
-    return el.addContent(new CDATA(getText()));
+    el.add(DocumentHelper.createCDATA(getText()));
+    return el;
   }
 
-  public Map getAttributes() {
-    Map map = super.getAttributes();
+  public Map<String, String> getAttributes() {
+    Map<String, String> map = super.getAttributes();
     if (componentID != null) {
       map.put(TAG_COMPONENT, componentID);
     }
@@ -416,6 +425,7 @@ public class Annotation extends Step {
   }
 
   class AnnotationWindow extends JDialog {
+
     public AnnotationWindow(Dialog parent, String title) {
       super(parent, title);
       addListener();

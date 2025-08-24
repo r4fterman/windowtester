@@ -1,7 +1,7 @@
 package abbot.script;
 
 import java.util.Map;
-import org.jdom.Element;
+import org.dom4j.Element;
 
 /**
  * Represents a comment.  No other function.
@@ -10,7 +10,7 @@ public class Comment extends Step {
 
   private static final String USAGE = "<!-- [text] -->";
 
-  public Comment(Resolver resolver, Map attributes) {
+  public Comment(Resolver resolver, Map<String, String> attributes) {
     super(resolver, attributes);
   }
 
