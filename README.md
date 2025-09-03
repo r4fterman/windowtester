@@ -6,6 +6,7 @@
 ![Static Badge](https://img.shields.io/badge/Maven-v3.5.4-blue)
 [![License](https://img.shields.io/badge/License-EPL--1.0-green.svg)](LICENSE.md)
 [![Build WindowTester](https://github.com/r4fterman/windowtester/actions/workflows/maven.yml/badge.svg)]( https://github.com/r4fterman/windowtester/actions/workflows/maven.yml)
+[![codecov](https://codecov.io/gh/r4fterman/windowtester/graph/badge.svg?token=fEDTM853bU)](https://codecov.io/gh/r4fterman/windowtester)
 
 ## Disclaimer
 
