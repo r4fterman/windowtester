@@ -88,15 +88,12 @@ public class WindowDisposedCondition implements ICondition {
 
   private List<Component> collectComponents() {
     var hierarchy = new AWTHierarchy();
-    var components = hierarchy.getRoots().stream()
-        .map(hierarchy::getComponents)
-        .flatMap(Collection::stream)
-        .toList();
+    var components =
+        hierarchy.getRoots().stream()
+            .map(hierarchy::getComponents)
+            .flatMap(Collection::stream)
+            .toList();
 
-    return Stream
-        .concat(
-            components.stream(),
-            hierarchy.getRoots().stream())
-        .toList();
+    return Stream.concat(components.stream(), hierarchy.getRoots().stream()).toList();
   }
 }

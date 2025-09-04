@@ -917,7 +917,9 @@ public class AWT {
 
     // On a mac, ALT+BUTTON1 means BUTTON2; META+BUTTON1 means BUTTON3
     int macModifiers =
-        getDefaultToolkit().getMenuShortcutKeyMaskEx() | InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK;
+        getDefaultToolkit().getMenuShortcutKeyMaskEx()
+            | InputEvent.ALT_DOWN_MASK
+            | InputEvent.META_DOWN_MASK;
     boolean isMacButton = isMouse && Platform.isMacintosh() && (flags & macModifiers) != 0;
     String mods = "";
     String or = "";
@@ -996,8 +998,12 @@ public class AWT {
 
   public static boolean isModifier(int keycode) {
     return switch (keycode) {
-      case KeyEvent.VK_META, KeyEvent.VK_ALT, KeyEvent.VK_ALT_GRAPH, KeyEvent.VK_CONTROL,
-           KeyEvent.VK_SHIFT -> true;
+      case KeyEvent.VK_META,
+          KeyEvent.VK_ALT,
+          KeyEvent.VK_ALT_GRAPH,
+          KeyEvent.VK_CONTROL,
+          KeyEvent.VK_SHIFT ->
+          true;
       default -> false;
     };
   }

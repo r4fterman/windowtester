@@ -41,5 +41,4 @@ public class TextUtils {
   public static String escapeSlashes(String text) {
     return text.replace("/", "\\\\\\\\/");
   }
-
 }

@@ -121,7 +121,7 @@ class CustomDialog extends JDialog implements ActionListener, PropertyChangeList
     if (isVisible()
         && (e.getSource() == optionPane)
         && (JOptionPane.VALUE_PROPERTY.equals(prop)
-        || JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))) {
+            || JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))) {
       Object value = optionPane.getValue();
 
       if (value == JOptionPane.UNINITIALIZED_VALUE) {

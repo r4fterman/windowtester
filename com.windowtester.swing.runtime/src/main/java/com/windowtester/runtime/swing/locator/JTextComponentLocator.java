@@ -31,8 +31,7 @@ import javax.swing.text.JTextComponent;
 public class JTextComponentLocator extends SwingWidgetLocator
     implements HasText, IsEnabled, HasFocus {
 
-  @Serial
-  private static final long serialVersionUID = -4186840479034195183L;
+  @Serial private static final long serialVersionUID = -4186840479034195183L;
 
   /**
    * the position index in case of a text pane
@@ -93,10 +92,7 @@ public class JTextComponentLocator extends SwingWidgetLocator
    * @param parent  the locator for the parent of the JTextComponent
    */
   public JTextComponentLocator(
-      Class<?> cls,
-      String nameOrLabel,
-      int index,
-      SwingWidgetLocator parent) {
+      Class<?> cls, String nameOrLabel, int index, SwingWidgetLocator parent) {
     super(cls, nameOrLabel, index, parent);
   }
 
@@ -130,11 +126,7 @@ public class JTextComponentLocator extends SwingWidgetLocator
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
     if (caretPosition == UNASSIGNED) {
       return super.doClick(ui, clicks, component, offset, modifierMask);
     }

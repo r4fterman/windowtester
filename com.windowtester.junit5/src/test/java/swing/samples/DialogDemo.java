@@ -571,5 +571,4 @@ public class DialogDemo extends JPanel {
 
     return createPane(moreDialogDesc + ":", radioButtons, showItButton);
   }
-
 }

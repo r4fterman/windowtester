@@ -276,8 +276,8 @@ public class Launch extends Call implements UIContext {
     String desc =
         Strings.get(
             "launch.desc",
-            new Object[]{
-                getTargetClassName() + "." + getMethodName() + "(" + getEncodedArguments() + ")"
+            new Object[] {
+              getTargetClassName() + "." + getMethodName() + "(" + getEncodedArguments() + ")"
             });
     return desc;
   }

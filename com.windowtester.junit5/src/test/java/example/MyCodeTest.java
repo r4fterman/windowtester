@@ -35,5 +35,4 @@ public class MyCodeTest {
     assertNotNull(url, () -> "File not found: " + filename);
     return new File(url.toURI());
   }
-
 }

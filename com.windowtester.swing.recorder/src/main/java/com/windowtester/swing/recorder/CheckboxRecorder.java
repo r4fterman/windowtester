@@ -37,6 +37,6 @@ public class CheckboxRecorder extends ComponentRecorder {
     notify(semanticEvent);
 
     ComponentReference cr = getResolver().addComponent(target);
-    return new Action(getResolver(), null, "actionClick", new String[]{cr.getID()});
+    return new Action(getResolver(), null, "actionClick", new String[] {cr.getID()});
   }
 }

@@ -19,8 +19,7 @@ import java.io.Serial;
  */
 public class InaccessibleWidgetException extends WidgetSearchException {
 
-  @Serial
-  private static final long serialVersionUID = 3035842156651482281L;
+  @Serial private static final long serialVersionUID = 3035842156651482281L;
 
   public InaccessibleWidgetException() {
     super();

@@ -72,5 +72,4 @@ public class SwingList extends JPanel {
     listModel.addElement("seven");
     return listModel;
   }
-
 }

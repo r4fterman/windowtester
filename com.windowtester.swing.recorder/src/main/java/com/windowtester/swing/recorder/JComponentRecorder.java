@@ -136,7 +136,7 @@ public class JComponentRecorder extends ContainerRecorder {
         getResolver(),
         null,
         "actionActionMap",
-        new String[]{cr.getID(), actionKey},
+        new String[] {cr.getID(), actionKey},
         JComponent.class);
   }
 }

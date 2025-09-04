@@ -55,44 +55,36 @@ public class UIContextSwing extends UIContextCommon {
   private IUIThreadMonitor threadMonitor;
 
   @Override
-  public IWidgetLocator click(
-      int clickCount,
-      ILocator locator,
-      int buttonMask) throws WidgetSearchException {
+  public IWidgetLocator click(int clickCount, ILocator locator, int buttonMask)
+      throws WidgetSearchException {
     handleConditions();
     return super.click(clickCount, locator, buttonMask);
   }
 
   @Override
-  public IWidgetLocator contextClick(
-      ILocator locator,
-      IMenuItemLocator menuItem,
-      int modifierMask) throws WidgetSearchException {
+  public IWidgetLocator contextClick(ILocator locator, IMenuItemLocator menuItem, int modifierMask)
+      throws WidgetSearchException {
     handleConditions();
     return super.contextClick(locator, menuItem, modifierMask);
   }
 
   @Override
-  public IWidgetLocator contextClick(
-      ILocator locator,
-      IMenuItemLocator menuItem) throws WidgetSearchException {
+  public IWidgetLocator contextClick(ILocator locator, IMenuItemLocator menuItem)
+      throws WidgetSearchException {
     handleConditions();
     return super.contextClick(locator, menuItem);
   }
 
   @Override
-  public IWidgetLocator contextClick(
-      ILocator locator,
-      String menuItem,
-      int modifierMask) throws WidgetSearchException {
+  public IWidgetLocator contextClick(ILocator locator, String menuItem, int modifierMask)
+      throws WidgetSearchException {
     handleConditions();
     return super.contextClick(locator, menuItem, modifierMask);
   }
 
   @Override
-  public IWidgetLocator contextClick(
-      ILocator locator,
-      String menuItem) throws WidgetSearchException {
+  public IWidgetLocator contextClick(ILocator locator, String menuItem)
+      throws WidgetSearchException {
     handleConditions();
     return super.contextClick(locator, menuItem);
   }
@@ -122,8 +114,8 @@ public class UIContextSwing extends UIContextCommon {
       return getDriver().getLocation(component, path);
     }
     if (locator instanceof JTableItemLocator tableItemLocator) {
-      return getDriver().getLocation(component, tableItemLocator.getRow(),
-          tableItemLocator.getColumn());
+      return getDriver()
+          .getLocation(component, tableItemLocator.getRow(), tableItemLocator.getColumn());
     }
     if (locator instanceof JTextComponentLocator textComponentLocator) {
       return getDriver().getLocation(component, textComponentLocator.getCaretPosition());
@@ -132,9 +124,7 @@ public class UIContextSwing extends UIContextCommon {
   }
 
   @Override
-  public IWidgetLocator dragTo(
-      ILocator locator,
-      int buttonMask) throws WidgetSearchException {
+  public IWidgetLocator dragTo(ILocator locator, int buttonMask) throws WidgetSearchException {
     try {
       getDriver().mouseDown(buttonMask);
       return dragTo(locator);
@@ -169,10 +159,11 @@ public class UIContextSwing extends UIContextCommon {
 
   @Override
   public void close(IWidgetLocator locator) {
-    var window = getWidgetReference(locator)
-        .filter(widgetReference -> widgetReference.getWidget() instanceof Window)
-        .map(widgetReference -> (Window) widgetReference.getWidget())
-        .orElseThrow(UnsupportedOperationException::new);
+    var window =
+        getWidgetReference(locator)
+            .filter(widgetReference -> widgetReference.getWidget() instanceof Window)
+            .map(widgetReference -> (Window) widgetReference.getWidget())
+            .orElseThrow(UnsupportedOperationException::new);
 
     getDriver().close(window);
   }
@@ -198,10 +189,7 @@ public class UIContextSwing extends UIContextCommon {
   }
 
   @Override
-  public void wait(
-      ICondition condition,
-      long timeout,
-      int interval) throws WaitTimedOutException {
+  public void wait(ICondition condition, long timeout, int interval) throws WaitTimedOutException {
     if (threadMonitor != null) {
       threadMonitor.expectDelay(timeout);
     }
@@ -275,18 +263,17 @@ public class UIContextSwing extends UIContextCommon {
    * @return a abbot.script.Condition
    */
   private Condition getAbbotCondition(ICondition condition) {
-    return
-        new Condition() {
-          @Override
-          public boolean test() {
-            return ConditionMonitor.test(UIContextSwing.this, condition);
-          }
+    return new Condition() {
+      @Override
+      public boolean test() {
+        return ConditionMonitor.test(UIContextSwing.this, condition);
+      }
 
-          @Override
-          public String toString() {
-            return condition.toString();
-          }
-        };
+      @Override
+      public String toString() {
+        return condition.toString();
+      }
+    };
   }
 
   public UIDriverSwing getDriver() {

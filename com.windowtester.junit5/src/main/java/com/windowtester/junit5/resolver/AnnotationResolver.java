@@ -22,14 +22,16 @@ public class AnnotationResolver {
   }
 
   public Optional<FieldInfo> tryToFindAnnotatedField(Class<? extends Annotation> annotationType) {
-    var annotatedFieldList = context.getTestInstance()
-        .map(testInstance -> AnnotationSupport.findAnnotatedFields(testInstance.getClass(),
-                    annotationType
-                ).stream()
-                .map(field -> fieldToFieldInfo(testInstance, field, annotationType))
-                .toList()
-        )
-        .orElse(Collections.emptyList());
+    var annotatedFieldList =
+        context
+            .getTestInstance()
+            .map(
+                testInstance ->
+                    AnnotationSupport.findAnnotatedFields(testInstance.getClass(), annotationType)
+                        .stream()
+                        .map(field -> fieldToFieldInfo(testInstance, field, annotationType))
+                        .toList())
+            .orElse(Collections.emptyList());
 
     if (annotatedFieldList.size() > 1) {
       throw new JUnitException("Only one instance must be annotated with @UIUnderTest.");
@@ -43,12 +45,10 @@ public class AnnotationResolver {
   }
 
   private FieldInfo fieldToFieldInfo(
-      Object testInstance,
-      Field field,
-      Class<? extends Annotation> annotationType) {
+      Object testInstance, Field field, Class<? extends Annotation> annotationType) {
     try {
       var title = getTitle(field, annotationType);
-      var  dimension = getDimension(field, annotationType);
+      var dimension = getDimension(field, annotationType);
       field.setAccessible(true);
       var value = field.get(testInstance);
       if (value == null) {
@@ -59,9 +59,10 @@ public class AnnotationResolver {
       }
       return new FieldInfo(title, dimension, value);
     } catch (IllegalAccessException e) {
-      var message = String.format(
-          "Unable to access annotation field [%s]. Make sure it has public accessibility.",
-          field.getName());
+      var message =
+          String.format(
+              "Unable to access annotation field [%s]. Make sure it has public accessibility.",
+              field.getName());
       throw new JUnitException(message, e);
     }
   }
@@ -81,5 +82,4 @@ public class AnnotationResolver {
     }
     return "";
   }
-
 }

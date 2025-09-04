@@ -17,8 +17,7 @@ import java.io.Serial;
  */
 public class WaitTimedOutException extends RuntimeException {
 
-  @Serial
-  private static final long serialVersionUID = -8129128536949106306L;
+  @Serial private static final long serialVersionUID = -8129128536949106306L;
 
   public WaitTimedOutException(String msg) {
     super(msg);

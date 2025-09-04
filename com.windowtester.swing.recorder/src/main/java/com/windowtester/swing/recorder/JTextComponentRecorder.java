@@ -118,8 +118,8 @@ public class JTextComponentRecorder extends JComponentRecorder {
           getResolver(),
           null,
           "actionClick",
-          new String[]{
-              cr.getID(), String.valueOf(index),
+          new String[] {
+            cr.getID(), String.valueOf(index),
           },
           JTextComponent.class);
     } else {
@@ -134,7 +134,7 @@ public class JTextComponentRecorder extends JComponentRecorder {
         getResolver(),
         null,
         "actionSelectText",
-        new String[]{cr.getID(), String.valueOf(start), String.valueOf(end)},
+        new String[] {cr.getID(), String.valueOf(start), String.valueOf(end)},
         JTextComponent.class);
   }
 }

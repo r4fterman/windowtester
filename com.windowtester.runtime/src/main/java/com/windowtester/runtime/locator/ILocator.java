@@ -13,6 +13,4 @@ package com.windowtester.runtime.locator;
 /**
  * Locators are used to identify widgets, menus, items within a menu, submenu or tree, etc.
  */
-public interface ILocator {
-
-}
+public interface ILocator {}

@@ -87,12 +87,12 @@ public class JTabbedPaneRecorder extends JComponentRecorder {
     ComponentReference ref = getResolver().addComponent(tabbedPane);
     ComponentLocation loc = new JTabbedPaneLocation(((JMenuItem) menuItem).getText());
     return new Action(
-            getResolver(),
-            null,
-            "actionSelectTab",
-            new String[]{
-                ref.getID(), loc.toString(),
-            });
+        getResolver(),
+        null,
+        "actionSelectTab",
+        new String[] {
+          ref.getID(), loc.toString(),
+        });
   }
 
   @Override
@@ -115,8 +115,8 @@ public class JTabbedPaneRecorder extends JComponentRecorder {
           getResolver(),
           null,
           "actionSelectTab",
-          new String[]{
-              cr.getID(), getLocationArgument(tp, x, y),
+          new String[] {
+            cr.getID(), getLocationArgument(tp, x, y),
           },
           javax.swing.JTabbedPane.class);
     }

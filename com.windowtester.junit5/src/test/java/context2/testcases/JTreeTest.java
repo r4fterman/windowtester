@@ -34,8 +34,7 @@ import swing.samples.SwingTree;
 @ExtendWith(WindowtesterExtension.class)
 class JTreeTest {
 
-  @UIUnderTest
-  private SwingTree panel;
+  @UIUnderTest private SwingTree panel;
 
   @BeforeEach
   void setUp() {
@@ -46,17 +45,13 @@ class JTreeTest {
   void testTreeSelections(@SwingUIContext IUIContext ui) throws WidgetSearchException {
     ui.wait(new WindowShowingCondition("Swing Tree Example"), 1_000);
 
-    var firstClickTree = doTreeClick(
-        1,
-        "Root/Parent1/Child10/grandChild102",
-        "tree1",
-        InputEvent.BUTTON1_DOWN_MASK,
-        ui
-    );
+    var firstClickTree =
+        doTreeClick(
+            1, "Root/Parent1/Child10/grandChild102", "tree1", InputEvent.BUTTON1_DOWN_MASK, ui);
 
     assertEquals(1, firstClickTree.getSelectionRows().length);
-    assertEquals("grandChild102",
-        firstClickTree.getSelectionPath().getLastPathComponent().toString());
+    assertEquals(
+        "grandChild102", firstClickTree.getSelectionPath().getLastPathComponent().toString());
 
     var secondClickTree = doTreeClick(1, "Root/Parent3/Child30", "tree1", ui);
 
@@ -68,36 +63,25 @@ class JTreeTest {
   void testTreeShiftSelections(@SwingUIContext IUIContext ui) throws Exception {
     ui.wait(new WindowShowingCondition("Swing Tree Example"), 1_000);
 
-    var firstClickTree = doTreeClick(
-        1,
-        "Root/Item 0/Node 01",
-        "tree2",
-        ui);
+    var firstClickTree = doTreeClick(1, "Root/Item 0/Node 01", "tree2", ui);
 
     doTreeClick(
         1,
         "Root/Item 1/Node 10",
         "tree2",
         InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK,
-        ui
-    );
+        ui);
 
     assertEquals(3, firstClickTree.getSelectionPaths().length);
 
-    var tree = doTreeClick(
-        1,
-        "Root/Item 0/Node 01",
-        "tree2",
-        ui
-    );
+    var tree = doTreeClick(1, "Root/Item 0/Node 01", "tree2", ui);
 
     doTreeClick(
         1,
         "Root/Item 1/Node 10",
         "tree2",
         InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK,
-        ui
-    );
+        ui);
 
     assertEquals(3, tree.getSelectionPaths().length);
   }
@@ -107,21 +91,15 @@ class JTreeTest {
     ui.wait(new WindowShowingCondition("Swing Tree Example"), 1_000);
 
     // test ctrl clicks
-    doTreeClick(
-        1,
-        "Root/Parent1/Child10/grandChild100",
-        "tree1",
-        InputEvent.BUTTON1_DOWN_MASK,
-        ui
-    );
+    doTreeClick(1, "Root/Parent1/Child10/grandChild100", "tree1", InputEvent.BUTTON1_DOWN_MASK, ui);
 
-    var secondClickTree = doTreeClick(
-        1,
-        "Root/Parent1/Child10/grandChild102",
-        "tree1",
-        InputEvent.BUTTON1_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx(),
-        ui
-    );
+    var secondClickTree =
+        doTreeClick(
+            1,
+            "Root/Parent1/Child10/grandChild102",
+            "tree1",
+            InputEvent.BUTTON1_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx(),
+            ui);
 
     assertEquals(2, secondClickTree.getSelectionPaths().length);
   }
@@ -132,17 +110,13 @@ class JTreeTest {
 
     assertFalse(panel.isChoice1());
     ui.contextClick(
-        new JTreeItemLocator("Root/Item 1/Node 11", "tree2"),
-        new JMenuItemLocator("choice1")
-    );
+        new JTreeItemLocator("Root/Item 1/Node 11", "tree2"), new JMenuItemLocator("choice1"));
 
     assertTrue(panel.isChoice1());
 
     assertFalse(panel.isChoice2());
     ui.contextClick(
-        new JTreeItemLocator("Root/Item 2/Node 21", "tree2"),
-        new JMenuItemLocator("choice2")
-    );
+        new JTreeItemLocator("Root/Item 2/Node 21", "tree2"), new JMenuItemLocator("choice2"));
     assertTrue(panel.isChoice2());
   }
 

@@ -87,12 +87,7 @@ public class UIDriverSwing {
     ComponentTester.setTester(JTable.class, new JTableTester());
   }
 
-  public Component click(
-      int clickCount,
-      Component component,
-      int x,
-      int y,
-      int mask) {
+  public Component click(int clickCount, Component component, int x, int y, int mask) {
     var tester = ComponentTester.getTester(component);
     dragSource = component;
     dragSrcX = x;
@@ -102,9 +97,7 @@ public class UIDriverSwing {
     return component;
   }
 
-  public Component click(
-      Component component,
-      String labelOrPath) throws ActionFailedException {
+  public Component click(Component component, String labelOrPath) throws ActionFailedException {
     // not checking for awt.MenuItem, not a subclass of Component
     var tester = ComponentTester.getTester(component);
     dragSource = component;
@@ -167,11 +160,8 @@ public class UIDriverSwing {
     return owner;
   }
 
-  public Component clickListItem(
-      int clickCount,
-      JList<?> list,
-      String labelOrPath,
-      int mask) throws ActionFailedException {
+  public Component clickListItem(int clickCount, JList<?> list, String labelOrPath, int mask)
+      throws ActionFailedException {
     var tester = ComponentTester.getTester(list);
     dragSource = list;
     var location = new JListLocation(labelOrPath);
@@ -182,16 +172,14 @@ public class UIDriverSwing {
     return list;
   }
 
-  public Component clickComboBox(
-      JComboBox<?> combobox,
-      String labelOrPath,
-      int clickCount) throws ActionFailedException {
+  public Component clickComboBox(JComboBox<?> combobox, String labelOrPath, int clickCount)
+      throws ActionFailedException {
     var tester = ComponentTester.getTester(combobox);
     if (labelOrPath != null) {
       ((JComboBoxTester) tester).actionSelectItem(combobox, labelOrPath);
     } else {
-      tester.actionClick(combobox, new ComponentLocation(), InputEvent.BUTTON1_DOWN_MASK,
-          clickCount);
+      tester.actionClick(
+          combobox, new ComponentLocation(), InputEvent.BUTTON1_DOWN_MASK, clickCount);
     }
     return combobox;
   }
@@ -270,11 +258,7 @@ public class UIDriverSwing {
    * @throws ComponentMissingException in case of error
    * @throws ActionFailedException     in case of error
    */
-  public Component contextClickTable(
-      JTable table,
-      int rowIndex,
-      int columnIndex,
-      String menuPath)
+  public Component contextClickTable(JTable table, int rowIndex, int columnIndex, String menuPath)
       throws ComponentMissingException, ActionFailedException {
     var tester = ComponentTester.getTester(table);
     var location = new JTableLocation(rowIndex, columnIndex);
@@ -465,12 +449,10 @@ public class UIDriverSwing {
   private boolean assertComponentShowing(String title) {
     var components = collectComponents();
     for (Component component : components) {
-      if (component instanceof Frame frame
-          && isFrameShowing(title, frame)) {
+      if (component instanceof Frame frame && isFrameShowing(title, frame)) {
         return true;
       }
-      if (component instanceof Dialog dialog
-          && isDialogShowing(title, dialog)) {
+      if (component instanceof Dialog dialog && isDialogShowing(title, dialog)) {
         return true;
       }
     }
@@ -487,10 +469,7 @@ public class UIDriverSwing {
     return isComponentShowing(expectedTitle, actualTitle, window);
   }
 
-  private boolean isComponentShowing(
-      String expectedTitle,
-      String actualTitle,
-      Window window) {
+  private boolean isComponentShowing(String expectedTitle, String actualTitle, Window window) {
     return StringComparator.matches(actualTitle, expectedTitle)
         && window.isDisplayable()
         && window.isVisible()
@@ -499,16 +478,13 @@ public class UIDriverSwing {
 
   private List<Component> collectComponents() {
     var hierarchy = new AWTHierarchy();
-    var components = hierarchy.getRoots().stream()
-        .map(hierarchy::getComponents)
-        .flatMap(Collection::stream)
-        .toList();
+    var components =
+        hierarchy.getRoots().stream()
+            .map(hierarchy::getComponents)
+            .flatMap(Collection::stream)
+            .toList();
 
-    return Stream
-        .concat(
-            components.stream(),
-            hierarchy.getRoots().stream())
-        .toList();
+    return Stream.concat(components.stream(), hierarchy.getRoots().stream()).toList();
   }
 
   public void pause(int ms) {

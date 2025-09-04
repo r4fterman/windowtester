@@ -68,5 +68,4 @@ public class DialogSample extends JDialog {
     pack();
     setVisible(true);
   }
-
 }

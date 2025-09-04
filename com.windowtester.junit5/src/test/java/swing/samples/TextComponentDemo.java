@@ -228,19 +228,27 @@ public class TextComponentDemo extends JFrame {
     InputMap inputMap = textPane.getInputMap();
 
     // Ctrl-b to go backward one character
-    KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+    KeyStroke key =
+        KeyStroke.getKeyStroke(
+            KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
     inputMap.put(key, DefaultEditorKit.backwardAction);
 
     // Ctrl-f to go forward one character
-    key = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+    key =
+        KeyStroke.getKeyStroke(
+            KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
     inputMap.put(key, DefaultEditorKit.forwardAction);
 
     // Ctrl-p to go up one line
-    key = KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+    key =
+        KeyStroke.getKeyStroke(
+            KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
     inputMap.put(key, DefaultEditorKit.upAction);
 
     // Ctrl-n to go down one line
-    key = KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+    key =
+        KeyStroke.getKeyStroke(
+            KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
     inputMap.put(key, DefaultEditorKit.downAction);
   }
 
@@ -308,12 +316,12 @@ public class TextComponentDemo extends JFrame {
 
   protected void initDocument() {
     String[] initString = {
-        "Use the mouse to place the caret.",
-        "Use the edit menu to cut, copy, paste, and select text.",
-        "Also to undo and redo changes.",
-        "Use the style menu to change the style of the text.",
-        "Use these emacs key bindings to move the caret:",
-        "ctrl-f, ctrl-b, ctrl-n, ctrl-p."
+      "Use the mouse to place the caret.",
+      "Use the edit menu to cut, copy, paste, and select text.",
+      "Also to undo and redo changes.",
+      "Use the style menu to change the style of the text.",
+      "Use these emacs key bindings to move the caret:",
+      "ctrl-f, ctrl-b, ctrl-n, ctrl-p."
     };
 
     SimpleAttributeSet[] attrs = initAttributes(initString.length);
@@ -425,5 +433,4 @@ public class TextComponentDemo extends JFrame {
       }
     }
   }
-
 }

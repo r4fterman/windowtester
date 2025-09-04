@@ -30,35 +30,39 @@ public class SwingButton extends JPanel {
     super();
 
     JButton button = new JButton();
-    button.addActionListener(e -> {
-      System.out.println("button clicked");
-      buttonClicked = true;
-    });
+    button.addActionListener(
+        e -> {
+          System.out.println("button clicked");
+          buttonClicked = true;
+        });
 
     button.setText("Test Button");
     add(button);
 
     JCheckBox checkbox = new JCheckBox("CheckBox", false);
-    checkbox.addActionListener(e -> {
-      System.out.println("checkbox clicked");
-      checkboxClicked = true;
-    });
+    checkbox.addActionListener(
+        e -> {
+          System.out.println("checkbox clicked");
+          checkboxClicked = true;
+        });
 
     add(checkbox);
 
     JRadioButton radioButton = new JRadioButton("RadioButton", false);
-    radioButton.addActionListener(e -> {
-      System.out.println("radio button clicked");
-      radioButtonClicked = true;
-    });
+    radioButton.addActionListener(
+        e -> {
+          System.out.println("radio button clicked");
+          radioButtonClicked = true;
+        });
 
     add(radioButton);
 
     JToggleButton toggleButton = new JToggleButton("ToggleButton", false);
-    toggleButton.addActionListener(e -> {
-      System.out.println("toggle button clicked");
-      toggleButtonClicked = true;
-    });
+    toggleButton.addActionListener(
+        e -> {
+          System.out.println("toggle button clicked");
+          toggleButtonClicked = true;
+        });
 
     add(toggleButton);
   }
@@ -78,5 +82,4 @@ public class SwingButton extends JPanel {
   private boolean getToggleButtonClicked() {
     return toggleButtonClicked;
   }
-
 }

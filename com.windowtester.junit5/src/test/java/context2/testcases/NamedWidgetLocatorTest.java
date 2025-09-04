@@ -44,6 +44,5 @@ class NamedWidgetLocatorTest {
 
     ui.click(new JButtonLocator("Set address"));
     ui.click(new NamedWidgetLocator("clear"));
-
   }
 }

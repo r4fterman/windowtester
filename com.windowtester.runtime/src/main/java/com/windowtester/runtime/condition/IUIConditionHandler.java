@@ -25,6 +25,4 @@ import com.windowtester.runtime.IUIContext;
  *
  * @see IConditionHandler
  */
-public interface IUIConditionHandler extends IConditionHandler, IUICondition {
-
-}
+public interface IUIConditionHandler extends IConditionHandler, IUICondition {}

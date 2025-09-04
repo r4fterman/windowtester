@@ -65,5 +65,4 @@ public class TestTree extends JFrame {
 
     getContentPane().add(pane, BorderLayout.CENTER);
   }
-
 }

@@ -18,44 +18,28 @@ import com.windowtester.recorder.event.meta.RecorderTraceEvent;
 public class SpyEventListener implements ISemanticEventListener {
 
   @Override
-  public void notify(IUISemanticEvent event) {
-
-  }
+  public void notify(IUISemanticEvent event) {}
 
   @Override
-  public void notifyAssertionHookAdded(String hookName) {
-
-  }
+  public void notifyAssertionHookAdded(String hookName) {}
 
   @Override
-  public void notifyControllerStart(int port) {
-
-  }
+  public void notifyControllerStart(int port) {}
 
   @Override
-  public void notifyDisplayNotFound() {
-
-  }
+  public void notifyDisplayNotFound() {}
 
   @Override
-  public void notifyDispose() {
-
-  }
+  public void notifyDispose() {}
 
   @Override
-  public void notifyError(RecorderErrorEvent event) {
-
-  }
+  public void notifyError(RecorderErrorEvent event) {}
 
   @Override
-  public void notifyPause() {
-
-  }
+  public void notifyPause() {}
 
   @Override
-  public void notifyRestart() {
-
-  }
+  public void notifyRestart() {}
 
   @Override
   public void notifySpyModeToggle() {
@@ -63,22 +47,14 @@ public class SpyEventListener implements ISemanticEventListener {
   }
 
   @Override
-  public void notifyStart() {
-
-  }
+  public void notifyStart() {}
 
   @Override
-  public void notifyStop() {
-
-  }
+  public void notifyStop() {}
 
   @Override
-  public void notifyTrace(RecorderTraceEvent event) {
-
-  }
+  public void notifyTrace(RecorderTraceEvent event) {}
 
   @Override
-  public void notifyWrite() {
-
-  }
+  public void notifyWrite() {}
 }

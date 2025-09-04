@@ -160,11 +160,8 @@ public class Script extends Sequence implements Resolver {
    * Since we allow ComponentReference IDs to be changed, make sure our map is always up-to-date.
    */
   private synchronized void synchReferenceIDs() {
-    Map<String, ComponentReference> map = refs.values().stream()
-        .collect(toMap(
-            ComponentReference::getID,
-            value -> value
-        ));
+    Map<String, ComponentReference> map =
+        refs.values().stream().collect(toMap(ComponentReference::getID, value -> value));
 
     if (!refs.equals(map)) {
       // atomic update of references map
@@ -316,12 +313,12 @@ public class Script extends Sequence implements Resolver {
     for (ComponentReference ref : refs.values()) {
       String id = ref.getAttribute(TAG_PARENT);
       if (id != null && refs.get(id) == null) {
-        String msg = Strings.get("script.parent_missing", new Object[]{id});
+        String msg = Strings.get("script.parent_missing", new Object[] {id});
         throw new InvalidScriptException(msg);
       }
       id = ref.getAttribute(TAG_WINDOW);
       if (id != null && refs.get(id) == null) {
-        String msg = Strings.get("script.window_missing", new Object[]{id});
+        String msg = Strings.get("script.window_missing", new Object[] {id});
         throw new InvalidScriptException(msg);
       }
     }
@@ -555,7 +552,7 @@ public class Script extends Sequence implements Resolver {
   @Override
   public String getDefaultDescription() {
     String ext = fork ? " &" : "";
-    String desc = Strings.get("script.desc", new Object[]{getFilename(), ext});
+    String desc = Strings.get("script.desc", new Object[] {getFilename(), ext});
     return desc.contains(UNTITLED_FILE) ? UNTITLED : desc;
   }
 
@@ -689,7 +686,7 @@ public class Script extends Sequence implements Resolver {
 
   public ComponentReference getComponentReference(Component comp) {
     if (!getHierarchy().contains(comp)) {
-      String msg = Strings.get("script.not_in_hierarchy", new Object[]{comp.toString()});
+      String msg = Strings.get("script.not_in_hierarchy", new Object[] {comp.toString()});
       throw new IllegalArgumentException(msg);
     }
     synchReferenceIDs();

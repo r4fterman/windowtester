@@ -102,8 +102,7 @@ class JListTest {
             "seven",
             new SwingWidgetLocator(
                 JViewport.class,
-                new SwingWidgetLocator(
-                    JScrollPane.class, 1, new SwingWidgetLocator(Box.class)))),
+                new SwingWidgetLocator(JScrollPane.class, 1, new SwingWidgetLocator(Box.class)))),
         InputEvent.BUTTON1_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
 
     IWidgetLocator locator =

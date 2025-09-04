@@ -96,18 +96,19 @@ public class JComboBoxRecorder extends JComponentRecorder {
     boolean consumed = true;
     if (combo == null) {
       combo = getComboBox(event);
-      listener = ev -> {
-        index = combo.getSelectedIndex();
-        if (!combo.isPopupVisible()) {
-          combo.removeActionListener(listener);
-          setFinished(true);
-        }
-      };
+      listener =
+          ev -> {
+            index = combo.getSelectedIndex();
+            if (!combo.isPopupVisible()) {
+              combo.removeActionListener(listener);
+              setFinished(true);
+            }
+          };
       combo.addActionListener(listener);
       setStatus("Waiting for selection");
     } else if (event.getID() == KeyEvent.KEY_RELEASED
         && (((KeyEvent) event).getKeyCode() == KeyEvent.VK_SPACE
-        || ((KeyEvent) event).getKeyCode() == KeyEvent.VK_ENTER)) {
+            || ((KeyEvent) event).getKeyCode() == KeyEvent.VK_ENTER)) {
       index = combo.getSelectedIndex();
       setFinished(true);
     }
@@ -161,7 +162,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
                 getResolver(),
                 null,
                 "actionSelectIndex",
-                new String[]{cr.getID(), String.valueOf(index)},
+                new String[] {cr.getID(), String.valueOf(index)},
                 javax.swing.JComboBox.class);
       } else {
         step =
@@ -169,7 +170,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
                 getResolver(),
                 null,
                 "actionSelectItem",
-                new String[]{cr.getID(), value},
+                new String[] {cr.getID(), value},
                 javax.swing.JComboBox.class);
         // Create semantic event
         IUISemanticEvent semanticEvent =

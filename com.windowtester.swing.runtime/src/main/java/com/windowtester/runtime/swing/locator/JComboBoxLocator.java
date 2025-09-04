@@ -27,8 +27,7 @@ import javax.swing.JComboBox;
  */
 public class JComboBoxLocator extends AbstractPathLocator implements IsEnabled, HasFocus {
 
-  @Serial
-  private static final long serialVersionUID = -1258270010418601192L;
+  @Serial private static final long serialVersionUID = -1258270010418601192L;
 
   /**
    * Creates a locator for a JComboBox with the specified selection
@@ -79,22 +78,15 @@ public class JComboBoxLocator extends AbstractPathLocator implements IsEnabled, 
    * @param index    the relative index
    * @param parent   locator for the parent
    */
-  public JComboBoxLocator(
-      Class<?> cls,
-      String itemText,
-      int index,
-      SwingWidgetLocator parent) {
+  public JComboBoxLocator(Class<?> cls, String itemText, int index, SwingWidgetLocator parent) {
     super(cls, itemText, index, parent);
   }
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
-    return ((UIContextSwing) ui).getDriver()
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
+    return ((UIContextSwing) ui)
+        .getDriver()
         .clickComboBox((JComboBox<?>) component, getItemText(), clicks);
   }
 

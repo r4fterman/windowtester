@@ -17,8 +17,6 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Label;
 import java.awt.Window;
-import java.io.IOException;
-import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,9 +446,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
         String msg =
             Strings.get(
                 "component.creation_mismatch",
-                new Object[]{
-                    toXMLString(), comp.toString(), wt, exact
-                });
+                new Object[] {toXMLString(), comp.toString(), wt, exact});
         throw new Error(msg);
       }
     } else {
@@ -493,8 +489,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       if ((name = getTitle(c)) == null) {
         if ((name = getText(c)) == null) {
           if ((name = getLabel(c)) == null) {
-            if ((name = getIconName(c)) == null) {
-            }
+            if ((name = getIconName(c)) == null) {}
           }
         }
       }
@@ -506,7 +501,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     String id = getAttribute(TAG_ID);
     if (id == null) {
       String[] attributes = {
-          TAG_NAME, TAG_TITLE, TAG_TEXT, TAG_LABEL, TAG_ICON,
+        TAG_NAME, TAG_TITLE, TAG_TEXT, TAG_LABEL, TAG_ICON,
       };
       for (String attribute : attributes) {
         String att = getAttribute(attribute);
@@ -674,7 +669,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   public boolean equals(Object obj) {
     return this == obj
         || (obj instanceof ComponentReference)
-        && toXMLString().equals(((ComponentReference) obj).toXMLString());
+            && toXMLString().equals(((ComponentReference) obj).toXMLString());
   }
 
   public String toString() {
@@ -798,8 +793,8 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * that the ordering attributes can only be evaluated when looking at several otherwise identical
    * components.
    */
-  private void disambiguate(Component original, Component[] matches,
-      Map<String, ComponentReference> newReferences)
+  private void disambiguate(
+      Component original, Component[] matches, Map<String, ComponentReference> newReferences)
       throws ComponentNotFoundException, MultipleComponentsFoundException {
     Log.debug("Attempting to disambiguate multiple matches");
     Container parent = resolver.getHierarchy().getParent(original);
@@ -1166,8 +1161,8 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     return ref;
   }
 
-  public static ComponentReference matchExisting(final Component comp,
-      Collection<ComponentReference> existing) {
+  public static ComponentReference matchExisting(
+      final Component comp, Collection<ComponentReference> existing) {
 
     Log.debug("Matching " + Robot.toString(comp) + " against existing refs");
 
@@ -1182,8 +1177,11 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     Iterator<ComponentReference> iter = existing.iterator();
     // Sort such that the best match comes first
     Map<ComponentReference, Boolean> matches =
-        new TreeMap<>((Comparator) (o1, o2) -> ((ComponentReference) o2).getMatchWeight(comp)
-            - ((ComponentReference) o1).getMatchWeight(comp));
+        new TreeMap<>(
+            (Comparator)
+                (o1, o2) ->
+                    ((ComponentReference) o2).getMatchWeight(comp)
+                        - ((ComponentReference) o1).getMatchWeight(comp));
     Map<ComponentReference, Boolean> empty = new HashMap<>();
     while (iter.hasNext()) {
       ComponentReference ref = iter.next();

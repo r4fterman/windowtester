@@ -32,12 +32,7 @@ public class DelayUIDriverSwing extends UIDriverSwing {
   }
 
   @Override
-  public Component click(
-      int clickCount,
-      Component component,
-      int x,
-      int y,
-      int mask) {
+  public Component click(int clickCount, Component component, int x, int y, int mask) {
     // first move the mouse to the point of interest:
     mouseMove(component);
     return super.click(clickCount, component, x, y, mask);
@@ -61,11 +56,7 @@ public class DelayUIDriverSwing extends UIDriverSwing {
 
   @Override
   public Component clickTable(
-      int clickCount,
-      JTable table,
-      int rowIndex,
-      int columnIndex,
-      int mask) {
+      int clickCount, JTable table, int rowIndex, int columnIndex, int mask) {
     mouseMove(table);
     return super.clickTable(clickCount, table, rowIndex, columnIndex, mask);
   }

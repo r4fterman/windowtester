@@ -83,13 +83,11 @@ public class SwingWidgetFinder implements IWidgetFinder {
     }
 
     // check to see whether (ALL) frame owns any windows
-    return Arrays.stream(window.getOwnedWindows())
-        .anyMatch(this::isMatchingWindow);
+    return Arrays.stream(window.getOwnedWindows()).anyMatch(this::isMatchingWindow);
   }
 
   private void findMatches(Matcher matcher, Component component, Set<Component> found) {
-    hierarchy.getComponents(component)
-        .forEach(comp -> findMatches(matcher, comp, found));
+    hierarchy.getComponents(component).forEach(comp -> findMatches(matcher, comp, found));
 
     if (matcher.matches(component)) {
       found.add(component);

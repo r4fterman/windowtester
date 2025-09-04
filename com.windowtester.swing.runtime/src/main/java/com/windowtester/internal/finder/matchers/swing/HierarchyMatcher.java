@@ -130,8 +130,9 @@ public final class HierarchyMatcher implements Matcher {
    */
   public HierarchyMatcher(Class<?> cls, String nameOrLabel, int index, Matcher parentMatcher) {
     this(
-        index, new CompositeMatcher(
-            new Matcher[]{new ClassMatcher(cls), new NameOrLabelMatcher(nameOrLabel)}),
+        index,
+        new CompositeMatcher(
+            new Matcher[] {new ClassMatcher(cls), new NameOrLabelMatcher(nameOrLabel)}),
         parentMatcher);
   }
 
@@ -160,7 +161,8 @@ public final class HierarchyMatcher implements Matcher {
   //
   // Matching
   //
-  /// ////////////////////////////////////////////////////////////////////////////////////////////////
+  ///
+  // ////////////////////////////////////////////////////////////////////////////////////////////////
 
   @Override
   public boolean matches(Component component) {
@@ -182,8 +184,10 @@ public final class HierarchyMatcher implements Matcher {
       matches = matcher.matches(component);
     }
 
-    if (parent != null && matcher.matches(component)
-        && parentMatcher != null && parentMatcher.matches(parent)) {
+    if (parent != null
+        && matcher.matches(component)
+        && parentMatcher != null
+        && parentMatcher.matches(parent)) {
       int indexRelativeToParent = infoService.getIndex(component, parent);
       matches = indexRelativeToParent == index;
     }

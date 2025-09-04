@@ -67,9 +67,7 @@ public class Annotation extends Step {
   private int width = -1;
   private int height = -1;
 
-  class WindowLock {
-
-  }
+  class WindowLock {}
 
   private final transient Object WINDOW_LOCK = new WindowLock();
   private transient volatile Frame frame;
@@ -164,8 +162,7 @@ public class Annotation extends Step {
     } else {
       try {
         SwingUtilities.invokeAndWait((Runnable) this::showAnnotationWindow);
-        SwingUtilities.invokeAndWait((Runnable) () -> {
-        });
+        SwingUtilities.invokeAndWait((Runnable) () -> {});
       } catch (Exception e) {
         Log.warn(e);
       }
@@ -224,8 +221,8 @@ public class Annotation extends Step {
         w =
             (parent instanceof Dialog)
                 ? (title != null
-                ? new AnnotationWindow((Dialog) parent, title)
-                : new AnnotationWindow((Dialog) parent))
+                    ? new AnnotationWindow((Dialog) parent, title)
+                    : new AnnotationWindow((Dialog) parent))
                 : (title != null
                     ? new AnnotationWindow((Frame) parent, title)
                     : new AnnotationWindow((Frame) parent));

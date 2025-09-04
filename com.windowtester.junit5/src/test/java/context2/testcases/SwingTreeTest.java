@@ -33,31 +33,45 @@ class SwingTreeTest {
   void testMain(@SwingUIContext IUIContext ui) throws Exception {
     ui.wait(new WindowShowingCondition("Swing Tree Demo"), 1_000);
 
-    JTreeItemLocator treeItemLocator = new JTreeItemLocator("Root/Parent4", new
-        SwingWidgetLocator(
-        JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane1")));
+    JTreeItemLocator treeItemLocator =
+        new JTreeItemLocator(
+            "Root/Parent4",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane1")));
     ui.click(2, treeItemLocator);
     ui.assertThat(treeItemLocator.isSelected());
-    ui.click(2, new JTreeItemLocator("Root/Parent4/Child41",
-        new SwingWidgetLocator(JViewport.class, new SwingWidgetLocator(
-            JScrollPane.class, "scrollPane1"))));
+    ui.click(
+        2,
+        new JTreeItemLocator(
+            "Root/Parent4/Child41",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane1"))));
 
-    JTreeItemLocator locator2 = new JTreeItemLocator("Root/Parent4/Child41/grandChild411",
-        new SwingWidgetLocator(JViewport.class, new SwingWidgetLocator(
-            JScrollPane.class, "scrollPane1")));
+    JTreeItemLocator locator2 =
+        new JTreeItemLocator(
+            "Root/Parent4/Child41/grandChild411",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane1")));
     ui.click(locator2);
     ui.assertThat(locator2.isSelected());
 
-    ui.click(new JTreeItemLocator("Root/Item 4", new SwingWidgetLocator(
-        JViewport.class, new SwingWidgetLocator(JScrollPane.class,
-        "scrollPane2"))));
-    ui.click(2, new JTreeItemLocator("Root/Item 0", new SwingWidgetLocator(
-        JViewport.class, new SwingWidgetLocator(JScrollPane.class,
-        "scrollPane2"))));
+    ui.click(
+        new JTreeItemLocator(
+            "Root/Item 4",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane2"))));
+    ui.click(
+        2,
+        new JTreeItemLocator(
+            "Root/Item 0",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane2"))));
 
-    JTreeItemLocator locator3 = new JTreeItemLocator("Root/Item 0/Node 01", new
-        SwingWidgetLocator(
-        JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane2")));
+    JTreeItemLocator locator3 =
+        new JTreeItemLocator(
+            "Root/Item 0/Node 01",
+            new SwingWidgetLocator(
+                JViewport.class, new SwingWidgetLocator(JScrollPane.class, "scrollPane2")));
     ui.click(locator3);
     ui.assertThat(locator3.isSelected());
   }

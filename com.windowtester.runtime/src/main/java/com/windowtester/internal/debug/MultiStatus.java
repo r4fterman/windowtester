@@ -9,11 +9,7 @@ public class MultiStatus implements IStatus {
   private final Throwable throwable;
 
   public MultiStatus(
-      String productId,
-      int ok,
-      IStatus[] children,
-      String message,
-      Throwable throwable) {
+      String productId, int ok, IStatus[] children, String message, Throwable throwable) {
     this.productId = productId;
     this.ok = ok;
     this.children = children;

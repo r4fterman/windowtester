@@ -324,7 +324,7 @@ public class ComponentTester extends Robot {
    * be useful in a custom component if the method is supported.
    */
   private static final String[] tagMethods = {
-      "getLabel", "getTitle", "getText",
+    "getLabel", "getTitle", "getText",
   };
 
   public static String getTag(Component component) {
@@ -347,7 +347,7 @@ public class ComponentTester extends Robot {
     for (String tagMethod : tagMethods) {
       // Don't use getText on text components
       if (((comp instanceof javax.swing.text.JTextComponent)
-          || (comp instanceof java.awt.TextComponent))
+              || (comp instanceof java.awt.TextComponent))
           && "getText".equals(tagMethod)) {
         continue;
       }
@@ -474,8 +474,8 @@ public class ComponentTester extends Robot {
     actionSelectPopupMenuItem(invoker, invoker.getWidth() / 2, invoker.getHeight() / 2, path);
   }
 
-  public void actionSelectPopupMenuItem(Component invoker, ComponentLocation location,
-      String path) {
+  public void actionSelectPopupMenuItem(
+      Component invoker, ComponentLocation location, String path) {
     selectPopupMenuItem(invoker, location, path);
     waitForIdle();
   }
@@ -740,7 +740,7 @@ public class ComponentTester extends Robot {
           }
 
           public String toString() {
-            return Strings.get("tester.Component.show_wait", new Object[]{identifier});
+            return Strings.get("tester.Component.show_wait", new Object[] {identifier});
           }
         },
         componentDelay);
@@ -763,7 +763,7 @@ public class ComponentTester extends Robot {
           }
 
           public String toString() {
-            return Strings.get("tester.Component.show_wait", new Object[]{ref});
+            return Strings.get("tester.Component.show_wait", new Object[] {ref});
           }
         },
         componentDelay);
@@ -792,8 +792,8 @@ public class ComponentTester extends Robot {
       Class<?>[] params = method.getParameterTypes();
       if ((returnType == null || returnType.equals(method.getReturnType()))
           && ((params.length == 0 && !componentArgument)
-          || (params.length > 0
-          && (Component.class.isAssignableFrom(params[0]) == componentArgument)))) {
+              || (params.length > 0
+                  && (Component.class.isAssignableFrom(params[0]) == componentArgument)))) {
         methods.add(method);
         names.add(name);
       }

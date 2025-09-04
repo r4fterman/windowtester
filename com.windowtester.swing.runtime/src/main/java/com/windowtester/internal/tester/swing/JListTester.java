@@ -46,7 +46,7 @@ public class JListTester extends abbot.tester.JListTester {
     var list = (JList<?>) component;
     var index = location.getIndex(list);
     if (index < 0 || index >= list.getModel().getSize()) {
-      var msg = Strings.get("tester.JList.invalid_index", new Object[]{index});
+      var msg = Strings.get("tester.JList.invalid_index", new Object[] {index});
       throw new ActionFailedException(msg);
     }
 
@@ -66,11 +66,7 @@ public class JListTester extends abbot.tester.JListTester {
   /**
    * click with mask specified
    */
-  public void actionMultipleClick(
-      Component component,
-      int clickCount,
-      String item,
-      int mask) {
+  public void actionMultipleClick(Component component, int clickCount, String item, int mask) {
     actionSelectRow(component, clickCount, new JListLocation(item), mask);
   }
 
@@ -78,14 +74,11 @@ public class JListTester extends abbot.tester.JListTester {
    * click on the given row, with the given clickCount
    */
   public void actionSelectRow(
-      Component component,
-      int clickCount,
-      JListLocation location,
-      int mask) {
+      Component component, int clickCount, JListLocation location, int mask) {
     var list = (JList<?>) component;
     var index = location.getIndex(list);
     if (index < 0 || index >= list.getModel().getSize()) {
-      var msg = Strings.get("tester.JList.invalid_index", new Object[]{index});
+      var msg = Strings.get("tester.JList.invalid_index", new Object[] {index});
       throw new ActionFailedException(msg);
     }
 

@@ -12,9 +12,7 @@ package com.windowtester.internal.runtime;
 
 public interface ICodeGenerator {
 
-  class JavaVersion {
-
-  }
+  class JavaVersion {}
 
   JavaVersion JAVA5 = new JavaVersion();
   JavaVersion JAVA4 = new JavaVersion();

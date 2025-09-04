@@ -44,8 +44,7 @@ public abstract class AbbotTimerTask extends TimerTask {
   /**
    * Creates a new timer task.
    */
-  protected AbbotTimerTask() {
-  }
+  protected AbbotTimerTask() {}
 
   /**
    * The action to be performed by this timer task.
@@ -65,5 +64,4 @@ public abstract class AbbotTimerTask extends TimerTask {
   public boolean isCanceled() {
     return state == CANCELLED;
   }
-
 }

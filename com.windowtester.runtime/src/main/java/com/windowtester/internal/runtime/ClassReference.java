@@ -35,12 +35,9 @@ public class ClassReference implements Serializable {
    * A class that is used as a sentinel when class resolution in
    * {@link ClassReference#getClassForName()} fails.
    */
-  public static final class UnresolvableClass {
+  public static final class UnresolvableClass {}
 
-  }
-
-  @Serial
-  private static final long serialVersionUID = -5522094418456665521L;
+  @Serial private static final long serialVersionUID = -5522094418456665521L;
 
   /**
    * name of the class

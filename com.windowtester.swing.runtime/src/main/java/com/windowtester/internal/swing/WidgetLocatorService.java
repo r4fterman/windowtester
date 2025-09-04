@@ -38,8 +38,7 @@ public class WidgetLocatorService {
   //	a list of keys which we want to propagate to locators
   private static final String[] INTERESTING_KEYS = {};
 
-  private final IWidgetIdentifierStrategy widgetIdentifier =
-      new ScopedComponentIdentifierBuilder();
+  private final IWidgetIdentifierStrategy widgetIdentifier = new ScopedComponentIdentifierBuilder();
 
   /**
    * Generate a Matcher that can be used to identify the widget described by this WidgetLocator
@@ -149,8 +148,7 @@ public class WidgetLocatorService {
    * @return the widget's text
    */
   public String getWidgetText(Component component) {
-    if (component instanceof AbstractButton button
-        && !(component instanceof JMenuItem)) {
+    if (component instanceof AbstractButton button && !(component instanceof JMenuItem)) {
       return button.getText();
     }
     if (component instanceof JLabel label) {
@@ -197,8 +195,7 @@ public class WidgetLocatorService {
   }
 
   private static SwingWidgetLocator getSwingWidgetLocator(
-      String text,
-      Class<? extends Component> cls) {
+      String text, Class<? extends Component> cls) {
     if (text != null) {
       return new SwingWidgetLocator(cls, text);
     }

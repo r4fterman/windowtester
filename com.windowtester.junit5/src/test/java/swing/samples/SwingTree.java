@@ -138,5 +138,4 @@ public class SwingTree extends JFrame {
   public boolean isChoice2() {
     return choice2;
   }
-
 }
