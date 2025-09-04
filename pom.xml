@@ -71,6 +71,15 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>dev.dimlight</groupId>
+                    <artifactId>shellcheck-maven-plugin</artifactId>
+                    <version>0.5.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -119,12 +128,32 @@
                 <configuration>
                     <java>
                         <googleJavaFormat>
-                            <version>1.19.2</version>
+                            <version>1.28.0</version>
                             <style>GOOGLE</style>
                             <reflowLongStrings>true</reflowLongStrings>
                             <formatJavadoc>false</formatJavadoc>
                         </googleJavaFormat>
+                        <importOrder/>
+                        <removeUnusedImports/>
+                        <formatAnnotations/>
                     </java>
+                    <json>
+                        <includes>
+                            <include>src/**/*.json</include>
+                        </includes>
+                        <gson>
+                            <indentSpaces>4</indentSpaces>
+                            <sortByKeys>false</sortByKeys>
+                            <escapeHtml>false</escapeHtml>
+                            <version>2.13.1</version>
+                        </gson>
+                    </json>
+                    <markdown>
+                        <includes>
+                            <include>**/*.md</include>
+                        </includes>
+                        <flexmark/>
+                    </markdown>
                 </configuration>
                 <executions>
                     <execution>
@@ -160,6 +189,55 @@
                     <outputDirectory>${project.build.directory}/classes/META-INF</outputDirectory>
                     <outputName>bom</outputName>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>dev.dimlight</groupId>
+                <artifactId>shellcheck-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>shell-script-linter</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>
+                                    <directory>${project.basedir}/scripts</directory>
+                                    <includes>
+                                        <include>*.sh</include>
+                                        <include>git-hooks/*</include>
+                                    </includes>
+                                </sourceDir>
+                            </sourceDirs>
+                            <args>
+                                <arg>-a</arg>
+                                <arg>-s</arg>
+                                <arg>bash</arg>
+                                <arg>--format=tty</arg>
+                                <arg>--norc</arg>
+                            </args>
+                            <failBuildIfWarnings>true</failBuildIfWarnings>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.rudikershaw.gitbuildhook</groupId>
+                <artifactId>git-build-hook-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <gitConfig>
+                        <core.hooksPath>scripts/git-hooks/</core.hooksPath>
+                    </gitConfig>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>configure</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
