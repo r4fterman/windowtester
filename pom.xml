@@ -6,7 +6,7 @@
 
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester</artifactId>
-    <version>5.13.5-SNAPSHOT</version>
+    <version>5.14.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>WindowTester</name>
@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.4</version>
+                <version>5.14.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -71,10 +71,19 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.6.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.14.1</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -82,14 +91,14 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.5.4</version>
                 <configuration>
                     <runOrder>alphabetical</runOrder>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
@@ -115,7 +124,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.46.0</version>
+                <version>3.0.0</version>
                 <configuration>
                     <java>
                         <googleJavaFormat>
@@ -172,7 +181,7 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-pmd-plugin</artifactId>
-                        <version>3.27.0</version>
+                        <version>3.28.0</version>
                         <configuration>
                             <linkXRef>false</linkXRef>
                             <failOnViolation>false</failOnViolation>
@@ -190,7 +199,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.9.3.2</version>
+                        <version>4.9.6.0</version>
                         <executions>
                             <execution>
                                 <phase>verify</phase>
@@ -212,7 +221,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.13</version>
+                        <version>0.8.14</version>
                         <configuration>
                             <destFile>${jacoco.execution.file}</destFile>
                             <dataFile>${jacoco.execution.file}</dataFile>
@@ -238,7 +247,7 @@
                     </plugin>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.5.3</version>
+                        <version>3.5.4</version>
                         <configuration>
                             <argLine>${surefireArgLine}</argLine>
                             <runOrder>alphabetical</runOrder>
@@ -255,7 +264,7 @@
                     </plugin>
                     <plugin>
                         <artifactId>maven-pmd-plugin</artifactId>
-                        <version>3.27.0</version>
+                        <version>3.28.0</version>
                     </plugin>
                 </plugins>
             </reporting>
@@ -279,7 +288,7 @@
                     </plugin>
                     <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.2</version>
+                        <version>3.12.0</version>
                         <configuration>
                             <doclint>none</doclint>
                         </configuration>
@@ -295,7 +304,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.3</version>
+                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -324,7 +333,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.8.0</version>
+                        <version>0.9.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>maven-central</publishingServerId>

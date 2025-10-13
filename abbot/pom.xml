@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester</artifactId>
-    <version>5.13.5-SNAPSHOT</version>
+    <version>5.14.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>abbot</artifactId>
@@ -42,7 +42,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
