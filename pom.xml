@@ -6,7 +6,7 @@
 
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester</artifactId>
-    <version>5.13.5-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>WindowTester</name>
@@ -52,8 +52,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <java.version>17</java.version>
-        <maven.version>3.5.4</maven.version>
+        <java.version>21</java.version>
+        <maven.version>3.9.9</maven.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.4</version>
+                <version>6.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -71,6 +71,15 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>dev.dimlight</groupId>
+                    <artifactId>shellcheck-maven-plugin</artifactId>
+                    <version>0.5.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -115,16 +124,36 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.46.0</version>
+                <version>2.46.1</version>
                 <configuration>
                     <java>
                         <googleJavaFormat>
-                            <version>1.19.2</version>
+                            <version>1.28.0</version>
                             <style>GOOGLE</style>
                             <reflowLongStrings>true</reflowLongStrings>
                             <formatJavadoc>false</formatJavadoc>
                         </googleJavaFormat>
+                        <importOrder/>
+                        <removeUnusedImports/>
+                        <formatAnnotations/>
                     </java>
+                    <json>
+                        <includes>
+                            <include>src/**/*.json</include>
+                        </includes>
+                        <gson>
+                            <indentSpaces>4</indentSpaces>
+                            <sortByKeys>false</sortByKeys>
+                            <escapeHtml>false</escapeHtml>
+                            <version>2.13.1</version>
+                        </gson>
+                    </json>
+                    <markdown>
+                        <includes>
+                            <include>**/*.md</include>
+                        </includes>
+                        <flexmark/>
+                    </markdown>
                 </configuration>
                 <executions>
                     <execution>
@@ -160,6 +189,83 @@
                     <outputDirectory>${project.build.directory}/classes/META-INF</outputDirectory>
                     <outputName>bom</outputName>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>dev.dimlight</groupId>
+                <artifactId>shellcheck-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>shell-script-linter</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>
+                                    <directory>${project.basedir}/scripts</directory>
+                                    <includes>
+                                        <include>*.sh</include>
+                                        <include>git-hooks/*</include>
+                                    </includes>
+                                </sourceDir>
+                            </sourceDirs>
+                            <args>
+                                <arg>-a</arg>
+                                <arg>-s</arg>
+                                <arg>bash</arg>
+                                <arg>--format=tty</arg>
+                                <arg>--norc</arg>
+                            </args>
+                            <failBuildIfWarnings>true</failBuildIfWarnings>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>12.0.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>conf/checkstyle/checkstyle.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <violationSeverity>warning</violationSeverity>
+                    <failOnViolation>true</failOnViolation>
+                    <failsOnError>true</failsOnError>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.rudikershaw.gitbuildhook</groupId>
+                <artifactId>git-build-hook-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <gitConfig>
+                        <core.hooksPath>scripts/git-hooks/</core.hooksPath>
+                    </gitConfig>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>configure</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

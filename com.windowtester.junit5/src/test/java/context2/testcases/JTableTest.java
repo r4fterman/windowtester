@@ -54,11 +54,9 @@ class JTableTest {
     var table00 = selectTableItem(new Point(0, 0), ui);
     assertEquals(1, table00.getSelectedRowCount());
 
-    var table20 = selectTableItem(
-        new Point(2, 0),
-        InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK,
-        ui
-    );
+    var table20 =
+        selectTableItem(
+            new Point(2, 0), InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK, ui);
     assertEquals(3, table20.getSelectedRowCount());
 
     ui.assertThat(new JTableItemLocator(new Point(2, 0)).isSelected());
@@ -68,14 +66,13 @@ class JTableTest {
 
   @Test
   void testCtrlClicks(@SwingUIContext IUIContext ui) throws WidgetSearchException {
-    var table = selectTableItem(new Point(0,0), ui);
+    var table = selectTableItem(new Point(0, 0), ui);
     assertEquals(1, table.getSelectedRowCount());
 
     selectTableItem(
-        new Point(2,0),
+        new Point(2, 0),
         InputEvent.BUTTON1_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx(),
-        ui
-    );
+        ui);
     assertEquals(2, table.getSelectedRowCount());
 
     ui.assertThat(new JTableItemLocator(new Point(2, 0)).isSelected());
@@ -85,7 +82,7 @@ class JTableTest {
 
   @Test
   void testTableRowClicks(@SwingUIContext IUIContext ui) throws WidgetSearchException {
-    var table = selectTableItem(new Point(0,1), ui);
+    var table = selectTableItem(new Point(0, 1), ui);
 
     var model = table.getModel();
     assertEquals("two", model.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));

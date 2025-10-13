@@ -26,12 +26,11 @@ import swing.samples.DialogSample;
 @ExtendWith(WindowtesterExtension.class)
 class DialogSampleTest {
 
-  @UIUnderTest
-  private DialogSample dialog;
+  @UIUnderTest private DialogSample dialog;
 
   @BeforeEach
   void setUp() {
-     dialog = new DialogSample(new JFrame("Question"), "");
+    dialog = new DialogSample(new JFrame("Question"), "");
   }
 
   @Test

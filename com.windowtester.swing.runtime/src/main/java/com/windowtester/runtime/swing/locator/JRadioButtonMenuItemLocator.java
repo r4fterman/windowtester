@@ -25,8 +25,7 @@ import javax.swing.JRadioButtonMenuItem;
  */
 public class JRadioButtonMenuItemLocator extends JMenuItemLocator implements IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = -4750442290023311100L;
+  @Serial private static final long serialVersionUID = -4750442290023311100L;
 
   /**
    * Creates an instance of a JRadioButtonMenuItem locator with the menu path indicated by a string

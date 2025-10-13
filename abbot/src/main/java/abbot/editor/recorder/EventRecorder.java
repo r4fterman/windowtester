@@ -543,7 +543,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
         break;
       case MouseEvent.MOUSE_ENTERED:
       case MouseEvent.MOUSE_EXITED:
-        //     case MouseEvent.MOUSE_MOVED:
+      //     case MouseEvent.MOUSE_MOVED:
       case MouseEvent.MOUSE_DRAGGED:
         capture = captureMotion;
         break;
@@ -628,8 +628,10 @@ public class EventRecorder extends Recorder implements SemanticEvents {
         sr.addActionListener(getListener());
       } catch (InvocationTargetException e) {
         Log.warn(e);
-      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
-               ClassNotFoundException e) {
+      } catch (NoSuchMethodException
+          | InstantiationException
+          | IllegalAccessException
+          | ClassNotFoundException e) {
         sr = getSemanticRecorder(cls.getSuperclass());
       }
       // Cache the results for future reference

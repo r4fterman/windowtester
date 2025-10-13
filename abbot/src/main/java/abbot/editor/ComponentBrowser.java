@@ -658,8 +658,8 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     }
 
     public boolean contains(Component component) {
-      return (isCompact() ? super.contains(component) : raw.contains(component)) && !filtered.containsKey(
-          component);
+      return (isCompact() ? super.contains(component) : raw.contains(component))
+          && !filtered.containsKey(component);
     }
 
     public void filter(Component c) {

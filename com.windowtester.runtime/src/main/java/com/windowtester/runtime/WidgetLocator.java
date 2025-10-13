@@ -41,8 +41,7 @@ public class WidgetLocator implements Serializable, IWidgetIdentifier, IAdaptabl
    * This should _not_ be a problem (hierarchies are not too deep); still, we
    * could consider a custom serialization scheme.
    */
-  @Serial
-  private static final long serialVersionUID = 7772528976750829834L;
+  @Serial private static final long serialVersionUID = 7772528976750829834L;
 
   /**
    * A sentinel value, indicating an unassigned index
@@ -88,10 +87,7 @@ public class WidgetLocator implements Serializable, IWidgetIdentifier, IAdaptabl
    * @since 3.8.1
    */
   protected WidgetLocator(
-      ClassReference classRef,
-      String nameOrLabel,
-      int index,
-      WidgetLocator parentInfo) {
+      ClassReference classRef, String nameOrLabel, int index, WidgetLocator parentInfo) {
     this.classRef = classRef;
     this.nameOrLabel = nameOrLabel;
     this.index = index;
@@ -106,11 +102,7 @@ public class WidgetLocator implements Serializable, IWidgetIdentifier, IAdaptabl
    * @param index       - the target's index relative to its parent
    * @param parentInfo  - the target's parent info
    */
-  public WidgetLocator(
-      Class<?> cls,
-      String nameOrLabel,
-      int index,
-      WidgetLocator parentInfo) {
+  public WidgetLocator(Class<?> cls, String nameOrLabel, int index, WidgetLocator parentInfo) {
     this(ClassReference.forClass(cls), nameOrLabel, index, parentInfo);
   }
 
@@ -285,19 +277,14 @@ public class WidgetLocator implements Serializable, IWidgetIdentifier, IAdaptabl
     if (name != null) {
       builder.append(name).append("(");
     } else {
-      builder
-          .append("WidgetLocator(")
-          .append(classRef.getName());
+      builder.append("WidgetLocator(").append(classRef.getName());
       if (getNameOrLabel() != null) {
         builder.append(", ");
       }
     }
 
     if (getNameOrLabel() != null) {
-      builder
-          .append('\"')
-          .append(getNameOrLabel())
-          .append('\"');
+      builder.append('\"').append(getNameOrLabel()).append('\"');
       if (getIndex() != UNASSIGNED || getParentInfo() != null) {
         builder.append(", ");
       }

@@ -69,7 +69,7 @@ public class Sequence extends Step {
   }
 
   public String getDefaultDescription() {
-    return Strings.get("sequence.desc", new Object[]{String.valueOf(size())});
+    return Strings.get("sequence.desc", new Object[] {String.valueOf(size())});
   }
 
   public String getXMLTag() {

@@ -22,11 +22,11 @@ public class ReflectionUtils {
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(T obj)
       throws IllegalArgumentException,
-      SecurityException,
-      InstantiationException,
-      IllegalAccessException,
-      InvocationTargetException,
-      NoSuchMethodException {
+          SecurityException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchMethodException {
     var newObj = obj.getClass().getConstructor().newInstance();
     return (T) newObj;
   }
@@ -34,11 +34,11 @@ public class ReflectionUtils {
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(T obj, Class<?> argType, Object arg)
       throws IllegalArgumentException,
-      SecurityException,
-      InstantiationException,
-      IllegalAccessException,
-      InvocationTargetException,
-      NoSuchMethodException {
+          SecurityException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchMethodException {
     var newObj = obj.getClass().getConstructor(argType).newInstance(arg);
     return (T) newObj;
   }
@@ -46,11 +46,11 @@ public class ReflectionUtils {
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(Class<?> instanceClass, Class<?> argType, Object arg)
       throws IllegalArgumentException,
-      SecurityException,
-      InstantiationException,
-      IllegalAccessException,
-      InvocationTargetException,
-      NoSuchMethodException {
+          SecurityException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchMethodException {
     var newObj = instanceClass.getConstructor(argType).newInstance(arg);
     return (T) newObj;
   }

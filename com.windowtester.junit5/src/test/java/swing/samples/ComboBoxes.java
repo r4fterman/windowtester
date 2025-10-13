@@ -48,5 +48,4 @@ public class ComboBoxes extends JPanel {
   public JComboBox<String> getComboBox2() {
     return colorsList;
   }
-
 }

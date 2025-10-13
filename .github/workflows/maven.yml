@@ -10,17 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
       - name: Checkout project
         uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
       - name: Build project and run UI test
         uses: coactions/setup-xvfb@v1
         with:
-          run: mvn clean verify
+          run: mvn clean verify -Pci
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:

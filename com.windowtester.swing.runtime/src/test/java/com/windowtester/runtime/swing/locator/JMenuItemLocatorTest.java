@@ -12,6 +12,7 @@ class JMenuItemLocatorTest {
 
     assertEquals("File/Exit", locator.getPath());
   }
+
   @Test
   void path_should_be_parsed_into_name_and_label() {
     var locator = new JMenuItemLocator("File/Exit");

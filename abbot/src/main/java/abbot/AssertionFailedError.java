@@ -13,8 +13,7 @@ public class AssertionFailedError extends RuntimeException {
   private File file;
   private int line;
 
-  public AssertionFailedError() {
-  }
+  public AssertionFailedError() {}
 
   public AssertionFailedError(String msg) {
     super(msg);
@@ -41,6 +40,6 @@ public class AssertionFailedError extends RuntimeException {
     }
 
     File file = Script.getFile(step);
-    return Strings.get("step.failure", new Object[]{msg, file, line});
+    return Strings.get("step.failure", new Object[] {msg, file, line});
   }
 }

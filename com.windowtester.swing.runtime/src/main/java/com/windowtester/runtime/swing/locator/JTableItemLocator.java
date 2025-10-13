@@ -38,8 +38,7 @@ import javax.swing.JTable;
  */
 public class JTableItemLocator extends SwingWidgetLocator implements IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = 7291989565140551064L;
+  @Serial private static final long serialVersionUID = 7291989565140551064L;
 
   private final Point rowColumn;
 
@@ -96,14 +95,15 @@ public class JTableItemLocator extends SwingWidgetLocator implements IsSelected 
    * @param index     the index of the JTable relative to the parent
    * @param parent    locator of the parent
    */
-  public JTableItemLocator(Class<?> cls, Point rowColum, String tableName, int index,
-      SwingWidgetLocator parent) {
+  public JTableItemLocator(
+      Class<?> cls, Point rowColum, String tableName, int index, SwingWidgetLocator parent) {
     super(cls, tableName, index, parent);
     rowColumn = rowColum;
     matcher = createMatcher(cls, tableName, index, parent);
   }
 
-  private IWidgetMatcher<?> createMatcher(Class<?> cls, String tableName, int index, SwingWidgetLocator parent) {
+  private IWidgetMatcher<?> createMatcher(
+      Class<?> cls, String tableName, int index, SwingWidgetLocator parent) {
     IWidgetMatcher<?> matcher = null;
     if (cls != null) {
       matcher = new ExactClassMatcher(cls);
@@ -126,8 +126,9 @@ public class JTableItemLocator extends SwingWidgetLocator implements IsSelected 
       return matcher;
     }
 
-    var msg = String.format("Unable to create matcher for class=%s, index=%d, parent=%s",
-        cls, index, parent);
+    var msg =
+        String.format(
+            "Unable to create matcher for class=%s, index=%d, parent=%s", cls, index, parent);
     throw new IllegalArgumentException(msg);
   }
 
@@ -149,10 +150,7 @@ public class JTableItemLocator extends SwingWidgetLocator implements IsSelected 
 
   @Override
   public IWidgetLocator contextClick(
-      IUIContext ui,
-      IWidgetReference widget,
-      IClickDescription click,
-      String menuItemPath) {
+      IUIContext ui, IWidgetReference widget, IClickDescription click, String menuItemPath) {
     var component = (Component) widget.getWidget();
     var clicked =
         ((UIContextSwing) ui)

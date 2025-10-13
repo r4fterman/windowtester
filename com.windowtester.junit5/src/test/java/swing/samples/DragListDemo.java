@@ -73,5 +73,4 @@ public class DragListDemo extends JPanel {
     add(panel2, BorderLayout.LINE_END);
     setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
   }
-
 }

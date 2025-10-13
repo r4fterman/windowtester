@@ -14,5 +14,4 @@ public record FieldInfo(String title, Dimension dimension, Object result) {
     }
     return false;
   }
-
 }

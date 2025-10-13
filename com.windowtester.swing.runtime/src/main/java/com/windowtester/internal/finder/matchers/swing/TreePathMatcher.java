@@ -30,8 +30,7 @@ public class TreePathMatcher extends AbstractMatcher {
   }
 
   private boolean searchTreeNode(
-      List<DefaultMutableTreeNode> treeNodes,
-      Iterator<String> searchIterator) {
+      List<DefaultMutableTreeNode> treeNodes, Iterator<String> searchIterator) {
     var nodeName = searchIterator.next();
     for (DefaultMutableTreeNode treeNode : treeNodes) {
       if (treeNode.toString().equalsIgnoreCase(nodeName)) {

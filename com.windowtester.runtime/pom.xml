@@ -5,12 +5,12 @@
     <parent>
         <groupId>io.github.r4fterman</groupId>
         <artifactId>com.windowtester</artifactId>
-        <version>5.13.5-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>com.windowtester.runtime</artifactId>
-    <name>Windowtester Runtime</name>
-    <description>The runtime library providing base functionality so Windowtester can operate on a
+    <name>WindowTester Runtime</name>
+    <description>The runtime library providing base functionality so WindowTester can operate on a
         screen.
     </description>
 
@@ -54,6 +54,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>dev.dimlight</groupId>
+                <artifactId>shellcheck-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

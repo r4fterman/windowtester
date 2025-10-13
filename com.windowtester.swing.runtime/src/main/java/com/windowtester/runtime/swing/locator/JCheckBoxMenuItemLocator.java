@@ -25,8 +25,7 @@ import javax.swing.JCheckBoxMenuItem;
  */
 public class JCheckBoxMenuItemLocator extends JMenuItemLocator implements IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = 4036431358452057857L;
+  @Serial private static final long serialVersionUID = 4036431358452057857L;
 
   /**
    * Creates an instance of a JCheckBoxMenuItem locator with the menu path indicated by a string

@@ -83,20 +83,15 @@ public class MatcherFactory {
         return new ClassMatcher(cls);
       }
       return new CompositeMatcher(
-          new Matcher[]{
-              new ClassMatcher(cls),
-              new NameOrLabelMatcher(nameOrLabel)
-          }
-      );
+          new Matcher[] {new ClassMatcher(cls), new NameOrLabelMatcher(nameOrLabel)});
     }
 
     if (nameOrLabel == null) {
       return new IndexMatcher(new ClassMatcher(cls), index);
     }
     return new CompositeMatcher(
-        new Matcher[]{
-            new ClassMatcher(cls),
-            new IndexMatcher(new NameOrLabelMatcher(nameOrLabel), index)
+        new Matcher[] {
+          new ClassMatcher(cls), new IndexMatcher(new NameOrLabelMatcher(nameOrLabel), index)
         });
   }
 

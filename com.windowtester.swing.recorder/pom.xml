@@ -1,16 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>io.github.r4fterman</groupId>
-    <artifactId>com.windowtester</artifactId>
-    <version>5.13.5-SNAPSHOT</version>
-  </parent>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.r4fterman</groupId>
+        <artifactId>com.windowtester</artifactId>
+        <version>6.0.0-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>com.windowtester.swing.recorder</artifactId>
-  <name>Windowtester Recorder</name>
-  <description>The recorder library provides functionality to record a manual UI interaction and replay it automatically.</description>
+    <artifactId>com.windowtester.swing.recorder</artifactId>
+    <name>WindowTester Recorder</name>
+    <description>The recorder library provides functionality to record a manual UI interaction and
+        replay it automatically.
+    </description>
 
   <scm>
     <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
@@ -36,4 +38,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.dimlight</groupId>
+                <artifactId>shellcheck-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

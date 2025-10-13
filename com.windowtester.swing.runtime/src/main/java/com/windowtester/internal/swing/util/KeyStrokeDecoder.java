@@ -54,11 +54,15 @@ public class KeyStrokeDecoder {
   };
 
   private static final int[] KEY_MODS = {
-    InputEvent.ALT_DOWN_MASK, InputEvent.SHIFT_DOWN_MASK, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+    InputEvent.ALT_DOWN_MASK,
+    InputEvent.SHIFT_DOWN_MASK,
+    Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
   };
 
   private static final int MODIFIER_MASK =
-      InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+      InputEvent.ALT_DOWN_MASK
+          | InputEvent.SHIFT_DOWN_MASK
+          | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
   public static int extractModifiers(int compositeKey) {
     int modifiers = 0;
@@ -83,9 +87,7 @@ public class KeyStrokeDecoder {
   }
 
   private static int[] toIntArray(List<Integer> keys) {
-    return keys.stream()
-        .mapToInt(i -> i)
-        .toArray();
+    return keys.stream().mapToInt(i -> i).toArray();
   }
 
   private KeyStrokeDecoder() {

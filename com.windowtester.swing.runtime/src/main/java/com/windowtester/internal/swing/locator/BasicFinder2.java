@@ -64,8 +64,7 @@ public class BasicFinder2 implements ComponentFinder {
     }
 
     public boolean contains(Component component) {
-      return getHierarchy().contains(component)
-          && SwingUtilities.isDescendingFrom(component, root);
+      return getHierarchy().contains(component) && SwingUtilities.isDescendingFrom(component, root);
     }
 
     public void dispose(Window window) {
@@ -92,9 +91,7 @@ public class BasicFinder2 implements ComponentFinder {
   @Override
   public Component find(Container root, Matcher matcher)
       throws ComponentNotFoundException, MultipleComponentsFoundException {
-    var hierarchy = root != null
-        ? new SingleComponentHierarchy(root)
-        : getHierarchy();
+    var hierarchy = root != null ? new SingleComponentHierarchy(root) : getHierarchy();
     return find(hierarchy, matcher);
   }
 
@@ -128,10 +125,7 @@ public class BasicFinder2 implements ComponentFinder {
   }
 
   protected void findMatches(
-      Hierarchy hierarchy,
-      Matcher matcher,
-      Component component,
-      Set<Component> found) {
+      Hierarchy hierarchy, Matcher matcher, Component component, Set<Component> found) {
     if (found.size() == 1 && !(matcher instanceof MultiMatcher)) {
       return;
     }
@@ -171,10 +165,7 @@ public class BasicFinder2 implements ComponentFinder {
   }
 
   protected void findMatchesAll(
-      Hierarchy hierarchy,
-      Matcher matcher,
-      Component component,
-      Set<Component> found) {
+      Hierarchy hierarchy, Matcher matcher, Component component, Set<Component> found) {
     for (Component comp : hierarchy.getComponents(component)) {
       findMatchesAll(hierarchy, matcher, comp, found);
     }

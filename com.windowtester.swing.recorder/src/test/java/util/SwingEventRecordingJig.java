@@ -54,32 +54,32 @@ class SwingEventRecordingJig {
         }
       };
 
-//  public SwingEventRecordingJig() {
+  //  public SwingEventRecordingJig() {
 
-    // super(DialogDemo.class);
-    //	super(ContactManagerSwing.class);
-    //	super(EditorSample.class);
+  // super(DialogDemo.class);
+  //	super(ContactManagerSwing.class);
+  //	super(EditorSample.class);
 
-    //	super(swing.samples.SwingText.class);
-    //	super(swing.samples.SwingMenus.class);
-    //	super(swing.samples.TestTree.class);
+  //	super(swing.samples.SwingText.class);
+  //	super(swing.samples.SwingMenus.class);
+  //	super(swing.samples.TestTree.class);
 
-    // super(swing.samples.DialogDemo.class); //test dialogs <-- TabPanes...
-    //	super(TextInputDemo.class);
-    // DONE:
-    //	super(swing.samples.SwingTree.class); //test trees
-    //	super(swing.samples.SwingList.class); //test lists
-    //	super(swing.samples.ComboBoxes.class); //test combos
-    //	super(swing.samples.SimpleTable.class); //test tables
-    //	super(swing.samples.SwingTables.class);
-    //	super(DatePickerSample.class);
-    //	super(DateFieldSample.class);
-    //	super(swing.samples.TextComponentDemo.class);
-    //	super(TextComponentDemo.class);
-    //	super(swing.samples.UseTheSampleDialog.class);
-    //	super(swing.samples.JListRendererDemo.class);
-//    System.out.println("Application opened");
-//  }
+  // super(swing.samples.DialogDemo.class); //test dialogs <-- TabPanes...
+  //	super(TextInputDemo.class);
+  // DONE:
+  //	super(swing.samples.SwingTree.class); //test trees
+  //	super(swing.samples.SwingList.class); //test lists
+  //	super(swing.samples.ComboBoxes.class); //test combos
+  //	super(swing.samples.SimpleTable.class); //test tables
+  //	super(swing.samples.SwingTables.class);
+  //	super(DatePickerSample.class);
+  //	super(DateFieldSample.class);
+  //	super(swing.samples.TextComponentDemo.class);
+  //	super(TextComponentDemo.class);
+  //	super(swing.samples.UseTheSampleDialog.class);
+  //	super(swing.samples.JListRendererDemo.class);
+  //    System.out.println("Application opened");
+  //  }
 
   @Test
   public void testDrive() throws WidgetSearchException {

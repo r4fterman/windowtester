@@ -37,8 +37,8 @@ public class DialogRecorder extends ComponentRecorder {
               getResolver(),
               null,
               "actionResize",
-              new String[]{
-                  ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
+              new String[] {
+                ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
               },
               Dialog.class);
     }

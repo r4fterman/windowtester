@@ -24,7 +24,7 @@ public class JComboBoxTest
   private IUIContext ui;
 
   public JComboBoxTest() {
-  //  super(ComboBoxes.class);
+    //  super(ComboBoxes.class);
   }
 
   protected void setUp() throws Exception {

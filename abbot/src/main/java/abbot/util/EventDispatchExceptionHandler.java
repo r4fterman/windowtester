@@ -89,8 +89,7 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
       // Does nothing but wait for the previous invocation to finish
       AWT.invokeAndWait(
           new Runnable() {
-            public void run() {
-            }
+            public void run() {}
           });
       System.setProperties(holder.properties);
       String oldHandler = System.getProperty(PROP_NAME);

@@ -29,11 +29,10 @@ import javax.swing.JRadioButton;
 /**
  * A locator for JRadioButtons.
  */
-public class JRadioButtonLocator extends SwingWidgetLocator implements HasText, IsEnabled,
-    IsSelected {
+public class JRadioButtonLocator extends SwingWidgetLocator
+    implements HasText, IsEnabled, IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = -3878160309614329887L;
+  @Serial private static final long serialVersionUID = -3878160309614329887L;
 
   /**
    * Creates an instance of a locator for a JRadioButton

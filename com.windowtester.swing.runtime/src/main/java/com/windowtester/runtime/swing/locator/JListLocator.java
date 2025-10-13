@@ -23,8 +23,7 @@ import javax.swing.JList;
  */
 public class JListLocator extends AbstractPathLocator {
 
-  @Serial
-  private static final long serialVersionUID = -1258270010418601192L;
+  @Serial private static final long serialVersionUID = -1258270010418601192L;
 
   /**
    * Create an instance of a locator for JList with the text for the selected item
@@ -67,21 +66,13 @@ public class JListLocator extends AbstractPathLocator {
    * @param index    the relative index to it's parent
    * @param parent   the parent locator
    */
-  public JListLocator(
-      Class<?> cls,
-      String itemText,
-      int index,
-      SwingWidgetLocator parent) {
+  public JListLocator(Class<?> cls, String itemText, int index, SwingWidgetLocator parent) {
     super(cls, itemText, index, parent);
   }
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
     return ((UIContextSwing) ui)
         .getDriver()
         .clickListItem(clicks, (JList<?>) component, getItemText(), modifierMask);

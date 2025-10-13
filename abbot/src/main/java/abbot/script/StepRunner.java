@@ -9,7 +9,6 @@ import abbot.finder.TestHierarchy;
 import abbot.i18n.Strings;
 import abbot.util.AWTFixtureHelper;
 import abbot.util.EDTExceptionCatcher;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Provides control and tracking of the execution of a step or series of steps. By default, the
- * runner stops execution on the first encountered failure/error.  The running environment is
+ * runner stops execution on the first encountered failure/error. The running environment is
  * preserved to the extent possible, which includes discarding any GUI components created by the
  * code under test.<p> If you wish to preserve the application state when there is an error, you can
  * use the method {@link #setTerminateOnError(boolean)}.
@@ -93,8 +92,8 @@ public class StepRunner {
   }
 
   /**
-   * Stop execution of the script after the current step completes.  The launched application will
-   * be left in its current state.
+   * Stop execution of the script after the current step completes. The launched application will be
+   * left in its current state.
    */
   public void stop() {
     stop(false);
@@ -110,7 +109,7 @@ public class StepRunner {
   }
 
   /**
-   * Create a security manager to use for the duration of this runner's execution.  The default
+   * Create a security manager to use for the duration of this runner's execution. The default
    * prevents invoked applications from invoking {@link System#exit(int)} and invokes
    * {@link #terminate()} instead.
    *
@@ -125,7 +124,7 @@ public class StepRunner {
    * tries to.
    */
   protected synchronized void installSecurityManager() {
-    String doInstall = System.getProperty("abbot.use_security_manager");
+    String doInstall = System.getProperty("abbot.use_security_manager", "false");
     if (System.getSecurityManager() == null && !"false".equals(doInstall)) {
       // When the application tries to exit, throw control back to the
       // step runner to dispose of it
@@ -172,8 +171,8 @@ public class StepRunner {
       throw new Error(Strings.get("runner.bad_invocation"));
     }
 
-    // Terminate incorrect contexts prior to doing any setup.
-    // Even though a UIContext will invoke terminate on a
+    // Terminate incorrect contexts before doing any setup.
+    // Even though a UIContext will invoke terminate in a
     // non-equivalent context, we need to make it happen
     // before anything gets run.
     UIContext context = null;
@@ -207,8 +206,7 @@ public class StepRunner {
       Log.debug("App tried to exit");
       terminate();
     } finally {
-      if (step instanceof Script
-          && (stopped() && terminateOnStop)) {
+      if (step instanceof Script && (stopped() && terminateOnStop)) {
         terminate();
       }
       removeSecurityManager();
@@ -234,20 +232,18 @@ public class StepRunner {
    * @param script script
    */
   protected void checkFile(Script script) throws InvalidScriptException {
-    File file = script.getFile();
+    var file = script.getFile();
     if (!file.exists() && !file.getName().startsWith(Script.UNTITLED_FILE)) {
-      String msg =
-          "The script '"
-              + script.getFilename()
-              + "' does not exist at the expected location '"
-              + file.getAbsolutePath()
-              + "'";
+      var msg =
+          String.format(
+              "The script '%s' does not exist at the expected location '%s'",
+              script.getFilename(), file.getAbsolutePath());
       throw new InvalidScriptException(msg);
     }
   }
 
   /**
-   * Main run method, which stores any failures or exceptions for later retrieval.  Any step will
+   * Main run method, which stores any failures or exceptions for later retrieval. Any step will
    * fire STEP_START events to all registered {@link StepListener}s on starting, and exactly one of
    * STEP_END, STEP_FAILURE, or STEP_ERROR upon termination.  If stopOnFailure/stopOnError is set
    * false, then both STEP_FAILURE/ERROR may be sent in addition to STEP_END.

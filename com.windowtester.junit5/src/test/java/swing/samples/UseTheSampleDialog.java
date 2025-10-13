@@ -62,5 +62,4 @@ public class UseTheSampleDialog implements ActionListener {
       }
     }
   }
-
 }

@@ -24,8 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(WindowtesterExtension.class)
 class LabeledListTest {
 
-  @UIUnderTest
-  private LabeledList labeledList;
+  @UIUnderTest private LabeledList labeledList;
   private ComponentFinder finder;
 
   @BeforeEach
@@ -49,10 +48,9 @@ class LabeledListTest {
     // how you can put more conditions into the Matcher.
     JLabel label =
         (JLabel)
-            finder
-                .find(
-                    labeledList,
-                    c -> c.getClass().equals(JLabel.class) && c.getParent() == labeledList);
+            finder.find(
+                labeledList,
+                c -> c.getClass().equals(JLabel.class) && c.getParent() == labeledList);
 
     JListTester tester = new JListTester();
 
@@ -60,12 +58,10 @@ class LabeledListTest {
     tester.actionSelectRow((JList<String>) list, new JListLocation(1));
     assertEquals("Selected: two", label.getText(), () -> "Wrong label after selection");
 
-
     tester.actionSelectRow((JList<String>) list, new JListLocation(2));
     assertEquals("Selected: three", label.getText(), () -> "Wrong label after selection");
 
     tester.actionSelectRow((JList<String>) list, new JListLocation(0));
     assertEquals("Selected: one", label.getText(), () -> "Wrong label after selection");
   }
-
 }

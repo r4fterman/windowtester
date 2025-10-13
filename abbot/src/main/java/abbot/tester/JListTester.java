@@ -37,9 +37,10 @@ public class JListTester extends JComponentTester {
    */
   static String valueToString(JList<?> list, int index) {
     Object value = list.getModel().getElementAt(index);
-    ListCellRenderer<? super Object> cellRenderer = (ListCellRenderer<? super Object>) list.getCellRenderer();
-    Component renderedListComponent = cellRenderer
-        .getListCellRendererComponent(list, value, index, false, false);
+    ListCellRenderer<? super Object> cellRenderer =
+        (ListCellRenderer<? super Object>) list.getCellRenderer();
+    Component renderedListComponent =
+        cellRenderer.getListCellRendererComponent(list, value, index, false, false);
 
     return convertToString(renderedListComponent, value);
   }
@@ -47,13 +48,14 @@ public class JListTester extends JComponentTester {
   private static String convertToString(Component renderedListComponent, Object value) {
     return convertListValueIntoString(renderedListComponent)
         .filter(v -> !v.isEmpty() && !ArgumentParser.isDefaultToString(v))
-        .orElseGet(() -> {
-          String string = ArgumentParser.toString(value);
-          if (Objects.equals(string, ArgumentParser.DEFAULT_TOSTRING)) {
-            return null;
-          }
-          return string;
-        });
+        .orElseGet(
+            () -> {
+              String string = ArgumentParser.toString(value);
+              if (Objects.equals(string, ArgumentParser.DEFAULT_TOSTRING)) {
+                return null;
+              }
+              return string;
+            });
   }
 
   private static Optional<String> convertListValueIntoString(Component renderedListComponent) {
@@ -123,7 +125,7 @@ public class JListTester extends JComponentTester {
     int index = location.getIndex(list);
 
     if (index < 0 || index >= list.getModel().getSize()) {
-      String msg = Strings.get("tester.JList.invalid_index", new Object[]{index});
+      String msg = Strings.get("tester.JList.invalid_index", new Object[] {index});
       throw new ActionFailedException(msg);
     }
 

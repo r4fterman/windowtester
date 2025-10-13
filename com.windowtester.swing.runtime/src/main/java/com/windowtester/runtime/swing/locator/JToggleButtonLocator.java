@@ -29,11 +29,10 @@ import javax.swing.JToggleButton;
 /**
  * A locator for JToggleButtons.
  */
-public class JToggleButtonLocator extends SwingWidgetLocator implements HasText, IsEnabled,
-    IsSelected {
+public class JToggleButtonLocator extends SwingWidgetLocator
+    implements HasText, IsEnabled, IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = 6685889878580688192L;
+  @Serial private static final long serialVersionUID = 6685889878580688192L;
 
   /**
    * Create an instance of a locator for a JToggleButton
@@ -61,10 +60,7 @@ public class JToggleButtonLocator extends SwingWidgetLocator implements HasText,
    * @param index       the index relative to the parent
    * @param parent      the locator for the parent of the button
    */
-  public JToggleButtonLocator(
-      String nameOrLabel,
-      int index,
-      SwingWidgetLocator parent) {
+  public JToggleButtonLocator(String nameOrLabel, int index, SwingWidgetLocator parent) {
     super(JToggleButton.class, nameOrLabel, index, parent);
   }
 

@@ -40,10 +40,8 @@ public class ClickHelper implements IClickDriver {
   }
 
   @Override
-  public IWidgetLocator click(
-      int clickCount,
-      ILocator locator,
-      int buttonMask) throws WidgetSearchException {
+  public IWidgetLocator click(int clickCount, ILocator locator, int buttonMask)
+      throws WidgetSearchException {
     var widgetLocator = getWidgetLocator(locator);
     IWidgetReference widget = null;
     if (!(widgetLocator instanceof IItemLocator)) {
@@ -121,9 +119,7 @@ public class ClickHelper implements IClickDriver {
   }
 
   private IClickDescription createClickDescription(
-      int clickCount,
-      ILocator locator,
-      int buttonMask) {
+      int clickCount, ILocator locator, int buttonMask) {
     // TODO properly handle nested XYLocators
     return ClickDescription.create(clickCount, locator, buttonMask);
   }
@@ -138,13 +134,11 @@ public class ClickHelper implements IClickDriver {
   }
 
   private void informClick(IClickDescription click, IWidgetLocator widgetLocator) {
-    getListeners()
-        .forEach(listener -> listener.clicked(click, widgetLocator));
+    getListeners().forEach(listener -> listener.clicked(click, widgetLocator));
   }
 
   private void informContextClick(IClickDescription click, IWidgetLocator widgetLocator) {
-    getListeners()
-        .forEach(listener -> listener.contextClicked(click, widgetLocator));
+    getListeners().forEach(listener -> listener.contextClicked(click, widgetLocator));
   }
 
   private List<Listener> getListeners() {
@@ -155,9 +149,8 @@ public class ClickHelper implements IClickDriver {
   }
 
   private IWidgetLocator doClick(
-      IWidgetReference widget,
-      IClickDescription click,
-      IUISelector selector) throws WidgetSearchException {
+      IWidgetReference widget, IClickDescription click, IUISelector selector)
+      throws WidgetSearchException {
     return selector.click(getUIContext(), widget, click);
   }
 

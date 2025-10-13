@@ -76,5 +76,4 @@ public class SwingMenus extends JFrame {
     submenu2.add(item2);
     setJMenuBar(menuBar);
   }
-
 }

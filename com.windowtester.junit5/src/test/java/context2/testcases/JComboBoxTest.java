@@ -40,15 +40,17 @@ class JComboBoxTest {
   void testComboClicks(@SwingUIContext IUIContext ui) throws Exception {
     ui.wait(new WindowShowingCondition("Swing Combo Boxes"), 1_000);
 
-    IWidgetLocator locator = ui.click(new JComboBoxLocator("Cat", new
-        SwingWidgetLocator(Box.class, 0, new
-        SwingWidgetLocator(ComboBoxes.class))));
+    IWidgetLocator locator =
+        ui.click(
+            new JComboBoxLocator(
+                "Cat",
+                new SwingWidgetLocator(Box.class, 0, new SwingWidgetLocator(ComboBoxes.class))));
     JComboBox<String> cBox = (JComboBox<String>) ((IWidgetReference) locator).getWidget();
 
     assertEquals("Cat", cBox.getSelectedItem());
 
-    JComboBoxLocator comboBoxLocator = new JComboBoxLocator("Rabbit", new
-        NamedWidgetLocator("pets"));
+    JComboBoxLocator comboBoxLocator =
+        new JComboBoxLocator("Rabbit", new NamedWidgetLocator("pets"));
 
     ui.assertThat(comboBoxLocator.isEnabled());
 
@@ -56,9 +58,14 @@ class JComboBoxTest {
 
     assertEquals("Rabbit", cBox.getSelectedItem());
 
-    locator = ui.click(new JComboBoxLocator("yellow", new
-        com.windowtester.runtime.swing.SwingWidgetLocator(javax.swing.Box.class, 1, new
-        com.windowtester.runtime.swing.SwingWidgetLocator(ComboBoxes.class))));
+    locator =
+        ui.click(
+            new JComboBoxLocator(
+                "yellow",
+                new com.windowtester.runtime.swing.SwingWidgetLocator(
+                    javax.swing.Box.class,
+                    1,
+                    new com.windowtester.runtime.swing.SwingWidgetLocator(ComboBoxes.class))));
     cBox = (JComboBox) ((IWidgetReference) locator).getWidget();
     assertEquals("yellow", cBox.getSelectedItem());
   }
@@ -80,7 +87,7 @@ class JComboBoxTest {
 
     IWidgetLocator locator = ui.click(colorsComboBoxLocator);
     JComboBox<String> cBox = (JComboBox<String>) ((IWidgetReference) locator).getWidget();
-    ((JTextField)cBox.getEditor().getEditorComponent()).setText("");
+    ((JTextField) cBox.getEditor().getEditorComponent()).setText("");
 
     ui.enterText("pink\n");
 

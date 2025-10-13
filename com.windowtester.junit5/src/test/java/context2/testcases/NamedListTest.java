@@ -30,31 +30,31 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import swing.samples.SwingList;
 
 @ExtendWith(WindowtesterExtension.class)
- class NamedListTest {
+class NamedListTest {
 
   @UIUnderTest(title = "Swing List Demo")
   private SwingList panel = new SwingList();
 
   @Test
-   void testNamedLists(@SwingUIContext IUIContext ui) throws WidgetSearchException {
+  void testNamedLists(@SwingUIContext IUIContext ui) throws WidgetSearchException {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
 
     // named locator
-     IWidgetLocator locator = ui.click(new JListLocator("one", new NamedWidgetLocator("list1")));
+    IWidgetLocator locator = ui.click(new JListLocator("one", new NamedWidgetLocator("list1")));
     JList jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[]{"one"});
+    assertContainsExactly(jlist.getSelectedValues(), new String[] {"one"});
 
     locator = ui.click(new JListLocator("four", new NamedWidgetLocator("list2")));
     jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[]{"four"});
+    assertContainsExactly(jlist.getSelectedValues(), new String[] {"four"});
 
     locator = ui.click(new JListLocator("seven", new NamedWidgetLocator("list3")));
     jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[]{"seven"});
+    assertContainsExactly(jlist.getSelectedValues(), new String[] {"seven"});
 
     locator = ui.click(new JListLocator("five", new NamedWidgetLocator("list1")));
     jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[]{"five"});
+    assertContainsExactly(jlist.getSelectedValues(), new String[] {"five"});
   }
 
   ////////////////////////////////////////////////////////////////////////

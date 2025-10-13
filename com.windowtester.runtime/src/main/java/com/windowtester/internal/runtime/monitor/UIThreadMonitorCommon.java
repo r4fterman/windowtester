@@ -458,9 +458,7 @@ public abstract class UIThreadMonitorCommon implements IUIThreadMonitor {
         .append(" ")
         .append(message);
     if (value != null) {
-      buf
-          .append(" ")
-          .append(value);
+      buf.append(" ").append(value);
     }
     if (traceMode == TRACE_CONSOLE) {
       System.out.println(buf);

@@ -35,8 +35,7 @@ import javax.swing.tree.TreePath;
  */
 public class JTreeItemLocator extends AbstractPathLocator implements IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = -5514291727454535792L;
+  @Serial private static final long serialVersionUID = -5514291727454535792L;
 
   /**
    * Creates an instance of a locator to a node in a JTree
@@ -117,8 +116,8 @@ public class JTreeItemLocator extends AbstractPathLocator implements IsSelected 
    * @param index  index of the tree relative to it's parent
    * @param parent locator to the parent
    */
-  public JTreeItemLocator(Class<?> cls, String path, String treeName, int index,
-      SwingWidgetLocator parent) {
+  public JTreeItemLocator(
+      Class<?> cls, String path, String treeName, int index, SwingWidgetLocator parent) {
     super(cls, path, index, parent);
     if (treeName != null && !treeName.isEmpty()) {
       matcher = new CompoundMatcher(matcher, NameOrTextMatcher.create(treeName));
@@ -132,11 +131,7 @@ public class JTreeItemLocator extends AbstractPathLocator implements IsSelected 
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
     if (clicks > 2) {
       throw new UnsupportedOperationException();
     }
@@ -146,10 +141,7 @@ public class JTreeItemLocator extends AbstractPathLocator implements IsSelected 
 
   @Override
   public IWidgetLocator contextClick(
-      IUIContext ui,
-      IWidgetReference widget,
-      IClickDescription click,
-      String menuItemPath) {
+      IUIContext ui, IWidgetReference widget, IClickDescription click, String menuItemPath) {
     var component = (Component) widget.getWidget();
     var clicked =
         ((UIContextSwing) ui)

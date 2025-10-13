@@ -31,8 +31,7 @@ import javax.swing.JCheckBox;
  */
 public class JCheckBoxLocator extends SwingWidgetLocator implements HasText, IsEnabled, IsSelected {
 
-  @Serial
-  private static final long serialVersionUID = -4566469282934199114L;
+  @Serial private static final long serialVersionUID = -4566469282934199114L;
 
   /**
    * Create an instance of a locator that locates a JCheckBox by its text or name

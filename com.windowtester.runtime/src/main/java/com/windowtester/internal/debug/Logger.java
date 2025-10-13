@@ -34,8 +34,7 @@ public class Logger {
   /**
    * Disallow the creation of instances of this class.
    */
-  private Logger() {
-  }
+  private Logger() {}
 
   /**
    * Log the specified exception.
@@ -144,7 +143,7 @@ public class Logger {
     }
     if (detail instanceof IStatus) {
       return new MultiStatus(
-          PRODUCT_ID, Status.OK, new IStatus[]{(IStatus) detail}, message, null);
+          PRODUCT_ID, Status.OK, new IStatus[] {(IStatus) detail}, message, null);
     }
     if (detail == null) {
       return new Status(Status.INFO, PRODUCT_ID, Status.OK, text, null);

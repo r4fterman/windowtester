@@ -58,10 +58,10 @@ public class SwingTables extends JPanel {
   private static class DataModel extends AbstractTableModel {
 
     private final Object[][] data = {
-        {"one", "two", "three", "four"},
-        {"five", "six", "seven", "eight"},
-        {"nine", "ten", "one", "twelve"},
-        {"thirteen", "fourteen", "fifteen", "sixteen"}
+      {"one", "two", "three", "four"},
+      {"five", "six", "seven", "eight"},
+      {"nine", "ten", "one", "twelve"},
+      {"thirteen", "fourteen", "fifteen", "sixteen"}
     };
 
     public DataModel() {
@@ -135,5 +135,4 @@ public class SwingTables extends JPanel {
     JScrollPane scrollPane2 = new JScrollPane(table2);
     add(scrollPane2);
   }
-
 }

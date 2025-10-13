@@ -53,10 +53,9 @@ public class SpyEventHandler {
     component = getMostSpecificWidgetForEvent(component, event);
 
     EventInfo info = extractInfo(event, component);
-    return
-        new SemanticWidgetInspectionEvent(info, UIContextSwingFactory.createContext())
-            .withWidgetHash(component.hashCode())
-            .atHoverPoint(getCursorPosition());
+    return new SemanticWidgetInspectionEvent(info, UIContextSwingFactory.createContext())
+        .withWidgetHash(component.hashCode())
+        .atHoverPoint(getCursorPosition());
   }
 
   private Point getCursorPosition() {
@@ -89,5 +88,4 @@ public class SpyEventHandler {
   static Component getMostSpecificWidgetForEvent(Component w, AWTEvent event) {
     return w;
   }
-
 }

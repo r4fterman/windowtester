@@ -34,8 +34,7 @@ public class XYLocator implements IXYLocator, Serializable {
    * to the specified area. If locator resolves to an instance of IXYLocator
    * rather than IAreaLocator, then the relative flags are ignored.
    */
-  @Serial
-  private static final long serialVersionUID = -916067593367432955L;
+  @Serial private static final long serialVersionUID = -916067593367432955L;
 
   /**
    * A locator to which the x,y coordinates are relative.

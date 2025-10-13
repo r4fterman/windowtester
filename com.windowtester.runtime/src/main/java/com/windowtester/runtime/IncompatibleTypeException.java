@@ -23,8 +23,7 @@ import java.io.Serial;
  */
 public class IncompatibleTypeException extends IllegalStateException {
 
-  @Serial
-  private static final long serialVersionUID = -1675440415583239600L;
+  @Serial private static final long serialVersionUID = -1675440415583239600L;
 
   /**
    * Constructs an IncompatibleTypeException with no detail message. A detail message is a String

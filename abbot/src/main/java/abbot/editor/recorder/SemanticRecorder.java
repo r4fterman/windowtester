@@ -152,5 +152,4 @@ public abstract class SemanticRecorder implements SemanticEvents {
       al.actionPerformed(event);
     }
   }
-
 }

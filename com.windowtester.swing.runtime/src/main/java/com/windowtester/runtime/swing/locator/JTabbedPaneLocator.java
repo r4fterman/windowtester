@@ -29,8 +29,7 @@ import javax.swing.JTabbedPane;
  */
 public class JTabbedPaneLocator extends SwingWidgetLocator {
 
-  @Serial
-  private static final long serialVersionUID = 2471285225375825938L;
+  @Serial private static final long serialVersionUID = 2471285225375825938L;
 
   /**
    * Creates an instance of a locator for a JTabbedPane
@@ -91,11 +90,7 @@ public class JTabbedPaneLocator extends SwingWidgetLocator {
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
     return ((UIContextSwing) ui).getDriver().click(component, getNameOrLabel());
   }
 }

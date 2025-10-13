@@ -66,7 +66,7 @@ public class WidgetReference<T> implements IWidgetReference, IAdaptable {
 
   @Override
   public IWidgetLocator[] findAll(IUIContext ui) {
-    return new IWidgetLocator[]{this};
+    return new IWidgetLocator[] {this};
   }
 
   @Override

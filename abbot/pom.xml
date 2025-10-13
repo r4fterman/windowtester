@@ -1,29 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>io.github.r4fterman</groupId>
-    <artifactId>com.windowtester</artifactId>
-    <version>5.13.5-SNAPSHOT</version>
-  </parent>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.r4fterman</groupId>
+        <artifactId>com.windowtester</artifactId>
+        <version>6.0.0-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>abbot</artifactId>
-  <name>Windowtester Abbot</name>
-  <description>Abbot provides robot functionality to interact with the UI.</description>
+    <artifactId>abbot</artifactId>
+    <name>WindowTester Abbot</name>
+    <description>Abbot provides robot functionality to interact with the UI.</description>
 
-  <scm>
-    <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
-    <developerConnection>scm:git:https://github.com/r4fterman/windowtester.git</developerConnection>
-    <url>https://github.com/r4fterman/windowtester</url>
-  </scm>
+    <scm>
+        <connection>scm:git:https://github.com/r4fterman/windowtester.git</connection>
+        <developerConnection>scm:git:https://github.com/r4fterman/windowtester.git
+        </developerConnection>
+        <url>https://github.com/r4fterman/windowtester</url>
+    </scm>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-suite</artifactId>
-      <version>1.10.1</version>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+        </dependency>
 
     <dependency>
       <groupId>gnu-regexp</groupId>
@@ -37,26 +37,33 @@
       </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>abbot/src/main/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>abbot/src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>dev.dimlight</groupId>
+                <artifactId>shellcheck-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

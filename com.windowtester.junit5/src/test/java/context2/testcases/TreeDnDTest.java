@@ -25,12 +25,12 @@ import swing.samples.TreeDnD;
 @ExtendWith(WindowtesterExtension.class)
 class TreeDnDTest {
 
-  @UIUnderTest
-  private TreeDnD panel = new TreeDnD();
+  @UIUnderTest private TreeDnD panel = new TreeDnD();
 
   @Test
   void testTreeDnD(@SwingUIContext IUIContext ui) throws WidgetSearchException {
-    ui.click(new JTreeItemLocator("JTree/colors/blue", new NamedWidgetLocator(JTree.class, "tree1")));
+    ui.click(
+        new JTreeItemLocator("JTree/colors/blue", new NamedWidgetLocator(JTree.class, "tree1")));
     ui.dragTo(new JTreeItemLocator("JTree/sports", new NamedWidgetLocator(JTree.class, "tree2")));
 
     ui.click(new JTreeItemLocator("JTree/food/hot dogs", new NamedWidgetLocator("tree2")));

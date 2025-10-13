@@ -87,10 +87,6 @@ public class JTableRecorder extends JComponentRecorder {
     notify(semanticEvent);
 
     return new Action(
-        getResolver(),
-        null,
-        methodName,
-        args.toArray(new String[0]),
-        javax.swing.JTable.class);
+        getResolver(), null, methodName, args.toArray(new String[0]), javax.swing.JTable.class);
   }
 }

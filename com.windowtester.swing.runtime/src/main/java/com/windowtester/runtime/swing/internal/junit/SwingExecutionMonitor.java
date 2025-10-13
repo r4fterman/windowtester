@@ -72,8 +72,7 @@ public class SwingExecutionMonitor extends AbstractExecutionMonitor {
   }
 
   @Override
-  protected void doWaitForFinish() {
-  }
+  protected void doWaitForFinish() {}
 
   @Override
   protected boolean terminateWaitForFinish() {

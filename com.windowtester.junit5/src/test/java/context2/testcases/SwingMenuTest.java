@@ -34,8 +34,7 @@ import swing.samples.SwingMenus;
 @ExtendWith(WindowtesterExtension.class)
 class SwingMenuTest {
 
-  @UIUnderTest
-  private SwingMenus panel = new SwingMenus("Swing Menus Example");
+  @UIUnderTest private SwingMenus panel = new SwingMenus("Swing Menus Example");
 
   @Test
   void testSelection(@SwingUIContext IUIContext ui) throws Exception {
@@ -54,19 +53,20 @@ class SwingMenuTest {
     menuItem.setEnabled(true);
     ui.assertThat(new JMenuItemLocator("parent/child 1").isEnabled());
 
-    JRadioButtonMenuItemLocator radioButtonMenuItemLocator = new
-        JRadioButtonMenuItemLocator("parent/child 2");
+    JRadioButtonMenuItemLocator radioButtonMenuItemLocator =
+        new JRadioButtonMenuItemLocator("parent/child 2");
     ui.assertThat(radioButtonMenuItemLocator.isEnabled(false));
     locator = ui.find(radioButtonMenuItemLocator);
 
-    JRadioButtonMenuItem radioButtonMenuItem = (JRadioButtonMenuItem) ((IWidgetReference) locator).getWidget();
+    JRadioButtonMenuItem radioButtonMenuItem =
+        (JRadioButtonMenuItem) ((IWidgetReference) locator).getWidget();
     radioButtonMenuItem.setEnabled(true);
     ui.assertThat(radioButtonMenuItemLocator.isEnabled());
     ui.click(radioButtonMenuItemLocator);
     ui.assertThat(radioButtonMenuItemLocator.isSelected());
 
-    JCheckBoxMenuItemLocator checkBoxMenuItemLocator = new
-        JCheckBoxMenuItemLocator("parent/child 3");
+    JCheckBoxMenuItemLocator checkBoxMenuItemLocator =
+        new JCheckBoxMenuItemLocator("parent/child 3");
     ui.assertThat(checkBoxMenuItemLocator.isEnabled());
 
     locator = ui.click(checkBoxMenuItemLocator);
@@ -108,7 +108,7 @@ class SwingMenuTest {
       ui.click(new JMenuItemLocator("child 2/nonexistent"));
       fail("should have thrown CME ex");
     } catch (WidgetSearchException e) {
-      //pass
+      // pass
 
     }
     //		//2
@@ -116,16 +116,15 @@ class SwingMenuTest {
       ui.click(new JMenuItemLocator("bogus"));
       fail("should have thrown CME ex");
     } catch (WidgetSearchException e) {
-      //pass
+      // pass
     }
 
-    //3
+    // 3
     try {
       ui.click(new JMenuItemLocator("bogus/really"));
       fail("should have thrown CME ex");
     } catch (WidgetSearchException e) {
-      //pass
+      // pass
     }
-
   }
 }

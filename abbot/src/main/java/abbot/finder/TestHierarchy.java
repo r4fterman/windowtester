@@ -64,9 +64,7 @@ public class TestHierarchy extends AWTHierarchy {
   @Override
   public Collection<Component> getRoots() {
     var components = super.getRoots();
-    return components.stream()
-        .filter(key -> !filtered.containsKey(key))
-        .toList();
+    return components.stream().filter(key -> !filtered.containsKey(key)).toList();
   }
 
   @Override
@@ -75,9 +73,7 @@ public class TestHierarchy extends AWTHierarchy {
       var components = super.getComponents(component);
       // NOTE: this only removes those components which are directly
       // filtered, not necessarily those which have a filtered ancestor.
-      return components.stream()
-          .filter(key -> !filtered.containsKey(key))
-          .toList();
+      return components.stream().filter(key -> !filtered.containsKey(key)).toList();
     }
     return EMPTY;
   }
@@ -115,8 +111,7 @@ public class TestHierarchy extends AWTHierarchy {
 
     if (component instanceof Window window) {
       var windows = window.getOwnedWindows();
-      Arrays.stream(windows)
-          .forEach(w -> setFiltered(w, filter));
+      Arrays.stream(windows).forEach(w -> setFiltered(w, filter));
     }
   }
 
