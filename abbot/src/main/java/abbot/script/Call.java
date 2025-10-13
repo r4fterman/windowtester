@@ -265,11 +265,11 @@ public class Call extends Step {
       throw new NoSuchMethodException(
           Strings.get(
               "call.no_matching_method",
-              new Object[]{
-                  name,
-                  (returnType == null ? "*" : returnType.toString()),
-                  String.valueOf(args.length),
-                  cls
+              new Object[] {
+                name,
+                (returnType == null ? "*" : returnType.toString()),
+                String.valueOf(args.length),
+                cls
               }));
     }
 
@@ -312,7 +312,7 @@ public class Call extends Step {
     String msg =
         Strings.get(
             "call.multiple_methods",
-            new Object[]{methods[0].getName(), methods[0].getDeclaringClass()});
+            new Object[] {methods[0].getName(), methods[0].getDeclaringClass()});
     throw new IllegalArgumentException(msg);
   }
 }

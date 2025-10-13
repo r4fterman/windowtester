@@ -19,8 +19,7 @@ import javax.swing.JMenu;
  */
 public class JMenuLocator extends JMenuItemLocator {
 
-  @Serial
-  private static final long serialVersionUID = 1369029475541129631L;
+  @Serial private static final long serialVersionUID = 1369029475541129631L;
 
   /**
    * Creates an instance of a JMenuLocator

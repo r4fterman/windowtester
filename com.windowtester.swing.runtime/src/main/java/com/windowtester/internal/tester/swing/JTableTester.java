@@ -45,11 +45,7 @@ public class JTableTester extends abbot.tester.JTableTester {
   /**
    * double-click the given cell, if not already.
    */
-  public void actionSelectCell(
-      int count,
-      Component component,
-      JTableLocation location,
-      int mask) {
+  public void actionSelectCell(int count, Component component, JTableLocation location, int mask) {
     var table = (JTable) component;
     var cell = location.getCell(table);
     if (table.isRowSelected(cell.row)
@@ -64,11 +60,7 @@ public class JTableTester extends abbot.tester.JTableTester {
    * Select the given cell, if not already. Equivalent to actionSelectCell(component, new
    * JTableLocation(rowIndex, columnIndex)).
    */
-  public void actionSelectCell(
-      Component component,
-      int rowIndex,
-      int columnIndex,
-      int mask) {
+  public void actionSelectCell(Component component, int rowIndex, int columnIndex, int mask) {
     actionSelectCell(component, new JTableLocation(rowIndex, columnIndex), mask);
   }
 }

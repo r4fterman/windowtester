@@ -164,7 +164,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
               null,
               ComponentTester.class.getName(),
               "assertComponentShowing",
-              new String[]{ref.getID()},
+              new String[] {ref.getID()},
               "true",
               Objects.equals(type, HIDE));
       step.setWait(true);
@@ -175,7 +175,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
           getResolver(),
           null,
           "actionMove",
-          new String[]{ref.getID(), String.valueOf(loc.x), String.valueOf(loc.y)},
+          new String[] {ref.getID(), String.valueOf(loc.x), String.valueOf(loc.y)},
           JInternalFrame.class);
     } else if (Objects.equals(type, RESIZE)) {
       Dimension size = target.getSize();
@@ -183,7 +183,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
           getResolver(),
           null,
           "actionResize",
-          new String[]{ref.getID(), String.valueOf(size.width), String.valueOf(size.height)},
+          new String[] {ref.getID(), String.valueOf(size.width), String.valueOf(size.height)},
           JInternalFrame.class);
     } else {
       String action;
@@ -197,7 +197,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
         }
       }
       return new Action(
-          getResolver(), null, action, new String[]{ref.getID()}, JInternalFrame.class);
+          getResolver(), null, action, new String[] {ref.getID()}, JInternalFrame.class);
     }
   }
 }

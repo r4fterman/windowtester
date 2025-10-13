@@ -59,7 +59,7 @@ public class AbstractButtonRecorder extends JComponentRecorder {
           getResolver(),
           null,
           "actionClick",
-          new String[]{cr.getID()},
+          new String[] {cr.getID()},
           javax.swing.AbstractButton.class);
     }
     return null;

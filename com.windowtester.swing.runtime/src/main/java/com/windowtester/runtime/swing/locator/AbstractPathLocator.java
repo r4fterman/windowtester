@@ -36,8 +36,7 @@ import java.io.Serial;
  */
 public abstract class AbstractPathLocator extends SwingWidgetLocator implements IPathLocator {
 
-  @Serial
-  private static final long serialVersionUID = 4463096378279721331L;
+  @Serial private static final long serialVersionUID = 4463096378279721331L;
 
   private String path;
 
@@ -53,8 +52,8 @@ public abstract class AbstractPathLocator extends SwingWidgetLocator implements 
     this(cls, getLabel(path), path, parentInfo);
   }
 
-  public AbstractPathLocator(Class<?> cls, String itemText, String path,
-      SwingWidgetLocator parentInfo) {
+  public AbstractPathLocator(
+      Class<?> cls, String itemText, String path, SwingWidgetLocator parentInfo) {
     this(cls, itemText, path, UNASSIGNED, parentInfo);
   }
 
@@ -62,17 +61,14 @@ public abstract class AbstractPathLocator extends SwingWidgetLocator implements 
     this(cls, getLabel(path), path, index, parentInfo);
   }
 
-  public AbstractPathLocator(Class<?> cls, String itemText, String path, int index,
-      SwingWidgetLocator parentInfo) {
+  public AbstractPathLocator(
+      Class<?> cls, String itemText, String path, int index, SwingWidgetLocator parentInfo) {
     super(cls, itemText, index, parentInfo);
     this.path = path;
     this.matcher = createMatcher(cls, index, parentInfo);
   }
 
-  private IWidgetMatcher<?> createMatcher(
-      Class<?> cls,
-      int index,
-      SwingWidgetLocator parent) {
+  private IWidgetMatcher<?> createMatcher(Class<?> cls, int index, SwingWidgetLocator parent) {
     IWidgetMatcher<?> matcher = null;
     if (this instanceof JListLocator || this instanceof JTreeItemLocator) {
       matcher = ClassMatcher.create(cls);
@@ -107,8 +103,9 @@ public abstract class AbstractPathLocator extends SwingWidgetLocator implements 
       return matcher;
     }
 
-    var msg = String.format("Unable to create matcher for class=%s, index=%d, parent=%s",
-        cls, index, parent);
+    var msg =
+        String.format(
+            "Unable to create matcher for class=%s, index=%d, parent=%s", cls, index, parent);
     throw new IllegalArgumentException(msg);
   }
 
@@ -147,10 +144,8 @@ public abstract class AbstractPathLocator extends SwingWidgetLocator implements 
    */
   @Override
   public IWidgetLocator contextClick(
-      IUIContext ui,
-      IWidgetReference widget,
-      IClickDescription click,
-      String menuItemPath) throws WidgetSearchException {
+      IUIContext ui, IWidgetReference widget, IClickDescription click, String menuItemPath)
+      throws WidgetSearchException {
     var component = (Component) widget.getWidget();
     var clicked = ((UIContextSwing) ui).getDriver().contextClick(component, menuItemPath);
     return WidgetReference.create(clicked, this);

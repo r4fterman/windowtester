@@ -52,8 +52,7 @@ public class BasicFinder implements ComponentFinder {
 
     @Override
     public boolean contains(Component component) {
-      return getHierarchy().contains(component)
-          && SwingUtilities.isDescendingFrom(component, root);
+      return getHierarchy().contains(component) && SwingUtilities.isDescendingFrom(component, root);
     }
 
     @Override
@@ -101,12 +100,12 @@ public class BasicFinder implements ComponentFinder {
     }
 
     if (found.isEmpty()) {
-      var msg = Strings.get("finder.not_found", new Object[]{matcher.toString()});
+      var msg = Strings.get("finder.not_found", new Object[] {matcher.toString()});
       throw new ComponentNotFoundException(msg);
     } else if (found.size() > 1) {
       var list = found.toArray(new Component[0]);
       if (!(matcher instanceof MultiMatcher)) {
-        var msg = Strings.get("finder.multiple_found", new Object[]{matcher.toString()});
+        var msg = Strings.get("finder.multiple_found", new Object[] {matcher.toString()});
         throw new MultipleComponentsFoundException(msg, list);
       }
       return ((MultiMatcher) matcher).bestMatch(list);
@@ -115,10 +114,7 @@ public class BasicFinder implements ComponentFinder {
   }
 
   protected void findMatches(
-      Hierarchy hierarchy,
-      Matcher matcher,
-      Component component,
-      Set<Component> found) {
+      Hierarchy hierarchy, Matcher matcher, Component component, Set<Component> found) {
     if (found.size() == 1 && !(matcher instanceof MultiMatcher)) {
       return;
     }

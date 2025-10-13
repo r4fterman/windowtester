@@ -90,7 +90,7 @@ public class ChoiceRecorder extends ComponentRecorder {
       }
     } else if (event.getID() == KeyEvent.KEY_RELEASED
         && (((KeyEvent) event).getKeyCode() == KeyEvent.VK_SPACE
-        || ((KeyEvent) event).getKeyCode() == KeyEvent.VK_ENTER)) {
+            || ((KeyEvent) event).getKeyCode() == KeyEvent.VK_ENTER)) {
       Log.debug("enter");
       setFinished(true);
     } else if (event.getID() == KeyEvent.KEY_RELEASED
@@ -131,7 +131,7 @@ public class ChoiceRecorder extends ComponentRecorder {
         getResolver(),
         null,
         "actionSelectItem",
-        new String[]{cr.getID(), selection},
+        new String[] {cr.getID(), selection},
         java.awt.Choice.class);
   }
 }

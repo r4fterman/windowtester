@@ -49,8 +49,7 @@ public class AWTHierarchy implements Hierarchy {
 
     Log.debug("Dispose " + window);
 
-    Arrays.stream(window.getOwnedWindows())
-        .forEach(this::dispose);
+    Arrays.stream(window.getOwnedWindows()).forEach(this::dispose);
 
     if (AWT.isSharedInvisibleFrame(window)) {
       // Don't dispose, or any child windows which may be currently
@@ -62,31 +61,32 @@ public class AWTHierarchy implements Hierarchy {
     // exceptions. If Window.dispose is called from a non-Swing thread,
     // it will invoke the dispose action on the Swing thread but in that
     // case we have no control over exceptions.
-    Runnable action = () -> {
-      try {
-        // Distinguish between the abbot framework disposing a
-        // window and anyone else doing so.
-        System.setProperty("abbot.finder.disposal", "true");
-        window.dispose();
-        System.setProperty("abbot.finder.disposal", "false");
-      } catch (NullPointerException npe) {
-        // Catch bug in AWT 1.3.1 when generating hierarchy
-        // events
-        Log.log(npe);
-      } catch (ExitException e) {
-        // Some apps might call System.exit on WINDOW_CLOSED
-        Log.log("Ignoring SUT exit: " + e);
-      } catch (Throwable e) {
-        // Don't allow other exceptions to interfere with
-        // disposal.
-        Log.warn(e);
-        Log.warn(
-            "An exception was thrown when disposing "
-                + " the window "
-                + Robot.toString(window)
-                + ".  The exception is ignored");
-      }
-    };
+    Runnable action =
+        () -> {
+          try {
+            // Distinguish between the abbot framework disposing a
+            // window and anyone else doing so.
+            System.setProperty("abbot.finder.disposal", "true");
+            window.dispose();
+            System.setProperty("abbot.finder.disposal", "false");
+          } catch (NullPointerException npe) {
+            // Catch bug in AWT 1.3.1 when generating hierarchy
+            // events
+            Log.log(npe);
+          } catch (ExitException e) {
+            // Some apps might call System.exit on WINDOW_CLOSED
+            Log.log("Ignoring SUT exit: " + e);
+          } catch (Throwable e) {
+            // Don't allow other exceptions to interfere with
+            // disposal.
+            Log.warn(e);
+            Log.warn(
+                "An exception was thrown when disposing "
+                    + " the window "
+                    + Robot.toString(window)
+                    + ".  The exception is ignored");
+          }
+        };
 
     if (SwingUtilities.isEventDispatchThread()) {
       action.run();
@@ -110,8 +110,8 @@ public class AWTHierarchy implements Hierarchy {
       return EMPTY;
     }
 
-    ArrayList<Component> list = new ArrayList<>(
-        Arrays.asList(((Container) component).getComponents()));
+    ArrayList<Component> list =
+        new ArrayList<>(Arrays.asList(((Container) component).getComponents()));
     // Add other components which are not explicitly children, but
     // that are conceptually descendents
     if (component instanceof JMenu menu) {

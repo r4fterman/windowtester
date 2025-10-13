@@ -12,12 +12,7 @@ public class Status implements IStatus {
   private final String message;
   private final Throwable throwable;
 
-  public Status(
-      int status,
-      String productId,
-      int ok,
-      String message,
-      Throwable throwable) {
+  public Status(int status, String productId, int ok, String message, Throwable throwable) {
     this.status = status;
     this.productId = productId;
     this.ok = ok;

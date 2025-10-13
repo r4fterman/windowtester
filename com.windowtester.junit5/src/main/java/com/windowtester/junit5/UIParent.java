@@ -15,6 +15,4 @@ import java.lang.annotation.Target;
 @Target({FIELD, METHOD})
 @Retention(RUNTIME)
 @Documented
-public @interface UIParent {
-
-}
+public @interface UIParent {}

@@ -28,8 +28,8 @@ public class WindowMatcher extends ClassMatcher {
     return super.matches(component)
         && (component.isShowing() || !mustBeShowing)
         && (stringsMatch(id, component.getName())
-        || (component instanceof Frame frame && stringsMatch(id, frame.getTitle()))
-        || (component instanceof Dialog dialog && stringsMatch(id, dialog.getTitle())));
+            || (component instanceof Frame frame && stringsMatch(id, frame.getTitle()))
+            || (component instanceof Dialog dialog && stringsMatch(id, dialog.getTitle())));
   }
 
   @Override

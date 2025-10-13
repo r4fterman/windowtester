@@ -34,14 +34,14 @@ import javax.swing.event.ListSelectionListener;
 public class AppletDemo extends JApplet {
 
   private final String[] flavors = {
-      "Chocolate",
-      "Strawberry",
-      "Vanilla Fudge Swirl",
-      "Mint Chip",
-      "Mocha Almond Fudge",
-      "Rum Raisin",
-      "Praline Cream",
-      "Mud Pie"
+    "Chocolate",
+    "Strawberry",
+    "Vanilla Fudge Swirl",
+    "Mint Chip",
+    "Mocha Almond Fudge",
+    "Rum Raisin",
+    "Praline Cream",
+    "Mud Pie"
   };
 
   private final DefaultListModel<String> lItems = new DefaultListModel<>();
@@ -64,18 +64,18 @@ public class AppletDemo extends JApplet {
         }
       };
 
-  private final ListSelectionListener ll = e -> {
-    if (e.getValueIsAdjusting()) {
-      return;
-    }
-    t.setText("");
+  private final ListSelectionListener ll =
+      e -> {
+        if (e.getValueIsAdjusting()) {
+          return;
+        }
+        t.setText("");
 
-    List<String> items = lst.getSelectedValuesList();
-    for (String item : items) {
-      t.append(item + "\n");
-    }
-  };
-
+        List<String> items = lst.getSelectedValuesList();
+        for (String item : items) {
+          t.append(item + "\n");
+        }
+      };
 
   public void init() {
     Container cp = getContentPane();

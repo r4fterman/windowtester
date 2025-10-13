@@ -62,8 +62,8 @@ import javax.swing.JLabel;
  * A class that captures Swing hierarchy (containment) relationships between widgets for use in
  * widget identification.
  */
-public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator implements
-    IUISelector, IDiagnosticParticipant, IsVisible {
+public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator
+    implements IUISelector, IDiagnosticParticipant, IsVisible {
 
   /*
    * NOTE: this class is serializable and uses the default serialization scheme.
@@ -76,8 +76,7 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
    * for use in codegen.  That said, we might remedy this in the future by,
    * for instance, making the matcher lazily initialized.
    */
-  @Serial
-  private static final long serialVersionUID = -6896731161658482507L;
+  @Serial private static final long serialVersionUID = -6896731161658482507L;
 
   /**
    * Delegate matcher NOTICE: the matcher is transient.
@@ -199,10 +198,7 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
    * @param parent      - the target's parent info
    */
   public SwingWidgetLocator(
-      Class<?> cls,
-      String nameOrLabel,
-      int index,
-      SwingWidgetLocator parent) {
+      Class<?> cls, String nameOrLabel, int index, SwingWidgetLocator parent) {
     super(cls, nameOrLabel, index, parent);
     // create the matcher
     // components such as buttons, lists and tables are matched by whether they are
@@ -211,10 +207,7 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
   }
 
   private IWidgetMatcher<?> createMatcher(
-      Class<?> cls,
-      String nameOrLabel,
-      int index,
-      SwingWidgetLocator parent) {
+      Class<?> cls, String nameOrLabel, int index, SwingWidgetLocator parent) {
     IWidgetMatcher<?> matcher = null;
     if (cls != null) {
       matcher = getClassMatcher(cls);
@@ -239,8 +232,9 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
       return matcher;
     }
 
-    var msg = String.format("Unable to create matcher for class=%s, index=%d, parent=%s",
-        cls, index, parent);
+    var msg =
+        String.format(
+            "Unable to create matcher for class=%s, index=%d, parent=%s", cls, index, parent);
     throw new IllegalArgumentException(msg);
   }
 
@@ -293,10 +287,8 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
   }
 
   @Override
-  public IWidgetLocator click(
-      IUIContext ui,
-      IWidgetReference widget,
-      IClickDescription click) throws WidgetSearchException {
+  public IWidgetLocator click(IUIContext ui, IWidgetReference widget, IClickDescription click)
+      throws WidgetSearchException {
     var component = (Component) widget.getWidget();
     var offset = getXYOffset(component, click);
     var clicked = doClick(ui, click.clicks(), component, offset, click.modifierMask());
@@ -312,21 +304,16 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
    * @return the clicked widget
    */
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
-    return ((UIContextSwing) ui).getDriver()
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
+    return ((UIContextSwing) ui)
+        .getDriver()
         .click(clicks, component, offset.x, offset.y, modifierMask);
   }
 
   @Override
   public IWidgetLocator contextClick(
-      IUIContext ui,
-      IWidgetReference widget,
-      IClickDescription click,
-      String menuItemPath) throws WidgetSearchException {
+      IUIContext ui, IWidgetReference widget, IClickDescription click, String menuItemPath)
+      throws WidgetSearchException {
     var component = (Component) widget.getWidget();
     // TODO: hook up xys
     var clicked = ((UIContextSwing) ui).getDriver().contextClick(component, menuItemPath);
@@ -359,21 +346,21 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
   @Override
   public void diagnose(IDiagnostic diagnostic) {
     var hierarchy = AWTHierarchy.getDefault();
-    hierarchy.getRoots().forEach(component -> {
-      if (((Window) component).isActive()) {
-        getAllChildren(component, hierarchy, diagnostic);
-      } else {
-        diagnoseAllChildren(component, hierarchy, diagnostic);
-      }
-    });
+    hierarchy
+        .getRoots()
+        .forEach(
+            component -> {
+              if (((Window) component).isActive()) {
+                getAllChildren(component, hierarchy, diagnostic);
+              } else {
+                diagnoseAllChildren(component, hierarchy, diagnostic);
+              }
+            });
   }
 
   private void diagnoseAllChildren(
-      Component component,
-      Hierarchy hierarchy,
-      IDiagnostic diagnostic) {
-    if (!component.getClass().getName()
-        .equals("javax.swing.SwingUtilities$SharedOwnerFrame")) {
+      Component component, Hierarchy hierarchy, IDiagnostic diagnostic) {
+    if (!component.getClass().getName().equals("javax.swing.SwingUtilities$SharedOwnerFrame")) {
       return;
     }
 
@@ -383,12 +370,8 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator i
         .forEach(window -> getAllChildren(window, hierarchy, diagnostic));
   }
 
-  private void getAllChildren(
-      Component component,
-      Hierarchy hierarchy,
-      IDiagnostic diagnostic) {
-    hierarchy.getComponents(component)
-        .forEach(c -> getAllChildren(c, hierarchy, diagnostic));
+  private void getAllChildren(Component component, Hierarchy hierarchy, IDiagnostic diagnostic) {
+    hierarchy.getComponents(component).forEach(c -> getAllChildren(c, hierarchy, diagnostic));
 
     if (component instanceof Frame || component instanceof Dialog) {
       diagnostic.attribute("class", component.getClass().toString());

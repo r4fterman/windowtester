@@ -53,14 +53,11 @@ public abstract class AbstractInternalFrameWatcher extends InternalFrameAdapter
   }
 
   @Override
-  public void componentShown(ComponentEvent e) {
-  }
+  public void componentShown(ComponentEvent e) {}
 
   @Override
-  public void componentResized(ComponentEvent e) {
-  }
+  public void componentResized(ComponentEvent e) {}
 
   @Override
-  public void componentMoved(ComponentEvent e) {
-  }
+  public void componentMoved(ComponentEvent e) {}
 }

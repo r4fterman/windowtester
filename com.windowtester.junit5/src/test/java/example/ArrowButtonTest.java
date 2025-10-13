@@ -25,8 +25,7 @@ class ArrowButtonTest {
   private ArrowButton up;
   private ArrowButton down;
 
-  @UIUnderTest
-  private JPanel panel = createPanel();
+  @UIUnderTest private JPanel panel = createPanel();
 
   @BeforeEach
   protected void setUp() {
@@ -85,5 +84,4 @@ class ArrowButtonTest {
     pane.add(left);
     return pane;
   }
-
 }

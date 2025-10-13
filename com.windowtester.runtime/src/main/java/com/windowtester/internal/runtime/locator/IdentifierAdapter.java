@@ -22,8 +22,7 @@ import java.io.Serializable;
  */
 public class IdentifierAdapter implements IWidgetIdentifier, IAdaptable, ILocator, Serializable {
 
-  @Serial
-  private static final long serialVersionUID = -2449531209586204515L;
+  @Serial private static final long serialVersionUID = -2449531209586204515L;
 
   private final transient ILocator locator;
 

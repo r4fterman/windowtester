@@ -42,40 +42,31 @@ public class EventCachingListener implements ISemanticEventListener {
   }
 
   @Override
-  public void notifyStart() {
-  }
+  public void notifyStart() {}
 
   @Override
-  public void notifyStop() {
-  }
+  public void notifyStop() {}
 
   @Override
-  public void notifyWrite() {
-  }
+  public void notifyWrite() {}
 
   @Override
-  public void notifyPause() {
-  }
+  public void notifyPause() {}
 
   @Override
-  public void notifyDispose() {
-  }
+  public void notifyDispose() {}
 
   @Override
-  public void notifyRestart() {
-  }
+  public void notifyRestart() {}
 
   @Override
-  public void notifyError(RecorderErrorEvent event) {
-  }
+  public void notifyError(RecorderErrorEvent event) {}
 
   @Override
-  public void notifyTrace(RecorderTraceEvent event) {
-  }
+  public void notifyTrace(RecorderTraceEvent event) {}
 
   @Override
-  public void notifySpyModeToggle() {
-  }
+  public void notifySpyModeToggle() {}
 
   public ISemanticEvent[] getEvents() {
     if (events.isEmpty()) {
@@ -85,12 +76,8 @@ public class EventCachingListener implements ISemanticEventListener {
   }
 
   @Override
-  public void notifyControllerStart(int port) {
-
-  }
+  public void notifyControllerStart(int port) {}
 
   @Override
-  public void notifyDisplayNotFound() {
-
-  }
+  public void notifyDisplayNotFound() {}
 }

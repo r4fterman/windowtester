@@ -208,7 +208,7 @@ public class ArrayListTransferHandler extends TransferHandler {
 
     @Override
     public DataFlavor[] getTransferDataFlavors() {
-      return new DataFlavor[]{localListFlavor, serialListFlavor};
+      return new DataFlavor[] {localListFlavor, serialListFlavor};
     }
 
     @Override

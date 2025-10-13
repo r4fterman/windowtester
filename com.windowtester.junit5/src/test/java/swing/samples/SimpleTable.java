@@ -60,12 +60,12 @@ public class SimpleTable extends JPanel {
   private static class DataModel extends AbstractTableModel {
 
     private Object[][] data = {
-        {"one", "two", "three", "four"},
-        {"five", "six", "seven", "eight"},
-        {"nine", "ten", "one", "twelve"},
-        {"thirteen", "fourteen", "fifteen", "sixteen"},
-        {"seventeen", "eighteen", "ninteen", "twenty"},
-        {"twenty-one", "twenty-two", "twenty-three", "twenty-four"}
+      {"one", "two", "three", "four"},
+      {"five", "six", "seven", "eight"},
+      {"nine", "ten", "one", "twelve"},
+      {"thirteen", "fourteen", "fifteen", "sixteen"},
+      {"seventeen", "eighteen", "ninteen", "twenty"},
+      {"twenty-one", "twenty-two", "twenty-three", "twenty-four"}
     };
 
     public DataModel() {
@@ -128,5 +128,4 @@ public class SimpleTable extends JPanel {
     // Add the scroll pane to this panel.
     add(scrollPane);
   }
-
 }

@@ -48,12 +48,12 @@ public class WindowRecorder extends ContainerRecorder {
   @Override
   protected boolean isWindowEvent(AWTEvent event) {
     return (event.getSource() instanceof Window
-        // Checking for window ready avoids picking up
-        // spurious resize events on first window show
-        && ((Window) event.getSource()).isShowing()
-        && WindowTracker.getTracker().isWindowReady((Window) event.getSource())
-        && (event.getID() == ComponentEvent.COMPONENT_MOVED
-        || event.getID() == ComponentEvent.COMPONENT_RESIZED))
+            // Checking for window ready avoids picking up
+            // spurious resize events on first window show
+            && ((Window) event.getSource()).isShowing()
+            && WindowTracker.getTracker().isWindowReady((Window) event.getSource())
+            && (event.getID() == ComponentEvent.COMPONENT_MOVED
+                || event.getID() == ComponentEvent.COMPONENT_RESIZED))
         || event.getID() == WindowEvent.WINDOW_CLOSING
         || super.isWindowEvent(event);
   }
@@ -102,7 +102,7 @@ public class WindowRecorder extends ContainerRecorder {
     IUISemanticEvent semanticEvent = UISemanticEventFactory.createShellDisposedEvent(window);
     notify(semanticEvent);
 
-    return new Action(getResolver(), null, "actionClose", new String[]{ref.getID()}, Window.class);
+    return new Action(getResolver(), null, "actionClose", new String[] {ref.getID()}, Window.class);
   }
 
   protected Step createMove(Window window, Point where) {
@@ -116,7 +116,7 @@ public class WindowRecorder extends ContainerRecorder {
         getResolver(),
         null,
         "actionMove",
-        new String[]{ref.getID(), String.valueOf(where.x), String.valueOf(where.y)},
+        new String[] {ref.getID(), String.valueOf(where.x), String.valueOf(where.y)},
         Window.class);
   }
 
@@ -131,8 +131,8 @@ public class WindowRecorder extends ContainerRecorder {
         getResolver(),
         null,
         "actionResize",
-        new String[]{
-            ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
+        new String[] {
+          ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
         },
         Window.class);
   }

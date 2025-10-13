@@ -90,7 +90,8 @@ public class JComboBoxTester extends JComponentTester {
     // If the value is the default Object.toString method (which
     // returns <class>@<pointer value>), try to find something better.
     if (value.startsWith(item.getClass().getName() + "@")) {
-      ListCellRenderer<? super Object> renderer = (ListCellRenderer<? super Object>) combo.getRenderer();
+      ListCellRenderer<? super Object> renderer =
+          (ListCellRenderer<? super Object>) combo.getRenderer();
       Component c = renderer.getListCellRendererComponent(list, item, index, true, true);
       if (c instanceof javax.swing.JLabel) {
         return ((javax.swing.JLabel) c).getText();
@@ -130,6 +131,6 @@ public class JComboBoxTester extends JComponentTester {
     }
     contents.append("]");
     throw new ActionFailedException(
-        Strings.get("tester.JComboBox.item_not_found", new Object[]{item, contents.toString()}));
+        Strings.get("tester.JComboBox.item_not_found", new Object[] {item, contents.toString()}));
   }
 }

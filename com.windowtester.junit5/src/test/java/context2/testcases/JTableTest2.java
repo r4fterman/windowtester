@@ -29,13 +29,12 @@ import swing.samples.SimpleTable;
 @ExtendWith(WindowtesterExtension.class)
 class JTableTest2 {
 
-  @UIUnderTest
-  private SimpleTable panel = new SimpleTable();
+  @UIUnderTest private SimpleTable panel = new SimpleTable();
 
   @Test
   void testDoubleClicks(@SwingUIContext IUIContext ui) throws Exception {
-    IWidgetReference locator = (IWidgetReference) ui.click(2,
-        new JTableItemLocator(new Point(1, 0)));
+    IWidgetReference locator =
+        (IWidgetReference) ui.click(2, new JTableItemLocator(new Point(1, 0)));
 
     JTable table = (JTable) locator.getWidget();
     TableModel model = table.getModel();
@@ -52,6 +51,5 @@ class JTableTest2 {
     ui.contextClick(new JTableItemLocator(new Point(2, 1)), new JMenuItemLocator("choice3"));
 
     ui.contextClick(new JTableItemLocator(new Point(0, 2)), new JMenuItemLocator("choice1"));
-
   }
 }

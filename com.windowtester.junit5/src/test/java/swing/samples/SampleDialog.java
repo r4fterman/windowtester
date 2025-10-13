@@ -46,20 +46,21 @@ public class SampleDialog extends JDialog {
     yesButton = new JButton("Yes");
     //   setVisible(false);
     //   setVisible(false);
-    ActionListener actionListener = new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        if (yesButton == e.getSource()) {
-          System.err.println("User chose yes.");
-          answer = true;
-          //   setVisible(false);
-        } else if (noButton == e.getSource()) {
-          System.err.println("User chose no.");
-          answer = false;
-          //   setVisible(false);
-        }
-      }
-    };
+    ActionListener actionListener =
+        new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            if (yesButton == e.getSource()) {
+              System.err.println("User chose yes.");
+              answer = true;
+              //   setVisible(false);
+            } else if (noButton == e.getSource()) {
+              System.err.println("User chose no.");
+              answer = false;
+              //   setVisible(false);
+            }
+          }
+        };
     yesButton.addActionListener(actionListener);
     myPanel.add(yesButton);
     noButton = new JButton("No");
@@ -69,5 +70,4 @@ public class SampleDialog extends JDialog {
     pack();
     setVisible(true);
   }
-
 }

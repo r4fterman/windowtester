@@ -88,17 +88,12 @@ public class WTRuntimeManager {
         return widgetRef;
       }
     }
-    var errMsg = new StringBuilder(
-        "Failed to create widget reference for instance of " + widget.getClass().getName());
-    errMsg
-        .append(StringUtils.NEW_LINE)
-        .append("   ")
-        .append(getPlatformDebugInfo());
+    var errMsg =
+        new StringBuilder(
+            "Failed to create widget reference for instance of " + widget.getClass().getName());
+    errMsg.append(StringUtils.NEW_LINE).append("   ").append(getPlatformDebugInfo());
     for (WTRuntimeFactoryReference factoryRef : factoryReferences) {
-      errMsg
-          .append(StringUtils.NEW_LINE)
-          .append("   factory: ")
-          .append(factoryRef.getFactory());
+      errMsg.append(StringUtils.NEW_LINE).append("   factory: ").append(factoryRef.getFactory());
     }
     throw new RuntimeException(errMsg.toString());
   }

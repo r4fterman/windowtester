@@ -99,20 +99,21 @@ public class LauncherFactory {
   static class MainRunner extends SeparateThreadLauncher {
 
     public MainRunner(Class<?> launchClass, String[] launchArgs) {
-      super(() -> {
-        var nullArgs = new String[0];
-        var main = launchClass.getMethod("main", String[].class);
+      super(
+          () -> {
+            var nullArgs = new String[0];
+            var main = launchClass.getMethod("main", String[].class);
 
-        Object[] realArgs;
-        // instead pass null string
-        if (launchArgs == null) {
-          realArgs = new Object[]{nullArgs};
-        } else {
-          realArgs = new Object[]{launchArgs};
-        }
+            Object[] realArgs;
+            // instead pass null string
+            if (launchArgs == null) {
+              realArgs = new Object[] {nullArgs};
+            } else {
+              realArgs = new Object[] {launchArgs};
+            }
 
-        main.invoke(null, realArgs);
-      });
+            main.invoke(null, realArgs);
+          });
     }
   }
 

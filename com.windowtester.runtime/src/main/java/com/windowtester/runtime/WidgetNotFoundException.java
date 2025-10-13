@@ -17,8 +17,7 @@ import java.io.Serial;
  */
 public class WidgetNotFoundException extends WidgetSearchException {
 
-  @Serial
-  private static final long serialVersionUID = -7232101203251666634L;
+  @Serial private static final long serialVersionUID = -7232101203251666634L;
 
   /**
    * Create an instance with no specified detail message.

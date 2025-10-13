@@ -33,8 +33,7 @@ import javax.swing.JTextField;
  */
 public class LabeledTextLocator extends JTextComponentLocator {
 
-  @Serial
-  private static final long serialVersionUID = -4186840479034195183L;
+  @Serial private static final long serialVersionUID = -4186840479034195183L;
 
   /**
    * Create an instance that locates a Text component of class JTextField preceded by a Label

@@ -21,7 +21,7 @@ public class JButtonTest
   private IUIContext ui;
 
   public JButtonTest() {
-  //  super(SwingButton.class);
+    //  super(SwingButton.class);
   }
 
   protected void setUp() throws Exception {

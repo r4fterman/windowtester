@@ -94,9 +94,7 @@ public class ThreadUtil {
   }
 
   private static void printStackTrace(
-      PrintWriter writer,
-      Thread thread,
-      StackTraceElement[] trace) {
+      PrintWriter writer, Thread thread, StackTraceElement[] trace) {
     try {
       writer.println(thread.toString() + ":");
       for (StackTraceElement stackTraceElement : trace) {

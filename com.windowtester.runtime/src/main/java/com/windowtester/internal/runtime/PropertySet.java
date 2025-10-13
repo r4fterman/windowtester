@@ -33,14 +33,12 @@ import java.util.List;
 
 public class PropertySet implements Serializable {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   // for testing
   public static class TestStub extends PropertySet {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public TestStub() {
       super(null, null);
@@ -54,8 +52,7 @@ public class PropertySet implements Serializable {
 
   public static class PropertyMapping implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final PropertyMapping ENABLED =
         PropertyMapping.withKey("isEnabled").withName("Is Enabled");

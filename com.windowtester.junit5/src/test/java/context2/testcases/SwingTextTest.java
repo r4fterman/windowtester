@@ -47,15 +47,15 @@ class SwingTextTest {
     ui.assertThat(new LabeledTextLocator("Name").hasText("Jane Smith"));
 
     // context clicks
-    ui.contextClick(new JTextComponentLocator(JTextField.class, 0, null), new
-        JMenuItemLocator("choice2"));
+    ui.contextClick(
+        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice2"));
 
-    ui.contextClick(new JTextComponentLocator(JTextField.class, 0, null), new
-        JMenuItemLocator("choice1"));
+    ui.contextClick(
+        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice1"));
 
     try {
-      ui.contextClick(new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator(
-          "bogus"));
+      ui.contextClick(
+          new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("bogus"));
       fail("should have thrown a CNF exception");
     } catch (ActionFailedException e) {
       fail("should not have thrown " + e);

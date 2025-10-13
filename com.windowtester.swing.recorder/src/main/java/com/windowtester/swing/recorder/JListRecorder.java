@@ -63,10 +63,6 @@ public class JListRecorder extends JComponentRecorder {
       }
     }
     return new Action(
-        getResolver(),
-        null,
-        methodName,
-        args.toArray(new String[0]),
-        javax.swing.JList.class);
+        getResolver(), null, methodName, args.toArray(new String[0]), javax.swing.JList.class);
   }
 }

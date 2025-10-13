@@ -99,20 +99,20 @@ public class FileDialogRecorder extends DialogRecorder {
               getResolver(),
               null,
               "actionSetDirectory",
-              new String[]{ref.getID(), dir},
+              new String[] {ref.getID(), dir},
               FileDialog.class));
     }
     if (accepted) {
       Step accept =
           new Action(
-              getResolver(), null, "actionAccept", new String[]{ref.getID()}, FileDialog.class);
+              getResolver(), null, "actionAccept", new String[] {ref.getID()}, FileDialog.class);
       if (fileChanged) {
         seq.addStep(
             new Action(
                 getResolver(),
                 null,
                 "actionSetFile",
-                new String[]{ref.getID(), file},
+                new String[] {ref.getID(), file},
                 FileDialog.class));
         seq.addStep(accept);
       } else {
@@ -121,7 +121,7 @@ public class FileDialogRecorder extends DialogRecorder {
     } else {
       Step cancel =
           new Action(
-              getResolver(), null, "actionCancel", new String[]{ref.getID()}, FileDialog.class);
+              getResolver(), null, "actionCancel", new String[] {ref.getID()}, FileDialog.class);
       if (dirChanged) {
         seq.addStep(cancel);
       } else {

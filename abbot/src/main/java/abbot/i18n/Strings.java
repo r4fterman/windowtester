@@ -31,8 +31,7 @@ public class Strings {
     addBundle(BUNDLE);
   }
 
-  private Strings() {
-  }
+  private Strings() {}
 
   public static void addBundle(String bundle) {
     var locale = Locale.getDefault();
@@ -64,8 +63,7 @@ public class Strings {
       }
     }
 
-    if (value == null
-        && !optional) {
+    if (value == null && !optional) {
       Log.log("Missing resource '" + key + "'");
       value = defaultValue;
     }

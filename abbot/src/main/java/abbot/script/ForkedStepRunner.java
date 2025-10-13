@@ -28,8 +28,10 @@ import java.util.StringTokenizer;
  */
 public class ForkedStepRunner extends StepRunner {
 
-  private static final int LAUNCH_TIMEOUT = Properties.getProperty("abbot.runner.launch_delay", 60000, 0, 300000);
-  private static final int TERMINATE_TIMEOUT = Properties.getProperty("abbot.runner.terminate_delay", 30000, 0, 300000);
+  private static final int LAUNCH_TIMEOUT =
+      Properties.getProperty("abbot.runner.launch_delay", 60000, 0, 300000);
+  private static final int TERMINATE_TIMEOUT =
+      Properties.getProperty("abbot.runner.terminate_delay", 30000, 0, 300000);
 
   private static ServerSocket serverSocket = null;
   private Process process = null;

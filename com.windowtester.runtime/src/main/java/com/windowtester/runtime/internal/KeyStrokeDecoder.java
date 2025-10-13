@@ -81,8 +81,6 @@ public class KeyStrokeDecoder {
   }
 
   private static int[] toIntArray(List<Integer> keys) {
-    return keys.stream()
-        .mapToInt(Integer::intValue)
-        .toArray();
+    return keys.stream().mapToInt(Integer::intValue).toArray();
   }
 }

@@ -46,8 +46,7 @@ import java.lang.reflect.Method;
  */
 public class NamedWidgetLocator extends SwingWidgetLocator implements HasText, IsEnabled {
 
-  @Serial
-  private static final long serialVersionUID = -6974445702753299953L;
+  @Serial private static final long serialVersionUID = -6974445702753299953L;
 
   /**
    * Create a locator instance.

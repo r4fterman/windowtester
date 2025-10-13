@@ -27,8 +27,7 @@ import javax.swing.JMenuItem;
  */
 public class JMenuItemLocator extends AbstractPathLocator implements IMenuItemLocator, IsEnabled {
 
-  @Serial
-  private static final long serialVersionUID = -5514291727454535792L;
+  @Serial private static final long serialVersionUID = -5514291727454535792L;
 
   /**
    * Creates an instance of a JMenuItem locator with the menu path indicated by a string such as
@@ -81,11 +80,7 @@ public class JMenuItemLocator extends AbstractPathLocator implements IMenuItemLo
 
   @Override
   protected Component doClick(
-      IUIContext ui,
-      int clicks,
-      Component component,
-      Point offset,
-      int modifierMask) {
+      IUIContext ui, int clicks, Component component, Point offset, int modifierMask) {
     ((UIContextSwing) ui).getDriver().clickMenuItem((JMenuItem) component);
     return component;
   }

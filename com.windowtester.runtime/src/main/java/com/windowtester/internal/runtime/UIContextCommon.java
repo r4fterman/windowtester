@@ -42,31 +42,28 @@ public abstract class UIContextCommon implements IUIContext {
   // dump system information
   static {
     StringBuilder sb = new StringBuilder();
-    sb
-        .append(NEW_LINE)
+    sb.append(NEW_LINE)
         .append("*************************************************")
         .append(NEW_LINE)
         .append("WindowTester Runtime " + ProductInfo.build)
         .append(NEW_LINE);
-    echoSystemProperties("OS:", new String[]{"os.name", "os.arch", "os.version"}, sb);
-    echoSystemProperties("Java:", new String[]{"java.vendor", "java.version"}, sb);
+    echoSystemProperties("OS:", new String[] {"os.name", "os.arch", "os.version"}, sb);
+    echoSystemProperties("Java:", new String[] {"java.vendor", "java.version"}, sb);
     echoSystemProperties(
         "Spec:",
-        new String[]{
-            "java.specification.name", "java.specification.vendor", "java.specification.version"
+        new String[] {
+          "java.specification.name", "java.specification.vendor", "java.specification.version"
         },
         sb);
     echoSystemProperties(
         "VM:",
-        new String[]{
-            "java.vm.specification.name",
-            "java.vm.specification.vendor",
-            "java.vm.specification.version"
+        new String[] {
+          "java.vm.specification.name",
+          "java.vm.specification.vendor",
+          "java.vm.specification.version"
         },
         sb);
-    sb
-        .append("*************************************************")
-        .append(NEW_LINE);
+    sb.append("*************************************************").append(NEW_LINE);
 
     LogHandler.log(sb.toString());
   }

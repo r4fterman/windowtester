@@ -57,5 +57,4 @@ public class MultipleWidgetsFoundException extends WidgetSearchException {
     }
     return component.getName();
   }
-
 }

@@ -106,8 +106,7 @@ public class WidgetLocatorFactory {
   }
 
   private boolean isCorrectComponent(JLabel label, Component component) {
-    return label.getClass().equals(component.getClass())
-        && label == component;
+    return label.getClass().equals(component.getClass()) && label == component;
   }
 
   private SwingWidgetLocator createDefaultLocator(Component component) {

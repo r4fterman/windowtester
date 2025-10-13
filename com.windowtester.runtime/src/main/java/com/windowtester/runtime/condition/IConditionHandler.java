@@ -17,6 +17,4 @@ package com.windowtester.runtime.condition;
  * @see com.windowtester.runtime.condition.IHandler
  * @see com.windowtester.runtime.condition.IConditionMonitor
  */
-public interface IConditionHandler extends ICondition, IHandler {
-
-}
+public interface IConditionHandler extends ICondition, IHandler {}

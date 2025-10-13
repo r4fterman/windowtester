@@ -45,8 +45,7 @@ public class ExactClassMatcher implements IWidgetMatcher {
   }
 
   private boolean classMatches(Object widget) {
-    return cls.isAssignableFrom(widget.getClass())
-        && widget.getClass().isAssignableFrom(cls);
+    return cls.isAssignableFrom(widget.getClass()) && widget.getClass().isAssignableFrom(cls);
   }
 
   @Override

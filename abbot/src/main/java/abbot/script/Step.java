@@ -26,6 +26,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+
 /**
  * Provides access to one step (line) from a script.  A Step is the basic unit of execution.
  * <b>Custom Step classes</b><p>
@@ -133,7 +134,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
   protected void usage(String details) {
     String msg = getUsage();
     if (details != null) {
-      msg = Strings.get("step.usage", new Object[]{msg, details});
+      msg = Strings.get("step.usage", new Object[] {msg, details});
     }
     setScriptError(new InvalidScriptException(msg));
   }
@@ -157,13 +158,14 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
   protected Element addAttributes(Element el) {
     // Use a TreeMap to keep the attributes sorted on output
     new TreeMap<>(getAttributes())
-        .forEach((key, value) -> {
-          if (value == null) {
-            Log.warn("Attribute '" + key + "' value was null in step " + getXMLTag());
-            value = "";
-          }
-          el.addAttribute(key, value);
-        });
+        .forEach(
+            (key, value) -> {
+              if (value == null) {
+                Log.warn("Attribute '" + key + "' value was null in step " + getXMLTag());
+                value = "";
+              }
+              el.addAttribute(key, value);
+            });
     return el;
   }
 
@@ -204,11 +206,7 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
 
   protected static Map<String, String> createAttributeMap(Element el) {
     Log.debug("Creating attribute map for " + el);
-    return el.attributes().stream()
-        .collect(toMap(
-            Attribute::getName,
-            Attribute::getValue
-        ));
+    return el.attributes().stream().collect(toMap(Attribute::getName, Attribute::getValue));
   }
 
   public static Step createStep(Resolver resolver, Element el) throws InvalidScriptException {
@@ -217,15 +215,11 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
 
     Map<String, String> attributes;
     if (tag.equals(TAG_WAIT)) {
-      attributes = Stream
-          .concat(
-              createAttributeMap(el).entrySet().stream(),
-              Map.of(TAG_WAIT, "true").entrySet().stream())
-          .collect(
-              Collectors.toMap(
-                  Entry::getKey,
-                  Entry::getValue
-              ));
+      attributes =
+          Stream.concat(
+                  createAttributeMap(el).entrySet().stream(),
+                  Map.of(TAG_WAIT, "true").entrySet().stream())
+              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
       name = "Assert";
     } else {
       attributes = createAttributeMap(el);
@@ -236,17 +230,17 @@ public abstract class Step implements XMLConstants, XMLifiable, Serializable {
       Class<?> cls = Class.forName(name);
       try {
         // Steps with contents require access to the XML element
-        Class<?>[] argTypes = new Class<?>[]{Resolver.class, Element.class, Map.class};
+        Class<?>[] argTypes = new Class<?>[] {Resolver.class, Element.class, Map.class};
         Constructor<?> ctor = cls.getConstructor(argTypes);
         return (Step) ctor.newInstance(resolver, el, attributes);
       } catch (NoSuchMethodException nsm) {
         // All steps must support this ctor
-        Class<?>[] argTypes = new Class<?>[]{Resolver.class, Map.class};
+        Class<?>[] argTypes = new Class<?>[] {Resolver.class, Map.class};
         Constructor<?> ctor = cls.getConstructor(argTypes);
         return (Step) ctor.newInstance(resolver, attributes);
       }
     } catch (ClassNotFoundException cnf) {
-      String msg = Strings.get("step.unknown_tag", new Object[]{tag});
+      String msg = Strings.get("step.unknown_tag", new Object[] {tag});
       throw new InvalidScriptException(msg);
     } catch (InvocationTargetException ite) {
       Log.warn(ite);

@@ -55,8 +55,7 @@ public final class Log {
   /**
    * No instantiations.
    */
-  private Log() {
-  }
+  private Log() {}
 
   /**
    * Global final to determine whether debugging code is generated.  This should be changed to false
@@ -79,9 +78,7 @@ public final class Log {
    * static final int WARNING = 0x0002; public static final int DEBUG   = 0x0004; public static
    * final int INFO    = 0x0008;
    */
-  private static class LogSynchronizer extends Object {
-
-  }
+  private static class LogSynchronizer extends Object {}
 
   /**
    * Synchronize message output.
@@ -197,8 +194,7 @@ public final class Log {
           new PrintStream(
               new OutputStream() {
                 @Override
-                public void write(int b) {
-                }
+                public void write(int b) {}
               });
       System.setErr(nullStream);
       System.setOut(nullStream);

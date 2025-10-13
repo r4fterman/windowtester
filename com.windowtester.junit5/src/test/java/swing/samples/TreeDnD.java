@@ -56,7 +56,7 @@ By John Zukowski
 ISBN: 1-893115-78-X
 Publisher: APress
 */
-public class TreeDnD extends JFrame  {
+public class TreeDnD extends JFrame {
 
   public TreeDnD() {
     setTitle("Tree Dragging Tester");
@@ -149,14 +149,11 @@ class DndTree extends JTree implements Autoscroll {
       insets = new Insets(top + 10, 0, bottom - 10, getWidth());
     }
 
-    public void dragExit(DropTargetEvent dropTargetEvent) {
-    }
+    public void dragExit(DropTargetEvent dropTargetEvent) {}
 
-    public void dragOver(DropTargetDragEvent dropTargetDragEvent) {
-    }
+    public void dragOver(DropTargetDragEvent dropTargetDragEvent) {}
 
-    public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent) {
-    }
+    public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent) {}
 
     public synchronized void drop(DropTargetDropEvent dropTargetDropEvent) {
       // Only support dropping over nodes that aren't leafs
@@ -247,14 +244,11 @@ class DndTree extends JTree implements Autoscroll {
       }
     }
 
-    public void dragExit(DragSourceEvent dragSourceEvent) {
-    }
+    public void dragExit(DragSourceEvent dragSourceEvent) {}
 
-    public void dragOver(DragSourceDragEvent dragSourceDragEvent) {
-    }
+    public void dragOver(DragSourceDragEvent dragSourceDragEvent) {}
 
-    public void dropActionChanged(DragSourceDragEvent dragSourceDragEvent) {
-    }
+    public void dropActionChanged(DragSourceDragEvent dragSourceDragEvent) {}
   }
 
   private static class TransferableTreeNode extends DefaultMutableTreeNode implements Transferable {
@@ -267,7 +261,7 @@ class DndTree extends JTree implements Autoscroll {
         new DataFlavor(DefaultMutableTreeNode.class, "Default Mutable Tree Node");
 
     static DataFlavor[] flavors = {
-        DEFAULT_MUTABLE_TREENODE_FLAVOR, DataFlavor.stringFlavor, DataFlavor.plainTextFlavor
+      DEFAULT_MUTABLE_TREENODE_FLAVOR, DataFlavor.stringFlavor, DataFlavor.plainTextFlavor
     };
 
     private final DefaultMutableTreeNode data;

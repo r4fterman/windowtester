@@ -9,7 +9,6 @@ import abbot.finder.TestHierarchy;
 import abbot.i18n.Strings;
 import abbot.util.AWTFixtureHelper;
 import abbot.util.EDTExceptionCatcher;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -207,8 +206,7 @@ public class StepRunner {
       Log.debug("App tried to exit");
       terminate();
     } finally {
-      if (step instanceof Script
-          && (stopped() && terminateOnStop)) {
+      if (step instanceof Script && (stopped() && terminateOnStop)) {
         terminate();
       }
       removeSecurityManager();
@@ -236,9 +234,10 @@ public class StepRunner {
   protected void checkFile(Script script) throws InvalidScriptException {
     var file = script.getFile();
     if (!file.exists() && !file.getName().startsWith(Script.UNTITLED_FILE)) {
-      var msg = String.format(
-          "The script '%s' does not exist at the expected location '%s'", script.getFilename(),
-          file.getAbsolutePath());
+      var msg =
+          String.format(
+              "The script '%s' does not exist at the expected location '%s'",
+              script.getFilename(), file.getAbsolutePath());
       throw new InvalidScriptException(msg);
     }
   }

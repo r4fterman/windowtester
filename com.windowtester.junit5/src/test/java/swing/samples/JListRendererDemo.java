@@ -25,10 +25,10 @@ public class JListRendererDemo {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     DataItem[] items = {
-        new DataItem("EN 1", "DE 1"),
-        new DataItem("EN 2", "DE 2"),
-        new DataItem("EN 3", "DE 3"),
-        new DataItem("EN 4", "DE 4")
+      new DataItem("EN 1", "DE 1"),
+      new DataItem("EN 2", "DE 2"),
+      new DataItem("EN 3", "DE 3"),
+      new DataItem("EN 4", "DE 4")
     };
     JList<DataItem> list = new JList<>(items);
     list.setName("JList1");
@@ -53,11 +53,7 @@ public class JListRendererDemo {
 
     @Override
     public Component getListCellRendererComponent(
-        JList list,
-        Object value,
-        int index,
-        boolean isSelected,
-        boolean cellHasFocus) {
+        JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
       JLabel renderer =
           (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -99,11 +95,7 @@ public class JListRendererDemo {
 
     @Override
     public String toString() {
-      return "DataItem [nameEN="
-          + nameEN
-          + ", nameDE="
-          + nameDE
-          + "]";
+      return "DataItem [nameEN=" + nameEN + ", nameDE=" + nameDE + "]";
     }
   }
 }

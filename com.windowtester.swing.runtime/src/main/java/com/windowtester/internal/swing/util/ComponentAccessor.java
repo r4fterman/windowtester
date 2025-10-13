@@ -30,8 +30,8 @@ import javax.swing.JPopupMenu;
 public class ComponentAccessor {
 
   private static final Hierarchy HIERARCHY = AWTHierarchy.getDefault();
-  private static final ComponentTester COMPONENT_TESTER = ComponentTester.getTester(
-      JMenuItem.class);
+  private static final ComponentTester COMPONENT_TESTER =
+      ComponentTester.getTester(JMenuItem.class);
 
   /**
    * Find the topmost parent menu item.
@@ -45,8 +45,7 @@ public class ComponentAccessor {
       parent = AWT.getInvoker(popup);
     }
 
-    while (parent instanceof JMenu menu
-        && !menu.isTopLevelMenu()) {
+    while (parent instanceof JMenu menu && !menu.isTopLevelMenu()) {
       popup = parent.getParent();
       if (popup instanceof JPopupMenu) {
         parent = AWT.getInvoker(popup);
@@ -182,9 +181,7 @@ public class ComponentAccessor {
   public static String assemblePath(String[] nodeNames) {
     var path = new StringBuilder();
     for (int i = 0; i < nodeNames.length - 1; i++) {
-      path
-          .append(nodeNames[i])
-          .append("/");
+      path.append(nodeNames[i]).append("/");
     }
     path.append(nodeNames[nodeNames.length - 1]);
     return path.toString();

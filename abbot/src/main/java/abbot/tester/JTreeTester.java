@@ -39,8 +39,7 @@ public class JTreeTester extends JComponentTester {
       row = tree.getClosestRowForLocation(x, y);
       if (row != -1) {
         Rectangle rect = tree.getRowBounds(row);
-        if (row == tree.getRowCount() - 1
-            && y >= rect.y + rect.height) {
+        if (row == tree.getRowCount() - 1 && y >= rect.y + rect.height) {
           return false;
         }
         // An approximation: use a square area to the left of the row
@@ -160,7 +159,7 @@ public class JTreeTester extends JComponentTester {
     if (componentLocation instanceof JTreeLocation treeLocation) {
       TreePath path = treeLocation.getPath((JTree) component);
       if (path == null) {
-        String msg = Strings.get("tester.JTree.path_not_found", new Object[]{componentLocation});
+        String msg = Strings.get("tester.JTree.path_not_found", new Object[] {componentLocation});
         throw new LocationUnavailableException(msg);
       }
       makeVisible(component, path);
@@ -251,7 +250,7 @@ public class JTreeTester extends JComponentTester {
 
               @Override
               public String toString() {
-                return Strings.get("tester.Component.show_wait", new Object[]{path.toString()});
+                return Strings.get("tester.Component.show_wait", new Object[] {path.toString()});
               }
             },
             componentDelay);
@@ -298,8 +297,8 @@ public class JTreeTester extends JComponentTester {
     // Alternatively, we can reflect into the UI and do a single click
     // on the appropriate expand location, but this is safer.
     if (tree.getToggleClickCount() != 0) {
-      actionClick(tree, componentLocation, InputEvent.BUTTON1_DOWN_MASK,
-          tree.getToggleClickCount());
+      actionClick(
+          tree, componentLocation, InputEvent.BUTTON1_DOWN_MASK, tree.getToggleClickCount());
     } else {
       // BasicTreeUI provides this method; punt if we can't find it
       if (!(tree.getUI() instanceof BasicTreeUI)) {

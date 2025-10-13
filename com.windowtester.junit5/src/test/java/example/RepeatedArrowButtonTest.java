@@ -18,8 +18,7 @@ class RepeatedArrowButtonTest {
 
   private ComponentTester tester;
 
-  @UIUnderTest
-  private final ArrowButton arrow = new ArrowButton(ArrowButton.LEFT);
+  @UIUnderTest private final ArrowButton arrow = new ArrowButton(ArrowButton.LEFT);
 
   private int count = 0;
 
@@ -39,5 +38,4 @@ class RepeatedArrowButtonTest {
 
     assertTrue(count > 1, () -> "Didn't get any repeated events");
   }
-
 }

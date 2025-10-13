@@ -462,7 +462,8 @@ public class ComponentRecorder extends SemanticRecorder {
         // the generated characters are not accepted as text input.
         // Add others if you encounter them, but err on the side of
         // accepting input that can later be removed.
-        if ((modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+        if ((modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
+                == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
             || (modifiers & InputEvent.ALT_DOWN_MASK) == InputEvent.ALT_DOWN_MASK) {
           Log.debug("Ignoring modifiers: " + modifiers);
           setRecordingType(SE_NONE);

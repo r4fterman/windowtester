@@ -27,11 +27,7 @@ public class JTreeTester extends abbot.tester.JTreeTester {
   /**
    * Select the given path, expanding parent nodes if necessary.
    */
-  public void actionSelectPath(
-      int clickCount,
-      Component component,
-      TreePath path,
-      int buttons) {
+  public void actionSelectPath(int clickCount, Component component, TreePath path, int buttons) {
     actionSelectRow(clickCount, component, new JTreeLocation(path), buttons);
   }
 
@@ -39,15 +35,12 @@ public class JTreeTester extends abbot.tester.JTreeTester {
    * Select the given row.  If the row is already selected, does nothing.
    */
   public void actionSelectRow(
-      int clickCount,
-      Component component,
-      ComponentLocation location,
-      int buttons) {
+      int clickCount, Component component, ComponentLocation location, int buttons) {
     var tree = (JTree) component;
     if (location instanceof JTreeLocation jTreeLocation) {
       var path = jTreeLocation.getPath((JTree) component);
       if (path == null) {
-        var msg = Strings.get("tester.JTree.path_not_found", new Object[]{location});
+        var msg = Strings.get("tester.JTree.path_not_found", new Object[] {location});
         throw new LocationUnavailableException(msg);
       }
       makeVisible(component, path);

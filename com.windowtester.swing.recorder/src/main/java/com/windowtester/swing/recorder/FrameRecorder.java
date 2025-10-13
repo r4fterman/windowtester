@@ -78,7 +78,7 @@ public class FrameRecorder extends WindowRecorder {
         getResolver(),
         null,
         newState == Frame.NORMAL ? "actionNormalize" : "actionMaximize",
-        new String[]{ref.getID()},
+        new String[] {ref.getID()},
         Frame.class);
   }
 
@@ -92,8 +92,8 @@ public class FrameRecorder extends WindowRecorder {
               getResolver(),
               null,
               "actionResize",
-              new String[]{
-                  ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
+              new String[] {
+                ref.getID(), String.valueOf(size.width), String.valueOf(size.height),
               },
               Frame.class);
     }
@@ -102,8 +102,7 @@ public class FrameRecorder extends WindowRecorder {
 
   protected int getExtendedState(Frame frame) {
     try {
-      Integer state =
-          (Integer) Frame.class.getMethod("getExtendedState").invoke(frame);
+      Integer state = (Integer) Frame.class.getMethod("getExtendedState").invoke(frame);
       Log.debug("State is " + state);
       return state;
     } catch (Exception e) {

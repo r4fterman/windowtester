@@ -119,7 +119,7 @@ public class Robot implements AWTConstants {
     // property is read once at startup and ignored thereafter.
     return Platform.isOSX()
         && (Boolean.getBoolean("com.apple.macos.useScreenMenuBar")
-        || Boolean.getBoolean("apple.laf.useScreenMenuBar"));
+            || Boolean.getBoolean("apple.laf.useScreenMenuBar"));
   }
 
   /**
@@ -395,7 +395,7 @@ public class Robot implements AWTConstants {
         long start = System.currentTimeMillis();
         while (!fw.focused) {
           if (System.currentTimeMillis() - start > componentDelay) {
-            String msg = Strings.get("tester.Robot.focus_failed", new Object[]{toString(comp)});
+            String msg = Strings.get("tester.Robot.focus_failed", new Object[] {toString(comp)});
             throw new ActionFailedException(msg);
           }
           sleep();
@@ -528,8 +528,7 @@ public class Robot implements AWTConstants {
   private static final Runnable EMPTY_RUNNABLE =
       new Runnable() {
         @Override
-        public void run() {
-        }
+        public void run() {}
       };
 
   /**
@@ -542,9 +541,7 @@ public class Robot implements AWTConstants {
   }
 
   protected boolean postInvocationEvent(EventQueue eq, Toolkit toolkit, long timeout) {
-    class RobotIdleLock {
-
-    }
+    class RobotIdleLock {}
     Object lock = new RobotIdleLock();
     synchronized (lock) {
       eq.postEvent(new InvocationEvent(toolkit, EMPTY_RUNNABLE, lock, true));
@@ -1101,13 +1098,14 @@ public class Robot implements AWTConstants {
   }
 
   public void click(Component comp, int x, int y, int mask, int count) {
-    var message = "Click at ("
-        + x
-        + ","
-        + y
-        + ") on "
-        + toString(comp)
-        + (count > 1 ? (" count=" + count) : "");
+    var message =
+        "Click at ("
+            + x
+            + ","
+            + y
+            + ") on "
+            + toString(comp)
+            + (count > 1 ? (" count=" + count) : "");
     Log.debug(message);
 
     int keyModifiers = mask & ~AWTConstants.BUTTON_DOWN_MASK;
@@ -1148,12 +1146,12 @@ public class Robot implements AWTConstants {
   public void selectAWTMenuItem(Frame frame, String path) {
     MenuBar mb = frame.getMenuBar();
     if (mb == null) {
-      String msg = Strings.get("tester.Robot.no_menu_bar", new Object[]{toString(frame)});
+      String msg = Strings.get("tester.Robot.no_menu_bar", new Object[] {toString(frame)});
       throw new ActionFailedException(msg);
     }
     MenuItem[] items = AWT.findAWTMenuItems(frame, path);
     if (items.length == 0) {
-      String msg = Strings.get("tester.Robot.no_menu_item", new Object[]{path, toString(frame)});
+      String msg = Strings.get("tester.Robot.no_menu_item", new Object[] {path, toString(frame)});
       throw new ActionFailedException(msg);
     }
     if (items.length > 1) {
@@ -1185,18 +1183,17 @@ public class Robot implements AWTConstants {
         return;
       } else if (items.length == 0) {
         String msg =
-            Strings.get("tester.Robot.no_popup_menu_item", new Object[]{path, toString(invoker)});
+            Strings.get("tester.Robot.no_popup_menu_item", new Object[] {path, toString(invoker)});
         throw new ActionFailedException(msg);
       }
-      String msg = Strings.get("tester.Robot.multiple_menu_items", new Object[]{path});
+      String msg = Strings.get("tester.Robot.multiple_menu_items", new Object[] {path});
       throw new ActionFailedException(msg);
     } finally {
       AWT.dismissAWTPopup();
     }
   }
 
-  protected void fireAccessibleAction(
-      Component context, AccessibleAction action, String name) {
+  protected void fireAccessibleAction(Component context, AccessibleAction action, String name) {
     if (action != null && action.getAccessibleActionCount() > 0) {
       invokeLater(
           context,
@@ -1207,7 +1204,7 @@ public class Robot implements AWTConstants {
             }
           });
     } else {
-      String msg = Strings.get("tester.Robot.no_accessible_action", new String[]{name});
+      String msg = Strings.get("tester.Robot.no_accessible_action", new String[] {name});
       throw new ActionFailedException(msg);
     }
   }
@@ -1596,7 +1593,7 @@ public class Robot implements AWTConstants {
                   (Boolean)
                       Toolkit.class
                           .getMethod("isFrameStateSupported", int.class)
-                          .invoke(toolkit, new Object[]{new Integer(MAXIMIZED_BOTH)});
+                          .invoke(toolkit, new Object[] {new Integer(MAXIMIZED_BOTH)});
               if (b.booleanValue() && !serviceMode) {
                 Frame.class
                     .getMethod("setExtendedState", int.class)
@@ -1892,8 +1889,7 @@ public class Robot implements AWTConstants {
       if ((name = getTitle(c)) == null) {
         if ((name = getText(c)) == null) {
           if ((name = getLabel(c)) == null) {
-            if ((name = getIconName(c)) == null) {
-            }
+            if ((name = getIconName(c)) == null) {}
           }
         }
       }
