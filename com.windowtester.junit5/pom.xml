@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.r4fterman</groupId>
         <artifactId>com.windowtester</artifactId>
-        <version>5.14.0</version>
+        <version>5.14.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>com.windowtester.junit5</artifactId>
