@@ -22,9 +22,6 @@ public class TestHierarchy extends AWTHierarchy {
   // Map of components to ignore
   private final Map<Component, Boolean> filtered = new WeakHashMap<>();
 
-  private static final boolean TRACK_APPLET_CONSOLE =
-      Boolean.getBoolean("abbot.applet.track_console");
-
   /**
    * Create a new TestHierarchy which does not contain any UI Components which might already exist.
    */
@@ -86,10 +83,6 @@ public class TestHierarchy extends AWTHierarchy {
   public boolean isFiltered(Component component) {
     if (component == null) {
       return false;
-    }
-
-    if ("sun.plugin.ConsoleWindow".equals(component.getClass().getName())) {
-      return !TRACK_APPLET_CONSOLE;
     }
 
     return filtered.containsKey(component)

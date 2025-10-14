@@ -5,28 +5,22 @@ import abbot.tester.Robot;
 import java.awt.AWTEvent;
 import java.awt.event.AWTEventListener;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * Provide an AWTEventListener which ensures all events are handled on the event dispatch thread.  This allows the
- * recorders and other listeners to safely manipulate GUI objects without concern for event dispatch thread-safety.
+ * Provide an AWTEventListener which ensures all events are handled on the event dispatch thread.
+ * This allows the recorders and other listeners to safely manipulate GUI objects without concern
+ * for event dispatch thread-safety.
  * <p>
- * Window.show generates WINDOW_OPENED (and possibly hierarchy and other events) to any listeners from whatever thread
- * the method was invoked on.
+ * Window.show generates WINDOW_OPENED (and possibly hierarchy and other events) to any listeners
+ * from whatever thread the method was invoked on.
  * <p>
- * NOTE: Applet runners may run several simultaneous event dispatch threads when displaying multiple applets
- * simultaneously.  If this listener is installed in the parent context of those dispatch threads, it will be invoked on
- * each of those threads, possibly simultaneously.
  */
 public abstract class SingleThreadedEventListener implements AWTEventListener {
-  private final ArrayList deferredEvents = new ArrayList();
 
-  private final Runnable action =
-      new Runnable() {
-        public void run() {
-          processDeferredEvents();
-        }
-      };
+  private final List<AWTEvent> deferredEvents = new ArrayList<>();
+  private final Runnable action = this::processDeferredEvents;
 
   /**
    * Event reception callback.
@@ -59,29 +53,29 @@ public abstract class SingleThreadedEventListener implements AWTEventListener {
    */
   protected void processDeferredEvents() {
     // Make a copy of the deferred events and empty the queue
-    ArrayList queue = new ArrayList();
+    List<AWTEvent> queue;
     synchronized (deferredEvents) {
       // In the rare case where there are multiple simultaneous dispatch
       // threads, it's possible for deferred events to get posted while
       // another event is being processed.  At most this will mean a few
       // events get processed out of order, but they will likely be from
       // different event dispatch contexts, so it shouldn't matter.
-      queue.addAll(deferredEvents);
+      queue = new ArrayList<>(deferredEvents);
       deferredEvents.clear();
     }
-    while (queue.size() > 0) {
+    while (!queue.isEmpty()) {
       AWTEvent prev = null;
       Log.debug("processing deferred event");
       // Process any events that were generated
-      prev = (AWTEvent) queue.get(0);
-      queue.remove(0);
+      prev = queue.getFirst();
+      queue.removeFirst();
       processEvent(prev);
     }
   }
 
   /**
-   * This method is not protected by any synchronization locks (nor should it be); in the presence of multiple
-   * simultaneous event dispatch threads, the listener must be threadsafe.
+   * This method is not protected by any synchronization locks (nor should it be); in the presence
+   * of multiple simultaneous event dispatch threads, the listener must be threadsafe.
    */
   protected abstract void processEvent(AWTEvent event);
 }
