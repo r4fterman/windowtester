@@ -66,27 +66,27 @@ import javax.swing.SwingUtilities;
  * Provide a higher level of abstraction for user input (A Better Robot). The Robot's operation may
  * be affected by the following properties:<br>
  * <pre><code>abbot.robot.auto_delay</code></pre><br>
- * Set this to a value representing the millisecond count in between generated events.  Usually just
- * set to 100-200 if you want to slow down the playback to simulate actual user input.  The default
- * is zero delay.<br>
+ * Set this to a value representing the millisecond count in between generated events. Usually set
+ * to 100-200 if you want to slow down the playback to simulate actual user input. The default is
+ * zero delay.<br>
  * <pre><code>abbot.robot.mode</code></pre><br>
- * Set this to either "robot" or "awt" to designate the desired mode of event generation.  "robot"
- * uses java.awt.Robot to generate events, while "awt" stuffs events directly into the AWT event
- * queue.<br>
+ * Set this to either "robot" or "awt" to designate the desired mode of event generation. The
+ * "robot" uses java.awt.Robot to generate events, while "awt" stuffs events directly into the AWT
+ * event queue.<br>
  * <pre><code>abbot.robot.event_post_delay</code></pre><br>
  * This is the maximum number of ms it takes the system to post an AWT event in response to a
  * Robot-generated event.
  * <pre><code>abbot.robot.default_delay</code></pre><br>
- * Base delay setting, acts as default value for the next two.
+ * Base delay setting acts as a default value for the next two.
  * <pre><code>abbot.robot.popup_delay</code></pre><br>
  * Set this to the maximum time to wait for a menu to appear or be generated.
  * <pre><code>abbot.robot.component_delay</code></pre><br>
  * Set this to the maximum time to wait for a Component to become available.
  * <p>
  * NOTE: Only use event queue synchronization (e.g. {@link #invokeAndWait(Runnable)} or
- * {@link #waitForIdle()} when a subsequent robot-level action is being applied to the results of a
- * prior action (e.g. focus, deiconify, menu selection).  Otherwise, don't introduce a mandatory
- * delay (e.g. use {@link #invokeLater(Runnable)}).
+ * {@link #waitForIdle()} when a later robot-level action is being applied to the results of a prior
+ * action (e.g., focus, deiconify, menu selection).  Otherwise, don't introduce a mandatory delay
+ * (e.g., use {@link #invokeLater(Runnable)}).
  * <p>
  * NOTE: If a robot action isn't reproduced properly, you may need to introduce either additional
  * events or extra delay. Adding enforced delay for a given platform is usually preferable to
@@ -108,14 +108,10 @@ public class Robot implements AWTConstants {
   public static int EM_AWT = 1;
 
   private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
-  // Max robot delay, in ms
   private static final int MAX_DELAY = 60000;
-  // TODO: verify this value for X11, etc.; ALT for w32, option for OSX
-  public static final int MOUSELESS_MODIFIER_MASK = InputEvent.ALT_DOWN_MASK;
-  public static final String MOUSELESS_MODIFIER = AWT.getKeyModifiers(MOUSELESS_MODIFIER_MASK);
 
-  protected static final boolean useScreenMenuBar() {
-    // Ideally we'd install a menu and check where it ended up, since the
+  protected static boolean useScreenMenuBar() {
+    // Ideally, we'd install a menu and check where it ended up, since the
     // property is read once at startup and ignored thereafter.
     return Platform.isOSX()
         && (Boolean.getBoolean("com.apple.macos.useScreenMenuBar")
@@ -135,8 +131,7 @@ public class Robot implements AWTConstants {
   private static int eventPostDelay =
       Properties.getProperty("abbot.robot.event_post_delay", 100, 0, 1000);
 
-  protected static long IDLE_TIMEOUT =
-      Integer.getInteger("abbot.robot.idle_timeout", 10000).intValue();
+  protected static long IDLE_TIMEOUT = Integer.getInteger("abbot.robot.idle_timeout", 10000);
 
   /**
    * Delay before failing to find a popup menu that should appear.
@@ -284,8 +279,6 @@ public class Robot implements AWTConstants {
     if (eventMode == EM_ROBOT) {
       Log.debug("ROBOT: Mouse move: (" + x + "," + y + ")");
       robot.mouseMove(x, y);
-    } else {
-      // Can't stuff an AWT event for an arbitrary location
     }
   }
 
@@ -306,7 +299,7 @@ public class Robot implements AWTConstants {
   }
 
   public void mouseRelease() {
-    mouseRelease(MouseEvent.BUTTON1_MASK);
+    mouseRelease(MouseEvent.BUTTON1_DOWN_MASK);
   }
 
   public void mouseRelease(int buttons) {
@@ -342,7 +335,7 @@ public class Robot implements AWTConstants {
   /**
    * Use an explicit listener, since hasFocus is not always reliable.
    */
-  private class FocusWatcher extends FocusAdapter {
+  private static class FocusWatcher extends FocusAdapter {
 
     public volatile boolean focused = false;
 
@@ -382,14 +375,7 @@ public class Robot implements AWTConstants {
     // NOTE: while it would be nice to have a robot method instead of
     // requesting focus, clicking to change focus may have
     // side effects
-    invokeAndWait(
-        comp,
-        new Runnable() {
-          @Override
-          public void run() {
-            comp.requestFocus();
-          }
-        });
+    invokeAndWait(comp, comp::requestFocus);
     try {
       if (wait) {
         long start = System.currentTimeMillis();
@@ -462,7 +448,7 @@ public class Robot implements AWTConstants {
         mods |= AWT.keyCodeToMask(keycode);
       }
       postKeyEvent(KeyEvent.KEY_PRESSED, mods, keycode, KeyEvent.CHAR_UNDEFINED);
-      // Auto-generate KEY_TYPED events, as best we can
+      // Auto-generate KEY_TYPED events as best we can
       int mask = state.getModifiers();
       if (keyChar == KeyEvent.CHAR_UNDEFINED) {
         KeyStroke ks = KeyStroke.getKeyStroke(keycode, mask);
@@ -521,15 +507,12 @@ public class Robot implements AWTConstants {
       try {
         Thread.sleep(ms);
       } catch (InterruptedException ie) {
+        // ignore
       }
     }
   }
 
-  private static final Runnable EMPTY_RUNNABLE =
-      new Runnable() {
-        @Override
-        public void run() {}
-      };
+  private static final Runnable EMPTY_RUNNABLE = () -> {};
 
   /**
    * Check for a blocked event queue (symptomatic of an active w32 AWT popup menu).
@@ -537,14 +520,13 @@ public class Robot implements AWTConstants {
    * @return whether the event queue is blocked.
    */
   protected boolean queueBlocked() {
-    return postInvocationEvent(toolkit.getSystemEventQueue(), toolkit, 200);
+    return postInvocationEvent(toolkit.getSystemEventQueue(), 200);
   }
 
-  protected boolean postInvocationEvent(EventQueue eq, Toolkit toolkit, long timeout) {
-    class RobotIdleLock {}
+  protected boolean postInvocationEvent(EventQueue eq, long timeout) {
     Object lock = new RobotIdleLock();
     synchronized (lock) {
-      eq.postEvent(new InvocationEvent(toolkit, EMPTY_RUNNABLE, lock, true));
+      eq.postEvent(new InvocationEvent(Robot.toolkit, EMPTY_RUNNABLE, lock, true));
       long start = System.currentTimeMillis();
       try {
         // NOTE: on fast linux systems when showing a dialog, if we
@@ -566,7 +548,7 @@ public class Robot implements AWTConstants {
 
     // NOTE: as of Java 1.3.1, robot.waitForIdle only waits for the
     // last event on the queue at the time of this invocation to be
-    // processed.  We need better than that.  Make sure the given event
+    // processed. We need it better than that. Make sure the given event
     // queue is empty when this method returns
 
     // We always post at least one idle event to allow any current event
@@ -574,7 +556,7 @@ public class Robot implements AWTConstants {
     long start = System.currentTimeMillis();
     int count = 0;
     do {
-      if (postInvocationEvent(eq, toolkit, IDLE_TIMEOUT)) {
+      if (postInvocationEvent(eq, IDLE_TIMEOUT)) {
         Log.warn(
             "Timed out waiting for posted invocation event: "
                 + IDLE_TIMEOUT
@@ -591,7 +573,7 @@ public class Robot implements AWTConstants {
 
       ++count;
 
-      // NOTE: this does not detect invocation events (i.e. what
+      // NOTE: this does not detect invocation events (e.g., what
       // gets posted with EventQueue.invokeLater), so if someone
       // is repeatedly posting one, we might get stuck.  Not too
       // worried, since if a Runnable keeps calling invokeLater
@@ -686,7 +668,7 @@ public class Robot implements AWTConstants {
    * Wait the given number of ms for the component to be showing and ready.  Returns false if the
    * operation times out.
    */
-  private boolean waitForComponent(Component c, long delay) {
+  private boolean notWaitForComponent(Component c, long delay) {
     if (!isReadyForInput(c)) {
       Log.debug("Waiting for component to show");
       long start = System.currentTimeMillis();
@@ -713,12 +695,12 @@ public class Robot implements AWTConstants {
                   + c.isShowing()
                   + " win ready="
                   + tracker.isWindowReady(AWT.getWindow(c)));
-          return false;
+          return true;
         }
         sleep();
       }
     }
-    return true;
+    return false;
   }
 
   /**
@@ -736,7 +718,7 @@ public class Robot implements AWTConstants {
   }
 
   public void mouseMove(Component comp, int x, int y) {
-    if (!waitForComponent(comp, componentDelay)) {
+    if (notWaitForComponent(comp, componentDelay)) {
       String msg = "Can't obtain position of component " + toString(comp);
       throw new ComponentNotShowingException(msg);
     }
@@ -841,7 +823,7 @@ public class Robot implements AWTConstants {
   }
 
   public void drop(Component target, int x, int y) {
-    // Delay between final move and drop to ensure drop ends.
+    // Delay between final move and drop to ensure the drop ends.
     int DROP_DELAY =
         Properties.getProperty("abbot.robot.drop_delay", Platform.isWindows() ? 200 : 0, 0, 60000);
 
@@ -1003,8 +985,8 @@ public class Robot implements AWTConstants {
 
   public void keyString(String str) {
     char[] ch = str.toCharArray();
-    for (int i = 0; i < ch.length; i++) {
-      keyStroke(ch[i]);
+    for (char c : ch) {
+      keyStroke(c);
     }
   }
 
@@ -1195,14 +1177,7 @@ public class Robot implements AWTConstants {
 
   protected void fireAccessibleAction(Component context, AccessibleAction action, String name) {
     if (action != null && action.getAccessibleActionCount() > 0) {
-      invokeLater(
-          context,
-          new Runnable() {
-            @Override
-            public void run() {
-              action.doAccessibleAction(0);
-            }
-          });
+      invokeLater(context, () -> action.doAccessibleAction(0));
     } else {
       String msg = Strings.get("tester.Robot.no_accessible_action", new String[] {name});
       throw new ActionFailedException(msg);
@@ -1282,7 +1257,7 @@ public class Robot implements AWTConstants {
       return;
     }
 
-    // If our parent is a menu, activate it first, if it's not already.
+    // If our parent is a menu, activate it first if it's not already.
     if (parent instanceof javax.swing.JMenuItem) {
       if (parentPopup == null || !parentPopup.isShowing()) {
         Log.debug("Opening parent menu " + toString(parent));
@@ -1296,14 +1271,7 @@ public class Robot implements AWTConstants {
       if (win != null) {
         // Make sure the window is in front, or its menus may be
         // obscured by another window.
-        invokeAndWait(
-            win,
-            new Runnable() {
-              @Override
-              public void run() {
-                win.toFront();
-              }
-            });
+        invokeAndWait(win, win::toFront);
         mouseMove(win);
       }
     }
@@ -1325,14 +1293,14 @@ public class Robot implements AWTConstants {
     // return
     if (isMenu) {
       JPopupMenu popup = ((javax.swing.JMenu) item).getPopupMenu();
-      if (!waitForComponent(popup, popupDelay)) {
+      if (notWaitForComponent(popup, popupDelay)) {
         String msg =
             "Clicking on '"
                 + ((javax.swing.JMenu) item).getText()
                 + "' never produced a popup menu";
         throw new ComponentMissingException(msg);
       }
-      // for OSX 1.4.1; isShowing set before popup is available
+      // for OSX 1.4.1; isShowing set before the popup is available
       if (subMenuDelay > autoDelay) {
         delay(subMenuDelay - autoDelay);
       }
@@ -1392,15 +1360,8 @@ public class Robot implements AWTConstants {
   }
 
   public void activate(Window win) {
-    // ACTIVATE means window gets keyboard focus.
-    invokeAndWait(
-        win,
-        new Runnable() {
-          @Override
-          public void run() {
-            win.toFront();
-          }
-        });
+    // ACTIVATE means a window gets keyboard focus.
+    invokeAndWait(win, win::toFront);
     // For pointer-focus systems
     mouseMove(win);
   }
@@ -1425,13 +1386,6 @@ public class Robot implements AWTConstants {
       } catch (Exception e) {
         // ignore
       }
-      WindowEvent ev = new WindowEvent(w, WindowEvent.WINDOW_CLOSING);
-      // If the window contains an applet, send the event on the
-      // applet's queue instead to ensure a shutdown from the
-      // applet's context (assists AppletViewer cleanup).
-      Component applet = AWT.findAppletDescendent(w);
-      EventQueue eq = tracker.getQueue(applet != null ? applet : w);
-      eq.postEvent(ev);
     }
   }
 
@@ -1454,14 +1408,7 @@ public class Robot implements AWTConstants {
       mouseMove(comp, p.x, p.y);
       mouseMove(comp, p.x + dx, p.y + dy);
     }
-    invokeAndWait(
-        comp,
-        new Runnable() {
-          @Override
-          public void run() {
-            comp.setLocation(new Point(loc.x + dx, loc.y + dy));
-          }
-        });
+    invokeAndWait(comp, () -> comp.setLocation(new Point(loc.x + dx, loc.y + dy)));
     if (userMovable) {
       Point p = getMoveLocation(comp);
       mouseMove(comp, p.x, p.y);
@@ -1502,14 +1449,7 @@ public class Robot implements AWTConstants {
       mouseMove(comp, p.x, p.y);
       mouseMove(comp, p.x + dx, p.y + dy);
     }
-    invokeAndWait(
-        comp,
-        new Runnable() {
-          @Override
-          public void run() {
-            comp.setSize(comp.getWidth() + dx, comp.getHeight() + dy);
-          }
-        });
+    invokeAndWait(comp, () -> comp.setSize(comp.getWidth() + dx, comp.getHeight() + dy));
     if (userResizable) {
       Point p = getResizeLocation(comp);
       mouseMove(comp, p.x, p.y);
@@ -1520,7 +1460,7 @@ public class Robot implements AWTConstants {
     Dimension size = c.getSize();
     Insets insets = c.getInsets();
     // We know the exact layout of the window manager frames for w32 and
-    // OSX.  Currently no way of detecting the WM under X11.  Maybe we
+    // OSX. Currently, no way of detecting the WM under X11.  Maybe we
     // could send a WM message (WM_ICONIFY)?
     Point loc = new Point();
     loc.y = insets.top / 2;
@@ -1547,14 +1487,7 @@ public class Robot implements AWTConstants {
     if (loc != null) {
       mouseMove(frame, loc.x, loc.y);
     }
-    invokeLater(
-        frame,
-        new Runnable() {
-          @Override
-          public void run() {
-            frame.setState(Frame.ICONIFIED);
-          }
-        });
+    invokeLater(frame, () -> frame.setState(Frame.ICONIFIED));
   }
 
   public void deiconify(Frame frame) {
@@ -1564,13 +1497,10 @@ public class Robot implements AWTConstants {
   public void normalize(Frame frame) {
     invokeLater(
         frame,
-        new Runnable() {
-          @Override
-          public void run() {
-            frame.setState(Frame.NORMAL);
-            if (Bugs.hasFrameDeiconifyBug()) {
-              frame.setVisible(true);
-            }
+        () -> {
+          frame.setState(Frame.NORMAL);
+          if (Bugs.hasFrameDeiconifyBug()) {
+            frame.setVisible(true);
           }
         });
   }
@@ -1582,31 +1512,25 @@ public class Robot implements AWTConstants {
     }
     invokeLater(
         frame,
-        new Runnable() {
-          @Override
-          public void run() {
-            // If the maximize is unavailable, set to full screen size
-            // instead.
-            try {
-              final int MAXIMIZED_BOTH = 6;
-              Boolean b =
-                  (Boolean)
-                      Toolkit.class
-                          .getMethod("isFrameStateSupported", int.class)
-                          .invoke(toolkit, new Object[] {new Integer(MAXIMIZED_BOTH)});
-              if (b.booleanValue() && !serviceMode) {
-                Frame.class
-                    .getMethod("setExtendedState", int.class)
-                    .invoke(frame, new Integer(MAXIMIZED_BOTH));
-              } else {
-                throw new RuntimeException("Platform won't maximize");
-              }
-            } catch (Exception e) {
-              Log.debug("Maximize not supported: " + e);
-              Rectangle rect = frame.getGraphicsConfiguration().getBounds();
-              frame.setLocation(rect.x, rect.y);
-              frame.setSize(rect.width, rect.height);
+        () -> {
+          // If maximize is unavailable, set to full-screen size instead.
+          try {
+            final int MAXIMIZED_BOTH = 6;
+            Boolean b =
+                (Boolean)
+                    Toolkit.class
+                        .getMethod("isFrameStateSupported", int.class)
+                        .invoke(toolkit, new Object[] {MAXIMIZED_BOTH});
+            if (b && !serviceMode) {
+              Frame.class.getMethod("setExtendedState", int.class).invoke(frame, MAXIMIZED_BOTH);
+            } else {
+              throw new RuntimeException("Platform won't maximize");
             }
+          } catch (Exception e) {
+            Log.debug("Maximize not supported: " + e);
+            Rectangle rect = frame.getGraphicsConfiguration().getBounds();
+            frame.setLocation(rect.x, rect.y);
+            frame.setSize(rect.width, rect.height);
           }
         });
   }
@@ -1653,79 +1577,47 @@ public class Robot implements AWTConstants {
 
   public static String getEventID(AWTEvent event) {
     // Optimize here to avoid field name lookup overhead
-    switch (event.getID()) {
-      case MouseEvent.MOUSE_MOVED:
-        return "MOUSE_MOVED";
-      case MouseEvent.MOUSE_DRAGGED:
-        return "MOUSE_DRAGGED";
-      case MouseEvent.MOUSE_PRESSED:
-        return "MOUSE_PRESSED";
-      case MouseEvent.MOUSE_CLICKED:
-        return "MOUSE_CLICKED";
-      case MouseEvent.MOUSE_RELEASED:
-        return "MOUSE_RELEASED";
-      case MouseEvent.MOUSE_ENTERED:
-        return "MOUSE_ENTERED";
-      case MouseEvent.MOUSE_EXITED:
-        return "MOUSE_EXITED";
-      case KeyEvent.KEY_PRESSED:
-        return "KEY_PRESSED";
-      case KeyEvent.KEY_TYPED:
-        return "KEY_TYPED";
-      case KeyEvent.KEY_RELEASED:
-        return "KEY_RELEASED";
-      case WindowEvent.WINDOW_OPENED:
-        return "WINDOW_OPENED";
-      case WindowEvent.WINDOW_CLOSING:
-        return "WINDOW_CLOSING";
-      case WindowEvent.WINDOW_CLOSED:
-        return "WINDOW_CLOSED";
-      case WindowEvent.WINDOW_ICONIFIED:
-        return "WINDOW_ICONIFIED";
-      case WindowEvent.WINDOW_DEICONIFIED:
-        return "WINDOW_DEICONIFIED";
-      case WindowEvent.WINDOW_ACTIVATED:
-        return "WINDOW_ACTIVATED";
-      case WindowEvent.WINDOW_DEACTIVATED:
-        return "WINDOW_DEACTIVATED";
-      case ComponentEvent.COMPONENT_MOVED:
-        return "COMPONENT_MOVED";
-      case ComponentEvent.COMPONENT_RESIZED:
-        return "COMPONENT_RESIZED";
-      case ComponentEvent.COMPONENT_SHOWN:
-        return "COMPONENT_SHOWN";
-      case ComponentEvent.COMPONENT_HIDDEN:
-        return "COMPONENT_HIDDEN";
-      case FocusEvent.FOCUS_GAINED:
-        return "FOCUS_GAINED";
-      case FocusEvent.FOCUS_LOST:
-        return "FOCUS_LOST";
-      case HierarchyEvent.HIERARCHY_CHANGED:
-        return "HIERARCHY_CHANGED";
-      case HierarchyEvent.ANCESTOR_MOVED:
-        return "ANCESTOR_MOVED";
-      case HierarchyEvent.ANCESTOR_RESIZED:
-        return "ANCESTOR_RESIZED";
-      case PaintEvent.PAINT:
-        return "PAINT";
-      case PaintEvent.UPDATE:
-        return "UPDATE";
-      case ActionEvent.ACTION_PERFORMED:
-        return "ACTION_PERFORMED";
-      case InputMethodEvent.CARET_POSITION_CHANGED:
-        return "CARET_POSITION_CHANGED";
-      case InputMethodEvent.INPUT_METHOD_TEXT_CHANGED:
-        return "INPUT_METHOD_TEXT_CHANGED";
-      default:
-        return Reflector.getFieldName(event.getClass(), event.getID(), "");
-    }
+    return switch (event.getID()) {
+      case MouseEvent.MOUSE_MOVED -> "MOUSE_MOVED";
+      case MouseEvent.MOUSE_DRAGGED -> "MOUSE_DRAGGED";
+      case MouseEvent.MOUSE_PRESSED -> "MOUSE_PRESSED";
+      case MouseEvent.MOUSE_CLICKED -> "MOUSE_CLICKED";
+      case MouseEvent.MOUSE_RELEASED -> "MOUSE_RELEASED";
+      case MouseEvent.MOUSE_ENTERED -> "MOUSE_ENTERED";
+      case MouseEvent.MOUSE_EXITED -> "MOUSE_EXITED";
+      case KeyEvent.KEY_PRESSED -> "KEY_PRESSED";
+      case KeyEvent.KEY_TYPED -> "KEY_TYPED";
+      case KeyEvent.KEY_RELEASED -> "KEY_RELEASED";
+      case WindowEvent.WINDOW_OPENED -> "WINDOW_OPENED";
+      case WindowEvent.WINDOW_CLOSING -> "WINDOW_CLOSING";
+      case WindowEvent.WINDOW_CLOSED -> "WINDOW_CLOSED";
+      case WindowEvent.WINDOW_ICONIFIED -> "WINDOW_ICONIFIED";
+      case WindowEvent.WINDOW_DEICONIFIED -> "WINDOW_DEICONIFIED";
+      case WindowEvent.WINDOW_ACTIVATED -> "WINDOW_ACTIVATED";
+      case WindowEvent.WINDOW_DEACTIVATED -> "WINDOW_DEACTIVATED";
+      case ComponentEvent.COMPONENT_MOVED -> "COMPONENT_MOVED";
+      case ComponentEvent.COMPONENT_RESIZED -> "COMPONENT_RESIZED";
+      case ComponentEvent.COMPONENT_SHOWN -> "COMPONENT_SHOWN";
+      case ComponentEvent.COMPONENT_HIDDEN -> "COMPONENT_HIDDEN";
+      case FocusEvent.FOCUS_GAINED -> "FOCUS_GAINED";
+      case FocusEvent.FOCUS_LOST -> "FOCUS_LOST";
+      case HierarchyEvent.HIERARCHY_CHANGED -> "HIERARCHY_CHANGED";
+      case HierarchyEvent.ANCESTOR_MOVED -> "ANCESTOR_MOVED";
+      case HierarchyEvent.ANCESTOR_RESIZED -> "ANCESTOR_RESIZED";
+      case PaintEvent.PAINT -> "PAINT";
+      case PaintEvent.UPDATE -> "UPDATE";
+      case ActionEvent.ACTION_PERFORMED -> "ACTION_PERFORMED";
+      case InputMethodEvent.CARET_POSITION_CHANGED -> "CARET_POSITION_CHANGED";
+      case InputMethodEvent.INPUT_METHOD_TEXT_CHANGED -> "INPUT_METHOD_TEXT_CHANGED";
+      default -> Reflector.getFieldName(event.getClass(), event.getID(), "");
+    };
   }
 
   public static Class<?> getCanonicalClass(Class<?> refClass) {
     // Don't use classnames from anonymous inner classes...
     // Don't use classnames from platform LAF classes...
     String className = refClass.getName();
-    while (className.indexOf("$") != -1
+    while (className.contains("$")
         || className.startsWith("javax.swing.plaf")
         || className.startsWith("com.apple.mrj")) {
       refClass = refClass.getSuperclass();
@@ -1785,12 +1677,10 @@ public class Robot implements AWTConstants {
   }
 
   protected static String descriptiveClassName(Class cls) {
-    StringBuffer desc = new StringBuffer(simpleClassName(cls));
-    Class coreClass = getCanonicalClass(cls);
+    StringBuilder desc = new StringBuilder(simpleClassName(cls));
+    Class<?> coreClass = getCanonicalClass(cls);
     String coreClassName = coreClass.getName();
-    while (!coreClassName.startsWith("java.awt.")
-        && !coreClassName.startsWith("javax.swing.")
-        && !coreClassName.startsWith("java.applet.")) {
+    while (!coreClassName.startsWith("java.awt.") && !coreClassName.startsWith("javax.swing.")) {
       coreClass = coreClass.getSuperclass();
       coreClassName = coreClass.getName();
     }
@@ -1802,7 +1692,7 @@ public class Robot implements AWTConstants {
   }
 
   public static String toHierarchyPath(Component c) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     Container parent = c.getParent();
     if (parent != null) {
       buf.append(toHierarchyPath(parent));
@@ -1898,18 +1788,7 @@ public class Robot implements AWTConstants {
   }
 
   private static String getName(Component c) {
-    String name = AWT.hasDefaultName(c) ? null : c.getName();
-    // Accessibility behaves like what we used to do with getTag.
-    // Not too helpful for our purposes, especially when the
-    // data on which the name is based might be dynamic.
-    /*
-    if (name == null) {
-        AccessibleContext context = c.getAccessibleContext();
-        if (context != null)
-            name = context.getAccessibleName();
-    }
-    */
-    return name;
+    return AWT.hasDefaultName(c) ? null : c.getName();
   }
 
   private static String getTitle(Component c) {
@@ -1999,8 +1878,8 @@ public class Robot implements AWTConstants {
     if (eventMode == EM_AWT && AWT.isAWTPopupMenuBlocking()) {
       throw new Error("Event queue is blocked by an active AWT PopupMenu");
     }
-    // Force an update of the input state, so that we're in synch
-    // internally.  Otherwise we might post more events before this
+    // Force an update of the input state so that we're in synch
+    // internally. Otherwise, we might post more events before this
     // one gets processed and end up using stale values for those events.
     state.update(ev);
     EventQueue q = getEventQueue(comp);
@@ -2109,4 +1988,6 @@ public class Robot implements AWTConstants {
     }
     return 50;
   }
+
+  private static class RobotIdleLock {}
 }

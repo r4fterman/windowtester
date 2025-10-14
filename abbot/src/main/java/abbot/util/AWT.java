@@ -13,7 +13,6 @@ import abbot.finder.matchers.ClassMatcher;
 import abbot.tester.AWTConstants;
 import abbot.tester.Robot;
 import com.windowtester.runtime.util.StringComparator;
-import java.applet.Applet;
 import java.awt.AWTEvent;
 import java.awt.Button;
 import java.awt.Canvas;
@@ -84,6 +83,7 @@ public class AWT {
       try {
         POPUP_TIMEOUT = Integer.parseInt(to);
       } catch (Exception e) {
+        // ignore
       }
     }
   }
@@ -123,8 +123,8 @@ public class AWT {
   }
 
   /**
-   * Ensure the given action happens on the event dispatch thread.  Any component modifications must be invoked this
-   * way.
+   * Ensure the given action happens on the event dispatch thread.  Any component modifications must
+   * be invoked this way.
    */
   public static void invokeAndWait(Runnable action) {
     if (EventQueue.isDispatchThread()) {
@@ -139,8 +139,8 @@ public class AWT {
   }
 
   /**
-   * Ensure the given action happens on the event dispatch thread.  Any component modifications must be invoked this
-   * way.  Note that this is
+   * Ensure the given action happens on the event dispatch thread.  Any component modifications must
+   * be invoked this way.  Note that this is
    * <b>not</b> the same as EventQueue.invokeLater, since if the current
    * thread is the dispatch thread, the action is invoked immediately.
    */
@@ -181,8 +181,7 @@ public class AWT {
       }
     } else if (root instanceof MenuItem) {
       if (((MenuItem) root).isEnabled()) {
-        if (root instanceof Menu) {
-          Menu menu = (Menu) root;
+        if (root instanceof Menu menu) {
           for (int i = 0; i < menu.getItemCount(); i++) {
             disable(menu.getItem(i), list);
           }
@@ -197,33 +196,26 @@ public class AWT {
   /**
    * Restore the enabled state.
    */
-  public static void reenableHierarchy(final List<Object> enabled) {
+  public static void reEnableHierarchy(final List<Object> enabled) {
     invokeAndWait(
-        new Runnable() {
-          public void run() {
-            for (Object o : enabled) {
-              if (o instanceof Component) {
-                ((Component) o).setEnabled(true);
-              } else if (o instanceof MenuItem) {
-                ((MenuItem) o).setEnabled(true);
-              }
+        () -> {
+          for (Object o : enabled) {
+            if (o instanceof Component) {
+              ((Component) o).setEnabled(true);
+            } else if (o instanceof MenuItem) {
+              ((MenuItem) o).setEnabled(true);
             }
           }
         });
   }
 
   /**
-   * Disable a component hierarchy starting at the given component. Returns a list of all components which used to be
-   * enabled, for use with reenableHierarchy.
+   * Disable a component hierarchy starting at the given component. Returns a list of all components
+   * that used to be enabled, for use with {@link #reEnableHierarchy(List).
    */
   public static List<Object> disableHierarchy(final Component root) {
     final List<Object> list = new ArrayList<>();
-    invokeAndWait(
-        new Runnable() {
-          public void run() {
-            disable(root, list);
-          }
-        });
+    invokeAndWait(() -> disable(root, list));
     return list;
   }
 
@@ -238,8 +230,8 @@ public class AWT {
   }
 
   /**
-   * Returns the invoker, if any, of the given AWT menu component.  Returns null if the menu component is not attached
-   * to anything, or if it is within a MenuBar hierarchy.
+   * Returns the invoker, if any, of the given AWT menu component. Returns null if the menu
+   * component is not attached to anything or if it is within a MenuBar hierarchy.
    */
   public static Component getInvoker(MenuComponent mc) {
     if (isOnMenuBar(mc)) {
@@ -253,34 +245,42 @@ public class AWT {
   }
 
   /**
-   * Returns the invoker, if any, of the given component.  Returns null if the component is not on a popup of any
-   * sort.
+   * Returns the invoker, if any, of the given component.  Returns null if the component is not on a
+   * popup of any sort.
    */
   public static Component getInvoker(Component comp) {
     if (comp instanceof JPopupMenu) {
       return ((JPopupMenu) comp).getInvoker();
     }
+
     comp = comp.getParent();
-    return comp != null ? getInvoker(comp) : null;
+    if (comp != null) {
+      return getInvoker(comp);
+    }
+    return null;
   }
 
   /**
-   * Similar to SwingUtilities.getWindowAncestor(), but returns the component itself if it is a Window, or the
-   * invoker's window if on a popup.
+   * Similar to SwingUtilities.getWindowAncestor(), but returns the component itself if it is a
+   * Window, or the invoker's window if on a popup.
    */
   public static Window getWindow(Component comp) {
-    if (comp == null) {
-      return null;
-    }
-    if (comp instanceof Window) {
-      return (Window) comp;
-    }
-    if (comp instanceof MenuElement) {
-      Component invoker = getInvoker(comp);
-      if (invoker != null) {
-        return getWindow(invoker);
+    switch (comp) {
+      case null -> {
+        return null;
       }
+      case Window window -> {
+        return window;
+      }
+      case MenuElement menuElement -> {
+        Component invoker = getInvoker(comp);
+        if (invoker != null) {
+          return getWindow(invoker);
+        }
+      }
+      default -> {}
     }
+
     return getWindow(hierarchy.getParent(comp));
   }
 
@@ -319,12 +319,12 @@ public class AWT {
     // If it can't get the tree lock, then there is a popup active in the
     // current tree.
     // Any component can provide the tree lock
-    ThreadStateChecker checker = new ThreadStateChecker(frames[0].getTreeLock());
+    ThreadStateChecker checker = new ThreadStateChecker();
     try {
       synchronized (checker) {
         checker.start();
         if (!checker.started) {
-          // avoid failure under heavy load
+          // avoid failure under heavy-load
           checker.wait(30000);
           if (!checker.started) {
             throw new Error("Popup checking thread never started");
@@ -358,7 +358,8 @@ public class AWT {
   }
 
   /**
-   * Returns whether the given MenuComponent is on a top-level AWT popup (that is, <i>not</i> under a MenuBar.
+   * Returns whether the given MenuComponent is on a top-level AWT popup that is, <i>not</i> under
+   * a MenuBar.
    */
   public static boolean isOnPopup(MenuComponent mc) {
     MenuContainer parent = mc.getParent();
@@ -372,8 +373,8 @@ public class AWT {
   }
 
   /**
-   * Returns whether the given component is on a top-level popup.  A top-level popup is one generated by a popup
-   * trigger, which means popups generated from a JMenu are not included.
+   * Returns whether the given component is on a top-level popup.  A top-level popup is one
+   * generated by a popup trigger, which means popups generated from a JMenu are not included.
    */
   public static boolean isOnPopup(Component comp) {
     boolean isWrapper = isTransientPopup(comp);
@@ -383,8 +384,8 @@ public class AWT {
   }
 
   /**
-   * Returns whether the given component is a heavyweight popup, that is, a container for a JPopupMenu that is
-   * implemented with a heavyweight component (usually a Window).
+   * Returns whether the given component is a heavyweight popup, that is, a container for a
+   * JPopupMenu that is implemented with a heavyweight component (usually a Window).
    */
   public static boolean isHeavyweightPopup(Component c) {
     if (c instanceof Window && !(c instanceof Dialog) && !(c instanceof Frame)) {
@@ -392,10 +393,7 @@ public class AWT {
       String cname = c.getClass().getName();
       return ("###overrideRedirect###".equals(name)
           || "###focusableSwingPopup###".equals(name)
-          // These classes are known to be heavyweight popups
-          // javax.swing.DefaultPopupFactory$WindowPopup (1.3)
           || cname.contains("PopupFactory$WindowPopup")
-          // javax.swing.Popup.HeavyWeightWindow (1.4)
           || cname.contains("HeavyWeightWindow"));
     }
     return false;
@@ -413,16 +411,16 @@ public class AWT {
   }
 
   /**
-   * Returns whether the given component is a lightweight popup, that is, a container for a JPopupMenu that is
-   * implemented with a lightweight component (usually JPanel).
+   * Returns whether the given component is a lightweight popup, that is, a container for a
+   * JPopupMenu that is implemented with a lightweight component (usually JPanel).
    */
   public static boolean isLightweightPopup(Component c) {
-    if (c instanceof JPanel) {
+    if (c instanceof JPanel panel) {
       Window w = SwingUtilities.getWindowAncestor(c);
       if (isHeavyweightPopup(w)) {
         return false;
       }
-      JPanel panel = (JPanel) c;
+
       Container parent = panel.getParent();
       if (parent instanceof JLayeredPane) {
         int layer = JLayeredPane.POPUP_LAYER;
@@ -440,15 +438,13 @@ public class AWT {
    *
    * @see javax.swing.RootPaneContainer#getContentPane
    */
-  public static boolean isContentPane(Component c) {
-    if (c.getParent() instanceof JLayeredPane) {
-      JLayeredPane p = (JLayeredPane) c.getParent();
-      if (p.getParent() instanceof JRootPane) {
-        return ((JRootPane) p.getParent()).getContentPane() == c;
-      } else {
-        int layer = JLayeredPane.FRAME_CONTENT_LAYER;
-        return p.getLayer(c) == layer && !(c instanceof JMenuBar);
+  public static boolean isContentPane(Component comp) {
+    if (comp.getParent() instanceof JLayeredPane parent) {
+      if (parent.getParent() instanceof JRootPane) {
+        return ((JRootPane) parent.getParent()).getContentPane() == comp;
       }
+      int layer = JLayeredPane.FRAME_CONTENT_LAYER;
+      return parent.getLayer(comp) == layer && !(comp instanceof JMenuBar);
     }
     return false;
   }
@@ -458,10 +454,9 @@ public class AWT {
    *
    * @see javax.swing.JRootPane#getGlassPane
    */
-  public static boolean isGlassPane(Component c) {
-    if (c.getParent() instanceof JRootPane) {
-      JRootPane p = (JRootPane) c.getParent();
-      return p.getGlassPane() == c;
+  public static boolean isGlassPane(Component comp) {
+    if (comp.getParent() instanceof JRootPane parent) {
+      return parent.getGlassPane() == comp;
     }
     return false;
   }
@@ -469,16 +464,16 @@ public class AWT {
   /**
    * Return whether the given component is part of the transient wrapper around a popup.
    */
-  public static boolean isTransientPopup(Component c) {
-    return isLightweightPopup(c) || isHeavyweightPopup(c);
+  public static boolean isTransientPopup(Component comp) {
+    return isLightweightPopup(comp) || isHeavyweightPopup(comp);
   }
 
-  private static boolean containsToolTip(Component c) {
-    if (c instanceof JToolTip) {
+  private static boolean containsToolTip(Component comp) {
+    if (comp instanceof JToolTip) {
       return true;
     }
-    if (c instanceof Container) {
-      Component[] kids = ((Container) c).getComponents();
+    if (comp instanceof Container container) {
+      Component[] kids = container.getComponents();
       for (Component kid : kids) {
         if (containsToolTip(kid)) {
           return true;
@@ -491,16 +486,16 @@ public class AWT {
   /**
    * Return whether the given component is part of the transient wrapper around a tooltip.
    */
-  public static boolean isToolTip(Component c) {
-    return isTransientPopup(c) && containsToolTip(c);
+  public static boolean isToolTip(Component comp) {
+    return isTransientPopup(comp) && containsToolTip(comp);
   }
 
   /**
    * Return whether the given component is part of an internal frame's LAF decoration.
    */
-  public static boolean isInternalFrameDecoration(Component c) {
-    Component parent = c.getParent();
-    return (parent instanceof JInternalFrame && !(c instanceof JRootPane))
+  public static boolean isInternalFrameDecoration(Component comp) {
+    Component parent = comp.getParent();
+    return (parent instanceof JInternalFrame && !(comp instanceof JRootPane))
         || (parent != null
             && (parent.getParent() instanceof JInternalFrame)
             && (!(parent instanceof JRootPane)));
@@ -541,27 +536,26 @@ public class AWT {
       Field field = Component.class.getDeclaredField("popups");
       boolean accessible = field.isAccessible();
       field.setAccessible(true);
-      Vector popups = (Vector) field.get(c);
+      Vector<?> popups = (Vector<?>) field.get(c);
       field.setAccessible(accessible);
       if (popups != null) {
-        return (PopupMenu[]) popups.toArray(new PopupMenu[0]);
+        return (PopupMenu[]) popups.toArray(new Object[0]);
       }
       return NO_POPUPS;
     } catch (NoSuchFieldException e) {
-      // not gonna happen
       throw new Error("No field named 'popups' in class Component");
     } catch (IllegalAccessException e) {
-      // neither should this
       throw new Error("Can't access popup for component " + c);
     }
   }
 
   /**
-   * Returns all MenuItems matching the given label or path which are on PopupMenus on the given Component.
+   * Returns all MenuItems matching the given label or path which are on PopupMenus on the given
+   * Component.
    */
   public static MenuItem[] findAWTPopupMenuItems(Component parent, String path) {
     PopupMenu[] popups = getPopupMenus(parent);
-    ArrayList<MenuItem> list = new ArrayList<>();
+    List<MenuItem> list = new ArrayList<>();
     for (PopupMenu popup : popups) {
       list.addAll(findMenuItems(popup, path, true));
     }
@@ -569,7 +563,8 @@ public class AWT {
   }
 
   /**
-   * Returns all MenuItems matching the given label or path which are found in the given Frame's MenuBar.
+   * Returns all MenuItems matching the given label or path which are found in the given Frame's
+   * MenuBar.
    */
   public static MenuItem[] findAWTMenuItems(Frame frame, String path) {
     MenuBar mb = frame.getMenuBar();
@@ -592,29 +587,12 @@ public class AWT {
   }
 
   /**
-   * Returns a unique path to the given MenuItem.  If on a PopupMenu, optionally include the PopupMenu name.
+   * Returns a unique path to the given MenuItem.  If on a PopupMenu, optionally include the
+   * PopupMenu name.
    */
   private static String getPath(MenuItem item, boolean includePopupName) {
     Component invoker = getInvoker(item);
-    MenuContainer root = invoker;
-    MenuContainer top;
-    if (invoker == null) {
-      // Find the top-most Menu above this MenuItem
-      top = item.getParent();
-      while (top instanceof Menu && !(((Menu) top).getParent() instanceof MenuBar)) {
-        top = ((Menu) top).getParent();
-      }
-      if (top == null) {
-        throw new RuntimeException("MenuItem is not attached to the hierarchy");
-      }
-      root = ((Menu) top).getParent();
-    } else {
-      // Find the containing PopupMenu
-      top = item.getParent();
-      while (top instanceof Menu && !(((Menu) top).getParent() instanceof Component)) {
-        top = ((Menu) top).getParent();
-      }
-    }
+    MenuContainer top = getMenuContainer(item, invoker);
 
     // Return a path to the item, starting at the first top level Menu
     String path = item.getLabel();
@@ -647,16 +625,38 @@ public class AWT {
     return path;
   }
 
+  private static MenuContainer getMenuContainer(MenuItem item, Component invoker) {
+    if (invoker == null) {
+      // Find the top-most Menu above this MenuItem
+      var top = item.getParent();
+      while (top instanceof Menu && !(((Menu) top).getParent() instanceof MenuBar)) {
+        top = ((Menu) top).getParent();
+      }
+      if (top == null) {
+        throw new RuntimeException("MenuItem is not attached to the hierarchy");
+      }
+      return top;
+    }
+
+    // Find the containing PopupMenu
+    var top = item.getParent();
+    while (top instanceof Menu && !(((Menu) top).getParent() instanceof Component)) {
+      top = ((Menu) top).getParent();
+    }
+    return top;
+  }
+
   /**
-   * Returns all AWT menu items found with the given label; if matchPath is set then the MenuItem path is examined as
-   * well as the label.
+   * Returns all AWT menu items found with the given label; if matchPath is set, then the MenuItem
+   * path is examined as well as the label.
    */
   private static Collection<MenuItem> findMenuItems(
       MenuContainer mc, String path, boolean matchPath) {
     if (matchPath) {
       Log.debug("Searching for '" + path + "' on '" + mc);
     }
-    ArrayList<MenuItem> list = new ArrayList<>();
+
+    List<MenuItem> list = new ArrayList<>();
     if (mc instanceof MenuBar) {
       for (int i = 0; i < ((MenuBar) mc).getMenuCount(); i++) {
         Menu menu = ((MenuBar) mc).getMenu(i);
@@ -687,8 +687,8 @@ public class AWT {
   }
 
   /**
-   * Return the focus owner under the given Window. As of 1.4.x, components will report that they do not have focus if
-   * asked from a different AppContext than their own.  Account for that here.
+   * Return the focus owner under the given Window. As of 1.4.x, components will report that they do
+   * not have focus if asked from a different AppContext than their own.  Account for that here.
    */
   public static Component getFocusOwner() {
     try {
@@ -729,23 +729,6 @@ public class AWT {
     return focus;
   }
 
-  // NOT Supported in Mac Java5+
-  //    /** For debugging purposes only. */
-  //    public static AppContext getAppContext(Component c) {
-  //        try {
-  //            Field field = Component.class.getDeclaredField("appContext");
-  //            boolean accessible = field.isAccessible();
-  //            field.setAccessible(true);
-  //            AppContext appContext = (AppContext)field.get(c);
-  //            field.setAccessible(accessible);
-  //            return appContext;
-  //        }
-  //        catch(Exception e) {
-  //            Log.warn(e);
-  //            return null;
-  //        }
-  //    }
-
   /**
    * WARNING: This uses 1.3/1.4 implementation details.
    */
@@ -761,8 +744,7 @@ public class AWT {
       AWTEvent ev = new AWTEvent(c, id) {};
       Method m = Component.class.getDeclaredMethod("eventEnabled", AWTEvent.class);
       m.setAccessible(true);
-      Boolean b = (Boolean) m.invoke(c, new Object[] {ev});
-      return b.booleanValue();
+      return (Boolean) m.invoke(c, new Object[] {ev});
     } catch (Exception e) {
       Log.warn(e);
       return true;
@@ -776,14 +758,11 @@ public class AWT {
     return c == JOptionPane.getRootFrame();
   }
 
-  public static boolean isAppletViewerFrame(Component c) {
-    return c.getClass().getName().equals("sun.applet.AppletViewer");
-  }
-
   private static final Matcher POPUP_MATCHER = new ClassMatcher(JPopupMenu.class, true);
 
   /**
-   * Returns the currently active popup menu, if any.  If no popup is currently showing, returns null.
+   * Returns the currently active popup menu, if any.  If no popup is currently showing returns
+   * null.
    */
   public static JPopupMenu getActivePopupMenu() {
     try {
@@ -794,8 +773,8 @@ public class AWT {
   }
 
   /**
-   * Find the currently active Swing popup menu, if any, waiting up to POPUP_TIMEOUT ms.  Returns null if no popup
-   * found.
+   * Find the currently active Swing popup menu, if any, waiting up to POPUP_TIMEOUT ms. Returns
+   * null if no popup found.
    */
   public static JPopupMenu findActivePopupMenu() {
     JPopupMenu popup = getActivePopupMenu();
@@ -808,6 +787,7 @@ public class AWT {
         try {
           Thread.sleep(100);
         } catch (Exception e) {
+          // ignore
         }
       }
     }
@@ -815,8 +795,9 @@ public class AWT {
   }
 
   /**
-   * Returns the location of the given components in screen coordinates. Avoids lockup if an AWT popup menu is
-   * showing, which means it holds the AWT tree lock, which Component.getLocationOnScreen requires.
+   * Returns the location of the given components in screen coordinates. Avoids lockup if an AWT
+   * popup menu is showing, which means it holds the AWT tree lock, which
+   * Component.getLocationOnScreen requires.
    */
   public static Point getLocationOnScreen(Component c) {
     if (isAWTTreeLockHeld()) {
@@ -835,17 +816,16 @@ public class AWT {
         loc.translate(ploc.x, ploc.y);
       }
       return loc;
-    } else {
-      return new Point(c.getLocationOnScreen());
     }
+    return new Point(c.getLocationOnScreen());
   }
 
   /**
-   * Return whether the given component is part of a transient dialog. This includes dialogs generated by
-   * JFileChooser, JOptionPane, JColorChooser, and ProgressMonitor.<p> Note that it is possible to use
-   * JOptionPane.createDialog to create a reusable dialog, so just because it's transient doesn't mean it will be
-   * disposed of when it is hidden.<p> Note that this won't detect transient Dialogs after their components have been
-   * reassigned to a new transient Dialog.
+   * Return whether the given component is part of a transient dialog. This includes dialogs
+   * generated by JFileChooser, JOptionPane, JColorChooser, and ProgressMonitor.<p> Note that it is
+   * possible to use JOptionPane.createDialog to create a reusable dialog, so just because it's
+   * transient doesn't mean it will be disposed of when it is hidden.<p> Note that this won't detect
+   * transient Dialogs after their components have been reassigned to a new transient Dialog.
    */
   public static boolean isTransientDialog(Component c) {
     if (c instanceof Window) {
@@ -869,19 +849,8 @@ public class AWT {
   }
 
   /**
-   * Returns the Applet descendent of the given Container, if any.
-   */
-  public static Applet findAppletDescendent(Container c) {
-    try {
-      return (Applet) BasicFinder.getDefault().find(c, new ClassMatcher(Applet.class));
-    } catch (ComponentSearchException e) {
-      return null;
-    }
-  }
-
-  /**
-   * Return whether this is the tertiary button, considering primary to be button1 and secondary to be the popup
-   * trigger button.
+   * Return whether this is the tertiary button, considering primary to be button1 and secondary to
+   * be the popup trigger button.
    */
   public static boolean isTertiaryButton(int mods) {
     return ((mods & AWTConstants.BUTTON_DOWN_MASK) != InputEvent.BUTTON1_DOWN_MASK)
@@ -914,7 +883,6 @@ public class AWT {
   }
 
   private static String getModifiers(int flags, boolean isMouse) {
-
     // On a mac, ALT+BUTTON1 means BUTTON2; META+BUTTON1 means BUTTON3
     int macModifiers =
         getDefaultToolkit().getMenuShortcutKeyMaskEx()
@@ -1035,13 +1003,12 @@ public class AWT {
 
   // Try to lock the AWT tree lock; returns immediately if it can
   private static class ThreadStateChecker extends Thread {
-    public boolean started;
-    private final Object lock;
 
-    public ThreadStateChecker(Object lock) {
+    private boolean started;
+
+    public ThreadStateChecker() {
       super("thread state checker");
       setDaemon(true);
-      this.lock = lock;
     }
 
     @Override
@@ -1049,8 +1016,6 @@ public class AWT {
       synchronized (this) {
         started = true;
         notifyAll();
-      }
-      synchronized (lock) {
       }
     }
   }

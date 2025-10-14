@@ -15,8 +15,7 @@ import javax.swing.SwingUtilities;
  * parent class loader gets a chance to look for the class (instead of the default behavior, which always delegates to
  * the parent class loader first).  This behavior enables the class to be reloaded simply by using a new instance of
  * this class loader with each launch of the app.<p> This class mimics the behavior of sun.misc.Launcher$AppClassLoader
- * as much as possible.<p> Bootstrap classes are always delegated to the bootstrap loader, with the exception of the
- * sun.applet package, which should never be delegated, since it does not work properly unless it is reloaded.<p> The
+ * as much as possible.<p> Bootstrap classes are always delegated to the bootstrap loader.<p> The
  * parent of this class loader will be the normal, default AppClassLoader (specifically, the class loader which loaded
  * this class will be used).
  */
@@ -38,11 +37,6 @@ public class AppClassLoader extends NonDelegatingClassLoader {
   private final NonDelegatingClassLoader extensionsLoader;
 
   /**
-   * Whether the framework itself is being tested.
-   */
-  private final boolean frameworkIsUnderTest = false;
-
-  /**
    * Old class loader context for the thread where this loader was installed.
    */
   private ClassLoader oldClassLoader = null;
@@ -50,7 +44,7 @@ public class AppClassLoader extends NonDelegatingClassLoader {
   private Thread installedThread = null;
   private String oldClassPath = null;
 
-  private class InstallationLock {}
+  private static class InstallationLock {}
 
   private final InstallationLock lock = new InstallationLock();
 
@@ -98,15 +92,9 @@ public class AppClassLoader extends NonDelegatingClassLoader {
 
   // FIXME we should only need the delegate flag if stuff in the classpath
   // is also found on the system classpath, e.g. the framework itself
-  // Maybe just set it internally in case the classpaths overlap?
+  // Maybe just set it internally in case the class paths overlap?
   protected boolean shouldDelegate(String name) {
-    return bootstrapLoader.shouldDelegate(name)
-        && !isExtension(name)
-        && !(frameworkIsUnderTest && isFrameworkClass(name));
-  }
-
-  private boolean isFrameworkClass(String name) {
-    return name.startsWith("abbot.") || name.startsWith("junit.extensions.abbot.");
+    return bootstrapLoader.shouldDelegate(name) && !isExtension(name);
   }
 
   private boolean isExtension(String name) {
@@ -123,14 +111,6 @@ public class AppClassLoader extends NonDelegatingClassLoader {
    * @throws ClassNotFoundException if the class could not be found
    */
   public Class findClass(String name) throws ClassNotFoundException {
-    if (isBootstrapClassRequiringReload(name)) {
-      try {
-        return bootstrapLoader.findClass(name);
-      } catch (ClassNotFoundException cnf) {
-        Log.warn(cnf);
-      }
-    }
-
     // Look for extensions first in the framework class path (with a
     // special loader), then in the app class path.
     // Extensions *must* have the same class loader as the corresponding
@@ -179,8 +159,7 @@ public class AppClassLoader extends NonDelegatingClassLoader {
     eventQueue = new AppEventQueue();
     eventQueue.install();
 
-    Thread current = Thread.currentThread();
-    installedThread = current;
+    installedThread = Thread.currentThread();
     oldClassLoader = installedThread.getContextClassLoader();
     installedThread.setContextClassLoader(this);
   }
@@ -248,6 +227,7 @@ public class AppClassLoader extends NonDelegatingClassLoader {
         pop();
         thread = null;
       } catch (EmptyStackException ese) {
+        // ignore
       }
       Log.debug("AppEventQueue uninstalled");
     }
@@ -258,29 +238,7 @@ public class AppClassLoader extends NonDelegatingClassLoader {
   }
 
   /**
-   * List of bootstrap classes we most definitely want to be loaded by this class loader, rather than any parent, or
-   * the bootstrap loader.
-   */
-  private final String[] mustReloadPrefixes = {
-    "sun.applet.", // need the whole package, not just AppletViewer/Main
-  };
-
-  /**
-   * Does the given class absolutely need to be preloaded?
-   */
-  private boolean isBootstrapClassRequiringReload(String name) {
-    for (int i = 0; i < mustReloadPrefixes.length; i++) {
-      if (name.startsWith(mustReloadPrefixes[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns the path to the primary JRE classes, not including any extensions.  This is primarily needed for loading
-   * sun.applet.AppletViewer/Main, since most other classes in the bootstrap path should <i>only</i> be loaded by the
-   * bootstrap loader.
+   * Returns the path to the primary JRE classes, not including any extensions.
    */
   private static String getBootstrapPath() {
     return System.getProperty("sun.boot.class.path");
@@ -289,17 +247,13 @@ public class AppClassLoader extends NonDelegatingClassLoader {
   /**
    * Provide access to bootstrap classes that we need to be able to reload.
    */
-  private class BootstrapClassLoader extends NonDelegatingClassLoader {
+  private static class BootstrapClassLoader extends NonDelegatingClassLoader {
     public BootstrapClassLoader() {
       super(getBootstrapPath(), null);
     }
 
     protected boolean shouldDelegate(String name) {
-      // Exclude all bootstrap classes, except for those we know we
-      // *must* be reloaded on each run in order to have function
-      // properly (e.g. applet)
-      return !isBootstrapClassRequiringReload(name)
-          && !"abbot.script.AppletSecurityManager".equals(name);
+      return true;
     }
   }
 

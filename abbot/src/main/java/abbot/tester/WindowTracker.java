@@ -37,6 +37,7 @@ import javax.swing.SwingUtilities;
 public class WindowTracker {
 
   private static class Holder {
+
     public static final WindowTracker INSTANCE = new WindowTracker();
   }
 
@@ -83,8 +84,8 @@ public class WindowTracker {
   }
 
   /**
-   * Create an instance of WindowTracker which will track all windows coming and going on the current and subsequent
-   * app contexts. WARNING: if an applet loads this class, it will only ever see stuff in its own app context.
+   * Create an instance of WindowTracker which will track all windows coming and going on the
+   * current and later app contexts.
    */
   WindowTracker() {
     ContextTracker contextTracker = new ContextTracker();
@@ -110,6 +111,7 @@ public class WindowTracker {
     try {
       robot = new java.awt.Robot();
     } catch (AWTException e) {
+      // ignore
     }
     windowReadyTimer = new NamedTimer("Window Ready Timer", true);
   }
@@ -129,9 +131,9 @@ public class WindowTracker {
   }
 
   /**
-   * Returns whether the window is ready to receive OS-level event input. A window's "isShowing" flag may be set true
-   * before the WINDOW_OPENED event is generated, and even after the WINDOW_OPENED is sent the window peer is not
-   * guaranteed to be ready.
+   * Returns whether the window is ready to receive OS-level event input. A window's "isShowing"
+   * flag may be set true before the WINDOW_OPENED event is generated, and even after the
+   * WINDOW_OPENED is sent the window peer is not guaranteed to be ready.
    */
   public boolean isWindowReady(Window w) {
     synchronized (openWindows) {
@@ -146,14 +148,13 @@ public class WindowTracker {
   }
 
   /**
-   * Return the event queue corresponding to the given component.  In most cases, this is the same as
-   * Component.getToolkit().getSystemEventQueue(), but in the case of applets will bypass the AppContext and provide
-   * the real event queue.
+   * Return the event queue corresponding to the given component. In most cases, this is the same as
+   * Component.getToolkit().getSystemEventQueue().
    */
   public EventQueue getQueue(Component c) {
-    // Components above the applet in the hierarchy may or may not share
-    // the same context with the applet itself.
-    while (!(c instanceof java.applet.Applet) && c.getParent() != null) c = c.getParent();
+    while (c.getParent() != null) {
+      c = c.getParent();
+    }
     synchronized (contexts) {
       WeakReference<EventQueue> ref = queues.get(c);
       EventQueue q = ref != null ? ref.get() : null;
@@ -168,9 +169,9 @@ public class WindowTracker {
    * Returns all known event queues.
    */
   public Collection<EventQueue> getEventQueues() {
-    HashSet<EventQueue> set = new HashSet<>();
+    HashSet<EventQueue> set;
     synchronized (contexts) {
-      set.addAll(contexts.keySet());
+      set = new HashSet<>(contexts.keySet());
       for (WeakReference<EventQueue> ref : queues.values()) {
         EventQueue q = ref.get();
         if (q != null) {
@@ -182,8 +183,8 @@ public class WindowTracker {
   }
 
   /**
-   * Return all available root Windows.  A root Window is one that has a null parent.  Nominally this means a list
-   * similar to that returned by Frame.getFrames(), but in the case of an Applet may return a few Dialogs as well.
+   * Return all available root Windows.  A root Window is one that has a null parent.  Nominally
+   * this means a list similar to that returned by Frame.getFrames().
    */
   public Collection<Component> getRootWindows() {
     Set<Component> set = new HashSet<>();
@@ -197,15 +198,15 @@ public class WindowTracker {
     }
     Frame[] frames = Frame.getFrames();
     Collections.addAll(set, frames);
-    // Log.debug(String.valueOf(list.size()) + " total Frames");
     return set;
   }
 
   /**
-   * Provides tracking of window visibility state.  We explicitly add this on WINDOW_OPEN and remove it on
-   * WINDOW_CLOSE to avoid having to process extraneous ComponentEvents.
+   * Provides tracking of window visibility state.  We explicitly add this on WINDOW_OPEN and remove
+   * it on WINDOW_CLOSE to avoid having to process extraneous ComponentEvents.
    */
   private class WindowWatcher extends WindowAdapter implements ComponentListener {
+
     public WindowWatcher(Window w) {
       w.addComponentListener(this);
       w.addWindowListener(this);
@@ -217,7 +218,6 @@ public class WindowTracker {
 
     public void componentHidden(ComponentEvent e) {
       synchronized (openWindows) {
-        // Log.log("Marking " + e.getSource() + " hidden");
         hiddenWindows.put((Window) e.getSource(), Boolean.TRUE);
         pendingWindows.remove(e.getSource());
       }
@@ -235,23 +235,16 @@ public class WindowTracker {
   }
 
   /**
-   * Whenever we get a window that's on a new event dispatch thread, take note of the thread, since it may correspond
-   * to a new event queue and AppContext.
+   * Whenever we get a window on a new event dispatch thread, take note of the thread, since it may
+   * correspond to a new event queue and AppContext.
    */
   // FIXME what if it has the same app context? can we check?
   private class ContextTracker implements AWTEventListener {
-    public void eventDispatched(AWTEvent ev) {
 
+    public void eventDispatched(AWTEvent ev) {
       ComponentEvent event = (ComponentEvent) ev;
       Component comp = event.getComponent();
-      // This is our sole means of accessing other app contexts
-      // (if running within an applet).  We look for window events
-      // beyond OPENED in order to catch windows that have already
-      // opened by the time we start listening but which are not
-      // in the Frame.getFrames list (i.e. they are on a different
-      // context).   Specifically watch for COMPONENT_SHOWN on applets,
-      // since we may not get frame events for them.
-      if (!(comp instanceof java.applet.Applet) && !(comp instanceof Window)) {
+      if (!(comp instanceof Window)) {
         return;
       }
 
@@ -272,8 +265,7 @@ public class WindowTracker {
           }
         }
       }
-      // The context for root-level windows may change between
-      // WINDOW_OPENED and subsequent events.
+
       synchronized (contexts) {
         WeakReference<EventQueue> ref = queues.get(comp);
         if (ref != null && !comp.getToolkit().getSystemEventQueue().equals(ref.get())) {
@@ -284,6 +276,7 @@ public class WindowTracker {
   }
 
   private class WindowReadyTracker implements AWTEventListener {
+
     public void eventDispatched(AWTEvent e) {
       if (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_DRAGGED) {
         Component c = (Component) e.getSource();
@@ -296,11 +289,7 @@ public class WindowTracker {
   private void noteContext(Component comp) {
     EventQueue queue = comp.getToolkit().getSystemEventQueue();
     synchronized (contexts) {
-      Map<Component, Boolean> map = contexts.get(queue);
-      if (map == null) {
-        map = new WeakHashMap<>();
-        contexts.put(queue, map);
-      }
+      Map<Component, Boolean> map = contexts.computeIfAbsent(queue, k -> new WeakHashMap<>());
       if (comp instanceof Window && comp.getParent() == null) {
         map.put(comp, Boolean.TRUE);
       }
@@ -309,7 +298,6 @@ public class WindowTracker {
   }
 
   private void noteOpened(Component comp) {
-    // Log.log("Noting " + comp + " opened");
     noteContext(comp);
     // Attempt to ensure the window is ready for input before recognizing
     // it as "open".  There is no Java API for this, so we institute an
@@ -317,7 +305,7 @@ public class WindowTracker {
     if (comp instanceof Window) {
       new WindowWatcher((Window) comp);
       markWindowShowing((Window) comp);
-      // Native components don't receive events anyway...
+      // Native components don't receive events anyway
       if (comp instanceof FileDialog) {
         markWindowReady((Window) comp);
       }
@@ -362,7 +350,6 @@ public class WindowTracker {
       }
     }
     synchronized (openWindows) {
-      // Log.log("Marking " + comp + " closed");
       openWindows.remove(comp);
       hiddenWindows.remove(comp);
       closedWindows.put(comp, Boolean.TRUE);
@@ -371,7 +358,8 @@ public class WindowTracker {
   }
 
   /**
-   * Mark the given Window as ready for input.  Indicate whether any pending "mark ready" task should be canceled.
+   * Mark the given Window as ready for input.  Indicate whether any pending "mark ready" task
+   * should be canceled.
    */
   private void markWindowReady(Window w) {
     synchronized (openWindows) {
@@ -380,7 +368,6 @@ public class WindowTracker {
       // Make sure it's still on the pending list before we actually
       // mark it ready.
       if (pendingWindows.containsKey(w)) {
-        // Log.log("Noting " + w + " ready");
         closedWindows.remove(w);
         hiddenWindows.remove(w);
         openWindows.put(w, Boolean.TRUE);
@@ -390,7 +377,8 @@ public class WindowTracker {
   }
 
   /**
-   * Indicate a window has set isShowing true and needs to be marked ready when it is actually ready.
+   * Indicate a window has set isShowing true and needs to be marked ready when it is actually
+   * ready.
    */
   private void markWindowShowing(final Window w) {
     synchronized (openWindows) {
@@ -405,7 +393,7 @@ public class WindowTracker {
         return insets;
       }
     } catch (NullPointerException e) {
-      // FileDialog.getInsets() throws (1.4.2_07)
+      // ignore
     }
     return new Insets(0, 0, 0, 0);
   }
@@ -415,7 +403,6 @@ public class WindowTracker {
   /**
    * Actively check whether the given window is ready for input.
    *
-   * @param robot
    * @see #isWindowReady
    */
   private void checkWindow(final Window w, java.awt.Robot robot) {
@@ -439,12 +426,10 @@ public class WindowTracker {
       if (pendingWindows.get(w) == Boolean.TRUE && isEmptyFrame(w)) {
         // Force the frame to be large enough to receive events
         SwingUtilities.invokeLater(
-            new Runnable() {
-              public void run() {
-                int nw = Math.max(width, insets.left + insets.right + 3);
-                int nh = Math.max(height, insets.top + insets.bottom + 3);
-                w.setSize(nw, nh);
-              }
+            () -> {
+              int nw = Math.max(width, insets.left + insets.right + 3);
+              int nh = Math.max(height, insets.top + insets.bottom + 3);
+              w.setSize(nw, nh);
             });
       }
       // At worst, time out and say the window is ready
