@@ -38,7 +38,7 @@ jobs:
             }]
 
       - name: Publish package
-        run: mvn --batch-mode deploy -Prelease -DskipTests
+        run: mvn -B deploy -Prelease -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GPG_SECRET_KEY_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
