@@ -280,7 +280,7 @@ public class Script extends Sequence implements Resolver {
     formatForSave = true;
     Element el = toXML();
     formatForSave = false;
-    el.setName(TAG_AWTTESTSCRIPT);
+    el.setName(TAG_AWT_TEST_SCRIPT);
 
     Document doc = DocumentHelper.createDocument(el);
     doc.write(writer);
@@ -617,15 +617,15 @@ public class Script extends Sequence implements Resolver {
     if (file.length() == 0) {
       return true;
     }
-    if (!file.exists() || !file.isFile() || file.length() < TAG_AWTTESTSCRIPT.length() * 2 + 5) {
+    if (!file.exists() || !file.isFile() || file.length() < TAG_AWT_TEST_SCRIPT.length() * 2 + 5) {
       return false;
     }
     try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
-      int len = XML_INFO.length() + TAG_AWTTESTSCRIPT.length() + 15;
+      int len = XML_INFO.length() + TAG_AWT_TEST_SCRIPT.length() + 15;
       byte[] buf = new byte[len];
       is.read(buf, 0, buf.length);
       String str = new String(buf);
-      return str.contains(TAG_AWTTESTSCRIPT);
+      return str.contains(TAG_AWT_TEST_SCRIPT);
     } catch (Exception exc) {
       return false;
     }

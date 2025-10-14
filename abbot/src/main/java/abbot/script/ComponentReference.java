@@ -10,7 +10,6 @@ import abbot.tester.ComponentTester;
 import abbot.tester.Robot;
 import abbot.util.AWT;
 import com.windowtester.runtime.util.StringComparator;
-import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -52,12 +51,12 @@ import org.dom4j.Element;
  * </code></blockquote>
  * The component reference ID may be used in scripts in place of the actual component to which this
  * reference refers. The conversion will be made when the actual component is needed.  The ID is
- * arbitrary, and may be changed in scripts to any unique string (just remember to change all
- * references to the ID in other places in the script as well).<p> A number of optional tags are
- * supported to provide an increasingly precise specification of the desired component:<br>
+ * arbitrary and may be changed in scripts to any unique string (remember to change all references
+ * to the ID in other places in the script as well).<p> A number of optional tags are supported to
+ * provide an increasingly precise specification of the desired component:<br>
  * <ul>
  * <li><b><code>weighted</code></b> refers to the name of an available
- * attribute which should be weighted more heavily in comparisons, e.g. the
+ * attribute which should be weighted more heavily in comparisons, e.g., the
  * label on a JButton.<br>
  * <li><b><code>parent</code></b> the reference id of this component's
  * parent.<br>
@@ -69,7 +68,7 @@ import org.dom4j.Element;
  * <li>Resolver.addComponent(Component) - creates a reference if one doesn't
  * already exist and modifiers the Resolver to include it.
  * <li>getReference(Resolver, Component, Map) - create a reference only if a
- * matching one does not exist, but does not modify the Resolver.
+ * matching one does not exist but does not modify the Resolver.
  * <li>ComponentReference#init - create a new reference.
  * </ul>
  */
@@ -82,7 +81,7 @@ import org.dom4j.Element;
 /*
   To extend, probably want to make a static function here that stores
   attributes and a lookup interface to read that attribute.  Do this only if
-  it is directly needed.
+  it is directly necessary.
 
   Should the JRE class be used instead of a custom class?
     pros: doesn't save custom classes, which might change
@@ -93,14 +92,14 @@ import org.dom4j.Element;
 */
 
 /*
- Optimization note:  All lookups are cached, so that at most we have to
+ Optimization note: All lookups are cached, so that at most we have to
  traverse the hierarchy once.
  Successful lookups are cached until the referenced component is GCd,
  removed from the hierarchy, or otherwise marked invalid.
  Unsuccessful lookups are cached for the duration of a particular lookup.
  These happen in several places.
  1) when resolving a cref into a component (getComponent())
- 2) when a script is checking for existing references prior to creating a
+ 2) when a script is checking for existing references before creating a
  new one (getReference()).
  3) when creating a new reference (ComponentReference().
  4) when looking for a matching, existing reference (matchExisting()).
@@ -109,14 +108,14 @@ import org.dom4j.Element;
  see also NOTES
 */
 
-public class ComponentReference implements XMLConstants, XMLifiable, Comparable {
+public class ComponentReference
+    implements XMLConstants, XMLifiable, Comparable<ComponentReference> {
 
   public static final String SHARED_FRAME_ID = "shared frame";
 
   // Matching weights for various attributes
   private static final int MW_NAME = 100;
   private static final int MW_ROOT = 25;
-  // private static final int MW_WEIGHTED = 50;
   private static final int MW_TAG = 50;
   private static final int MW_PARENT = 25; //
   private static final int MW_WINDOW = 25;
@@ -128,15 +127,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   private static final int MW_ICON = 25;
   private static final int MW_INDEX = 10; //
   private static final int MW_CLASS = 1;
-  // Pretty much for applets only, or other embedded frames
+  // Pretty much for embedded frames
   private static final int MW_PARAMS = 1;
   private static final int MW_DOCBASE = 1;
-  // Mostly for distinguishing between multiple components that would
-  // otherwise all match
+  // Mostly for distinguishing between multiple components that would otherwise all match
   private static final int MW_HORDER = 1;
   private static final int MW_VORDER = 1;
-  // private static final int MW_ENABLED = 1;
-  // private static final int MW_FOCUSED = 1;
   private static final int MW_SHOWING = 1;
 
   /**
@@ -150,15 +146,16 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   private final Map<String, String> attributes = new HashMap<>();
   // This helps component reference creation by an order of magnitude,
   // especially when dealing with ordered attributes.
-  private WeakReference cachedLookup;
+  private WeakReference<Component> cachedLookup;
 
   /**
    * This ThreadLocal allows us to keep track of unresolved components on a per-thread (basically
    * per-lookup) basis.
    */
-  private static final ThreadLocal lookupFailures =
-      new ThreadLocal() {
-        protected synchronized Object initialValue() {
+  private static final ThreadLocal<Map<Object, Object>> lookupFailures =
+      new ThreadLocal<>() {
+        @Override
+        protected synchronized Map<Object, Object> initialValue() {
           return new HashMap<>();
         }
       };
@@ -167,9 +164,10 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * This ThreadLocal allows us to keep track of non-showing, resolved components on a per-thread
    * (basically per-lookup) basis.
    */
-  private static final ThreadLocal nonShowingMatches =
-      new ThreadLocal() {
-        protected synchronized Object initialValue() {
+  private static final ThreadLocal<Map<Object, Object>> nonShowingMatches =
+      new ThreadLocal<>() {
+        @Override
+        protected synchronized Map<Object, Object> initialValue() {
           return new HashMap<>();
         }
       };
@@ -177,9 +175,10 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   /**
    * Keep track of which ComponentReference ctor is the first one.
    */
-  private static final ThreadLocal ownsFailureCache =
-      new ThreadLocal() {
-        protected synchronized Object initialValue() {
+  private static final ThreadLocal<Boolean> ownsFailureCache =
+      new ThreadLocal<>() {
+        @Override
+        protected synchronized Boolean initialValue() {
           return Boolean.TRUE;
         }
       };
@@ -240,10 +239,10 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       boolean includeHierarchyAttributes,
       Map<String, ComponentReference> newReferences) {
     // This method may be called recursively (indirectly through
-    // Resolver.addComponent) in order to add references for parent
+    // Resolver.addComponent) to add references for parent
     // components.  Make note of whether this instantiation needs
     // to clear the failure cache when it's done.
-    boolean cleanup = (Boolean) ownsFailureCache.get();
+    boolean cleanup = ownsFailureCache.get();
     ownsFailureCache.set(Boolean.FALSE);
 
     Log.debug("ctor: " + comp);
@@ -296,19 +295,9 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       setAttribute(TAG_ICON, icon);
     }
 
-    if (comp instanceof Applet) {
-      Applet applet = (Applet) comp;
-      setAttribute(TAG_PARAMS, encodeParams(applet));
-      // 10/3/07 : kp
-      // recording on applet - get npe
-      // java.net.URL url = applet.getDocumentBase();
-      java.net.URL url = null;
-      setAttribute(TAG_DOCBASE, "null");
-    }
-
     Container parent = resolver.getHierarchy().getParent(comp);
     if (null != parent) {
-      // Don't save window indices, they're not sufficiently reliable
+      // Don't save window indices, they're not reliable enough
       if (!(comp instanceof Window)) {
         int index = getIndex(parent, comp);
         if (index != -1) {
@@ -355,7 +344,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     // Set the cache immediately
     if (cacheOnCreation || AWT.isSharedInvisibleFrame(comp)) {
       Log.debug("Cacheing initial match");
-      cachedLookup = new WeakReference(comp);
+      cachedLookup = new WeakReference<>(comp);
     } else {
       cachedLookup = null;
     }
@@ -369,22 +358,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   }
 
   public static int getIndex(Container parent, Component comp) {
-    if (comp instanceof Window) {
-      Window[] owned = ((Window) parent).getOwnedWindows();
-      for (int i = 0; i < owned.length; i++) {
-        if (owned[i] == comp) {
-          return i;
-        }
-      }
-    } else {
-      Component[] children = parent.getComponents();
-      for (int i = 0; i < children.length; ++i) {
-        if (children[i] == comp) {
-          return i;
-        }
-      }
-    }
-    return -1;
+    return Robot.getIndex(parent, comp);
   }
 
   public Component getComponent()
@@ -400,7 +374,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       throws ComponentNotFoundException, MultipleComponentsFoundException {
 
     try {
-      return findInHierarchy(null, hierarchy, 1, new HashMap<>());
+      return findInHierarchy(hierarchy, 1, new HashMap<>());
     } finally {
       // never called recursively, so we can clear the cache here
       getLookupFailures().clear();
@@ -415,7 +389,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
 
   /**
    * Returns whether the given component is reachable from the root of the current hierarchy.
-   * Popups' transient elements may already have gone away, and will be unreachable.
+   * Popups' transient elements may already have gone away and will be unreachable.
    */
   private boolean reachableInHierarchy(Component c) {
     Window w = AWT.getWindow(c);
@@ -437,8 +411,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     // unreachable from the root of the hierarchy, or if a lookup will
     // fail for other reasons, simply check for a match.
     // WARNING: this leaves a hole if the component actually needs an
-    // ORDER attribute, but the ORDER attribute is intended for applets
-    // only.
+    // ORDER attribute
     if (!reachableInHierarchy(comp)) {
       int wt = getMatchWeight(comp, newReferences);
       int exact = getExactMatchWeight();
@@ -452,7 +425,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     } else {
       try {
         Log.debug("Finding in hierarchy (" + resolver.getHierarchy() + ")");
-        findInHierarchy(null, resolver.getHierarchy(), getExactMatchWeight(), newReferences);
+        findInHierarchy(resolver.getHierarchy(), getExactMatchWeight(), newReferences);
       } catch (MultipleComponentsFoundException multiples) {
         try {
           // More than one match found, so add more information
@@ -466,8 +439,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
               "Reverse lookup failed to uniquely match " + Robot.toString(comp) + ": " + e);
         }
       } catch (ComponentNotFoundException e) {
-        // This indicates a failure in the reference recording
-        // mechanism, and requires a fix.
+        // This indicates a failure in the reference recording mechanism and requires a fix.
         throw new Error(
             "Reverse lookup failed looking for "
                 + Robot.toString(comp)
@@ -477,24 +449,6 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
                 + e);
       }
     }
-  }
-
-  public static String getDescriptiveName(Component c) {
-    if (AWT.isSharedInvisibleFrame(c)) {
-      return Strings.get("component.default_frame");
-    }
-
-    String name = getName(c);
-    if (name == null) {
-      if ((name = getTitle(c)) == null) {
-        if ((name = getText(c)) == null) {
-          if ((name = getLabel(c)) == null) {
-            if ((name = getIconName(c)) == null) {}
-          }
-        }
-      }
-    }
-    return name;
   }
 
   public String getDescriptiveName() {
@@ -598,8 +552,8 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * @throws InvalidScriptException invalid script
    * @deprecated
    */
-  // This is only used when editing scripts, since we don't want to have to
-  // hunt down existing references
+  // This is only used when editing scripts since we don't want to have to hunt down existing
+  // references
   public void fromXML(String input) throws InvalidScriptException {
     try {
       Document doc = DocumentHelper.parseText(input);
@@ -614,7 +568,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   }
 
   /**
-   * Parse settings from the given XML.   Only overwrite the ID if useGivenID is set.
+   * Parse settings from the given XML. Only overwrite the ID if useGivenID is set.
    *
    * @throws InvalidScriptException if the given Element is not valid XML for a ComponentReference.
    */
@@ -647,6 +601,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     }
   }
 
+  @Override
   public Element toXML() {
     Element el = DocumentHelper.createElement(TAG_COMPONENT);
     for (String key : new TreeMap<>(attributes).keySet()) {
@@ -662,16 +617,19 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * @return editable string
    * @deprecated Used to be used to edit XML in a text editor.
    */
+  @Override
   public String toEditableString() {
     return toXMLString();
   }
 
+  @Override
   public boolean equals(Object obj) {
     return this == obj
         || (obj instanceof ComponentReference)
             && toXMLString().equals(((ComponentReference) obj).toXMLString());
   }
 
+  @Override
   public String toString() {
     String id = getID();
     String cname = getAttribute(TAG_CLASS);
@@ -714,23 +672,23 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       }
       // Preferring one enabled/focused state is dangerous to do:
       // An enabled component might be preferred over a disabled one,
-      // but it will fail if you're trying to examine state on the
+      // but it will fail if you're trying to examine the state on the
       // disabled component.  Ditto for focused.
     }
-    String horder = getAttribute(TAG_HORDER);
-    if (horder != null) {
+    String hOrder = getAttribute(TAG_HORDER);
+    if (hOrder != null) {
       for (int i = 0; i < matches.length; i++) {
         String order = getOrder(matches[i], matches, true);
-        if (horder.equals(order)) {
+        if (hOrder.equals(order)) {
           weights[i] += MW_HORDER;
         }
       }
     }
-    String vorder = getAttribute(TAG_VORDER);
-    if (vorder != null) {
+    String vOrder = getAttribute(TAG_VORDER);
+    if (vOrder != null) {
       for (int i = 0; i < matches.length; i++) {
         String order = getOrder(matches[i], matches, false);
-        if (vorder.equals(order)) {
+        if (vOrder.equals(order)) {
           weights[i] += MW_VORDER;
         }
       }
@@ -749,7 +707,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       }
     }
     if (best.size() == 1) {
-      return (Component) best.get(0);
+      return best.getFirst();
     }
     // Finally, see if any match the old cached value
     Component cache = getCachedLookup(resolver.getHierarchy());
@@ -771,7 +729,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * screen position. All components with the same effective value will have the same order.
    */
   static String getOrder(Component original, Component[] matchList, boolean horizontal) {
-    Comparator c = horizontal ? HORDER_COMPARATOR : VORDER_COMPARATOR;
+    Comparator<Component> c = horizontal ? HORDER_COMPARATOR : VORDER_COMPARATOR;
     Component[] matches = matchList.clone();
     Arrays.sort(matches, c);
     int order = 0;
@@ -799,7 +757,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     Log.debug("Attempting to disambiguate multiple matches");
     Container parent = resolver.getHierarchy().getParent(original);
     boolean retryOnFailure = false;
-    String order = null;
+    String order;
     try {
       String cname = original.getClass().getName();
       // Use the inner class name unless it's numeric (numeric values
@@ -810,17 +768,14 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       } else if (parent != null
           && getAttribute(TAG_PARENT) == null
           && !(original instanceof JPopupMenu)) {
-        Log.debug("Adding parent");
         addParent(parent, newReferences);
         retryOnFailure = true;
       } else if (getAttribute(TAG_HORDER) == null
           && (order = getOrder(original, matches, true)) != null) {
-        Log.debug("Adding horder");
         setAttribute(TAG_HORDER, order);
         retryOnFailure = true;
       } else if (getAttribute(TAG_VORDER) == null
           && (order = getOrder(original, matches, false)) != null) {
-        Log.debug("Adding vorder");
         setAttribute(TAG_VORDER, order);
         retryOnFailure = true;
       }
@@ -829,7 +784,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       // Remove this cref and its ancestors from the failure
       // cache so we don't automatically fail
       getLookupFailures().remove(this);
-      findInHierarchy(null, resolver.getHierarchy(), getExactMatchWeight(), newReferences);
+      findInHierarchy(resolver.getHierarchy(), getExactMatchWeight(), newReferences);
       Log.debug("Success!");
     } catch (MultipleComponentsFoundException multiples) {
       if (retryOnFailure) {
@@ -917,7 +872,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
         weight += MW_PARENT;
       }
       // Don't detract on parent mismatch, since changing a parent is
-      // not that big a change (e.g. adding a scroll pane)
+      // not that big a change (e.g., adding a scroll pane)
     }
     // ROOT and PARENT are mutually exclusive
     else if (null != getAttribute(TAG_ROOT)) {
@@ -996,25 +951,6 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       // common.
     }
 
-    if (comp instanceof Applet) {
-      Applet applet = (Applet) comp;
-      String params = getAttribute(TAG_PARAMS);
-      if (null != params) {
-        String params2 = encodeParams(applet);
-        if (expressionMatch(params, params2)) {
-          weight += MW_PARAMS;
-        }
-      }
-      String docBase = getAttribute(TAG_DOCBASE);
-      if (null != docBase) {
-        java.net.URL url = null;
-        if (url != null) {
-          expressionMatch(docBase, url.toString());
-        }
-      }
-      // No negative weighting here
-    }
-
     if (Log.isClassDebugEnabled(ComponentReference.class)) {
       Log.debug(
           "Compared " + Robot.toString(comp) + " to " + toXMLString() + " weight is " + weight);
@@ -1090,11 +1026,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * the preferred Component.
    * </ul>
    * While there is a subtle difference between the two cases (when running
-   * a test it is expected that there will be some match, whereas when
-   * creating a new reference there may or may not be a match, based on the
+   * a test, it is expected that there will be some match. Whereas when
+   * creating a new reference, there may or may not be a match, based on the
    * current script contents), it is not a useful distinction.
    */
-  private Component resolveComponent(Component preferred, Map newReferences) {
+  private Component resolveComponent(
+      Component preferred, Map<String, ComponentReference> newReferences) {
     // This call should be equivalent to getComponent(), but without
     // clearing the lookup failure cache on completion
     if (Log.isClassDebugEnabled(ComponentReference.class)) {
@@ -1102,7 +1039,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     }
     Component found = null;
     try {
-      found = findInHierarchy(null, resolver.getHierarchy(), 1, newReferences);
+      found = findInHierarchy(resolver.getHierarchy(), 1, newReferences);
     } catch (MultipleComponentsFoundException e) {
       Component[] list = e.getComponents();
       for (Component component : list) {
@@ -1140,7 +1077,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       Resolver r, Component comp, Map<String, ComponentReference> newReferences) {
     Log.debug("Looking for a reference for " + Robot.toString(comp));
     // Preserve the failure cache across both lookup and creation
-    boolean cleanup = (Boolean) ownsFailureCache.get();
+    boolean cleanup = ownsFailureCache.get();
     ownsFailureCache.set(Boolean.FALSE);
 
     // Allow the resolver to do cacheing if it needs to; otherwise we'd
@@ -1162,27 +1099,23 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   }
 
   public static ComponentReference matchExisting(
-      final Component comp, Collection<ComponentReference> existing) {
+      Component comp, Collection<ComponentReference> existing) {
 
     Log.debug("Matching " + Robot.toString(comp) + " against existing refs");
 
     // This method might be called recursively (indirectly through
-    // Resolver.addComponent) in order to add references for parent
+    // Resolver.addComponent) to add references for parent
     // components.  Make note of whether this level of invocation needs
     // to clear the failure cache when it's done.
-    boolean cleanup = (Boolean) ownsFailureCache.get();
+    boolean cleanup = ownsFailureCache.get();
     ownsFailureCache.set(Boolean.FALSE);
 
     ComponentReference match = null;
     Iterator<ComponentReference> iter = existing.iterator();
     // Sort such that the best match comes first
     Map<ComponentReference, Boolean> matches =
-        new TreeMap<>(
-            (Comparator)
-                (o1, o2) ->
-                    ((ComponentReference) o2).getMatchWeight(comp)
-                        - ((ComponentReference) o1).getMatchWeight(comp));
-    Map<ComponentReference, Boolean> empty = new HashMap<>();
+        new TreeMap<>((o1, o2) -> o2.getMatchWeight(comp) - o1.getMatchWeight(comp));
+    Map<String, ComponentReference> empty = new HashMap<>();
     while (iter.hasNext()) {
       ComponentReference ref = iter.next();
       if (comp == ref.getCachedLookup(ref.resolver.getHierarchy())
@@ -1261,47 +1194,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   }
 
   private static String getName(Component c) {
-    String name = AWT.hasDefaultName(c) ? null : c.getName();
-    // Accessibility behaves like what we used to do with getTag.
-    // Not too helpful for our purposes, especially when the
-    // data on which the name is based might be dynamic.
-    /*
-    if (name == null) {
-        AccessibleContext context = c.getAccessibleContext();
-        if (context != null)
-            name = context.getAccessibleName();
-    }
-    */
-    return name;
-  }
-
-  /**
-   * Convert the given applet's parameters into a simple String.
-   */
-  private String encodeParams(Applet applet) {
-    // TODO: is there some other way of digging out the full set of
-    // parameters that were passed the applet? b/c here we rely on the
-    // applet having been properly written to tell us about supported
-    // parameters.
-    StringBuilder sb = new StringBuilder();
-    String[][] info = applet.getParameterInfo();
-    if (info == null) {
-      // Default implementation of applet returns null
-      return "null";
-    }
-    for (String[] strings : info) {
-      sb.append(strings[0]);
-      sb.append("=");
-      String param = applet.getParameter(strings[0]);
-      sb.append(param != null ? param : "null");
-      sb.append(";");
-    }
-    return sb.toString();
+    return AWT.hasDefaultName(c) ? null : c.getName();
   }
 
   public Component getCachedLookup(Hierarchy hierarchy) {
     if (cachedLookup != null) {
-      Component c = (Component) cachedLookup.get();
+      Component c = cachedLookup.get();
       // Discard if the component has been gc'd, is no longer in the
       // hierarchy, or is no longer reachable from a Window.
       if (c != null && hierarchy.contains(c) && AWT.getWindow(c) != null) {
@@ -1318,13 +1216,8 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
    * hierarchy whose match weight exceeds the given minimum.  If a valid cached lookup exists, that
    * is returned immediately.
    */
-  // TODO: refactor this to extract the finder/lookup logic into a separate
-  // class.  the ref should only store attributes.
   private Component findInHierarchy(
-      Container root,
-      Hierarchy hierarchy,
-      int weight,
-      Map<String, ComponentReference> newReferences)
+      Hierarchy hierarchy, int weight, Map<String, ComponentReference> newReferences)
       throws ComponentNotFoundException, MultipleComponentsFoundException {
     Component match;
 
@@ -1341,30 +1234,9 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     Set<Component> set = new HashSet<>();
     match = getCachedLookup(hierarchy);
     if (match != null) {
-      // This is always valid
       if (AWT.isSharedInvisibleFrame(match)) {
         return match;
       }
-      // TODO: always use the cached lookup; since TestHierarchy
-      // auto-disposes, only improperly disposed components will still
-      // match.  Codify this behavior with an explicit test.
-
-      // Normally, we'd always want to use the cached lookup, but there
-      // are instances where a component hierarchy may be used in a
-      // transient way, so a given reference may need to match more than
-      // one object without the first having been properly disposed.
-      // Consider a createDialog() method, which creates an identical
-      // dialog on each invocation, with an OK button.  Every call of
-      // the method is semantically providing the same component,
-      // although the implementation may create a new one each time.  If
-      // previous instances have not been properly disposed, we need a
-      // way to prefer a brand new instance over an old one.  We do that
-      // by checking the cache window's showing state.
-      // A showing match will trump a non-showing one,
-      // but if there are multiple, non-showing matches, the cached
-      // lookup will win.
-      // We check the window, not the component itself, because some
-      // components hide their children.
       Window w = AWT.getWindow(match);
       if (w != null && (w.isShowing() || getNonShowingMatches().get(this) == match)) {
         Log.debug("Using cached lookup for " + getID() + " (hierarchy=" + hierarchy + ")");
@@ -1374,7 +1246,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
       }
     }
 
-    weight = findMatchesInHierarchy(root, hierarchy, weight, set, newReferences);
+    findMatchesInHierarchy(null, hierarchy, weight, set, newReferences);
 
     Log.debug("Found " + set.size() + " matches for " + toXMLString());
     if (set.size() == 1) {
@@ -1398,7 +1270,7 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     // This provides significant speedup when many similar components are
     // in play.
     Log.debug("Cacheing match: " + Integer.toHexString(match.hashCode()));
-    cachedLookup = new WeakReference(match);
+    cachedLookup = new WeakReference<>(match);
     if (!match.isShowing()) {
       getNonShowingMatches().put(this, match);
     }
@@ -1406,8 +1278,8 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
   }
 
   /**
-   * Return the the set of all components under the given component's hierarchy (inclusive) which
-   * match the given reference.
+   * Return the set of all components under the given component's hierarchy (inclusive) which match
+   * the given reference.
    */
   private int findMatchesInHierarchy(
       Component root,
@@ -1471,10 +1343,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
         try {
           x1 = c1.getLocationOnScreen().x;
         } catch (Exception e) {
+          // ignore
         }
         try {
           x2 = c2.getLocationOnScreen().x;
         } catch (Exception e) {
+          // ignore
         }
         return x1 - x2;
       };
@@ -1486,10 +1360,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
         try {
           y1 = c1.getLocationOnScreen().y;
         } catch (Exception e) {
+          // ignore
         }
         try {
           y2 = c2.getLocationOnScreen().y;
         } catch (Exception e) {
+          // ignore
         }
         return y1 - y2;
       };
@@ -1546,13 +1422,11 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     }
   }
 
-  public int compareTo(Object o) {
-    return getID().compareTo(((ComponentReference) o).getID());
+  @Override
+  public int compareTo(ComponentReference o) {
+    return getID().compareTo(o.getID());
   }
 
-  /**
-   * See javax.swing.JComponent.getBorderTitle.
-   */
   private static String getBorderTitle(Border b) {
     String title = null;
     if (b instanceof TitledBorder) {
@@ -1600,12 +1474,12 @@ public class ComponentReference implements XMLConstants, XMLifiable, Comparable 
     return title;
   }
 
-  private static Map getLookupFailures() {
-    return (Map) lookupFailures.get();
+  private static Map<Object, Object> getLookupFailures() {
+    return lookupFailures.get();
   }
 
-  private static Map getNonShowingMatches() {
-    return (Map) nonShowingMatches.get();
+  private static Map<Object, Object> getNonShowingMatches() {
+    return nonShowingMatches.get();
   }
 
   public String getUniqueID(Map<String, ComponentReference> refs) {

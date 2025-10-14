@@ -9,7 +9,7 @@ public interface XMLConstants {
   /**
    * Primary document tag for a test script.
    */
-  String TAG_AWTTESTSCRIPT = "AWTTestScript";
+  String TAG_AWT_TEST_SCRIPT = "AWTTestScript";
 
   String TAG_LAUNCH = "launch";
 
@@ -20,15 +20,10 @@ public interface XMLConstants {
 
   String TAG_CLASSPATH = "classpath";
   String TAG_THREADED = "threaded";
-  String TAG_APPLETVIEWER = "appletviewer";
-  String TAG_CODE = "code";
-  String TAG_CODEBASE = "codebase";
-  String TAG_ARCHIVE = "archive";
   String TAG_TERMINATE = "terminate";
   String TAG_COMPONENT = "component";
   String TAG_ID = "id";
   String TAG_NAME = "name";
-  String TAG_WEIGHTED = "weighted";
   String TAG_WINDOW = "window";
 
   /**
@@ -76,7 +71,6 @@ public interface XMLConstants {
   String TAG_AWT = "awt";
   String TAG_VMARGS = "vmargs";
   String TAG_WAIT = "wait";
-  String TAG_EXPR = "expr";
   String TAG_METHOD = "method";
   String TAG_ARGS = "args";
   String TAG_VALUE = "value";
@@ -84,8 +78,6 @@ public interface XMLConstants {
   String TAG_INVERT = "invert";
   String TAG_TIMEOUT = "timeout";
   String TAG_POLL_INTERVAL = "pollInterval";
-  String TAG_STOP_ON_FAILURE = "stopOnFailure";
-  String TAG_STOP_ON_ERROR = "stopOnError";
-  // this is not actually used as a tag per se
+  // this is not used as a tag per se
   String TAG_COMMENT = "comment";
 }
