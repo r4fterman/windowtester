@@ -61,6 +61,7 @@ jobs:
           build-mode: manual
 
       - name: Build and test with Maven
+        uses: coactions/setup-xvfb@v1
         run: |
           mvn -B clean test -Dmaven.wagon.http.retryHandler.count=5
 
