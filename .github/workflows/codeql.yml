@@ -60,9 +60,6 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: manual
 
-      - name: Start virtual framebuffer (Xvfb)
-        uses: coactions/setup-xvfb@v1
-
       - name: Build and test with Maven
         uses: coactions/setup-xvfb@v1
         with:
