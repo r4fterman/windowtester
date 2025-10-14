@@ -39,6 +39,6 @@ jobs:
             }]
 
       - name: Release package
-        run: mvn clean deploy -Prelease,maven-central -DskipTests
+        run: mvn -B clean deploy -Prelease,maven-central -DskipTests
         env:
           GPG_SECRET_KEY_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}

@@ -22,7 +22,7 @@ jobs:
       - name: Build project and run UI test
         uses: coactions/setup-xvfb@v1
         with:
-          run: mvn clean verify -Pci
+          run: mvn -B clean verify -Pci
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

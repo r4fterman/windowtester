@@ -30,13 +30,39 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<'EOF'
+          <settings>
+            <mirrors>
+              <mirror>
+                <id>central-mirror</id>
+                <name>Central Mirror</name>
+                <url>https://repo1.maven.org/maven2</url>
+                <mirrorOf>central</mirrorOf>
+              </mirror>
+            </mirrors>
+          </settings>
+          EOF
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+          build-mode: manual
 
-      - name: Build with Maven
-        run: mvn clean compile
+      - name: Build and test with Maven
+        run: |
+          mvn -B clean test -Dmaven.wagon.http.retryHandler.count=5
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
