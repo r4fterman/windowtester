@@ -42,24 +42,19 @@ public class AWTHierarchy implements Hierarchy {
 
   @Override
   public void dispose(Window window) {
-    if (AWT.isAppletViewerFrame(window)) {
-      // Don't dispose, it must quit on its own
-      return;
-    }
-
     Log.debug("Dispose " + window);
 
     Arrays.stream(window.getOwnedWindows()).forEach(this::dispose);
 
     if (AWT.isSharedInvisibleFrame(window)) {
-      // Don't dispose, or any child windows which may be currently
-      // ignored (but not hidden) will be hidden and disposed.
+      // Don't dispose, or any child windows that may be currently
+      // ignored (but not hidden) will be hidden and disposed of.
       return;
     }
 
     // Ensure the disposal is done on the swing thread so we can catch any
     // exceptions. If Window.dispose is called from a non-Swing thread,
-    // it will invoke the dispose action on the Swing thread but in that
+    // it will invoke the dispose action on the Swing thread, but in that
     // case we have no control over exceptions.
     Runnable action =
         () -> {
@@ -114,15 +109,14 @@ public class AWTHierarchy implements Hierarchy {
         new ArrayList<>(Arrays.asList(((Container) component).getComponents()));
     // Add other components which are not explicitly children, but
     // that are conceptually descendents
-    if (component instanceof JMenu menu) {
-      list.add(menu.getPopupMenu());
-    } else if (component instanceof Window window) {
-      list.addAll(Arrays.asList(window.getOwnedWindows()));
-    } else if (component instanceof JDesktopPane) {
-      // Add iconified frames, which are otherwise unreachable.
-      // For consistency, they are still considerered children of
-      // the desktop pane.
-      list.addAll(findInternalFramesFromIcons((Container) component));
+    switch (component) {
+      case JMenu menu -> list.add(menu.getPopupMenu());
+      case Window window -> list.addAll(Arrays.asList(window.getOwnedWindows()));
+      case JDesktopPane jDesktopPane ->
+          // Add iconified frames, which are otherwise unreachable.
+          // For consistency, they are still considered children of the desktop pane.
+          list.addAll(findInternalFramesFromIcons((Container) component));
+      default -> {}
     }
     return list;
   }
