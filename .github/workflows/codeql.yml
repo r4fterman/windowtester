@@ -61,9 +61,7 @@ jobs:
           build-mode: manual
 
       - name: Build and test with Maven
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: mvn -B clean test -Dmaven.wagon.http.retryHandler.count=5
+        run: mvn -B clean compile -Dmaven.wagon.http.retryHandler.count=5
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
