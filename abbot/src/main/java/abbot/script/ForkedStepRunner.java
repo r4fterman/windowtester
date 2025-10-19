@@ -20,11 +20,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * A StepRunner that runs the step in a separate VM.  Behavior should be indistinguishable from the base StepRunner.
+ * A StepRunner that runs the step in a separate VM.  Behavior should be indistinguishable from the
+ * base StepRunner.
  */
 public class ForkedStepRunner extends StepRunner {
 
@@ -34,48 +35,32 @@ public class ForkedStepRunner extends StepRunner {
       Properties.getProperty("abbot.runner.terminate_delay", 30000, 0, 300000);
 
   private static ServerSocket serverSocket = null;
-  private Process process = null;
   private Socket connection = null;
 
   /**
    * When actually within the separate VM, this is what gets run.
    */
   protected static class SlaveStepRunner extends StepRunner {
+
     private Socket connection = null;
     private Script script = null;
-
-    /**
-     * Notify the master when the application exits.
-     */
-    protected SecurityManager createSecurityManager() {
-      return new ExitHandler() {
-        public void checkExit(int status) {
-          // handle application exit; send something back to
-          // the master if called from System.exit
-          String msg =
-              Strings.get("runner.slave_premature_exit", new Object[] {new Integer(status)});
-          fireStepError(script, new Error(msg));
-        }
-      };
-    }
 
     /**
      * Translate the given event into something we can send back to the master.
      */
     private void forwardEvent(StepEvent event) {
       Step step = event.getStep();
-      final StringBuffer sb = new StringBuffer(encodeStep(script, step));
-      sb.append("\n");
-      sb.append(event.getType());
-      sb.append("\n");
-      sb.append(event.getID());
+      var encodedStep = encodeStep(script, step);
+      final StringBuilder sb =
+          new StringBuilder(encodedStep == null ? "" : encodedStep)
+              .append("\n")
+              .append(event.getType())
+              .append("\n")
+              .append(event.getID());
       Throwable thr = event.getError();
       if (thr != null) {
-        sb.append("\nMSG:");
-        sb.append(thr.getMessage());
-        sb.append("\nSTR:");
-        sb.append(thr);
-        sb.append("\nTRC:");
+        sb.append("\nMSG:").append(thr.getMessage()).append("\nSTR:").append(thr).append("\nTRC:");
+
         StringWriter writer = new StringWriter();
         thr.printStackTrace(new PrintWriter(writer));
         sb.append(writer);
@@ -88,12 +73,12 @@ public class ForkedStepRunner extends StepRunner {
     }
 
     public void launchSlave(int port) {
-      // make connection back to originating port
+      // make connection back to the originating port
       try {
         InetAddress local = InetAddress.getLocalHost();
         connection = new Socket(local, port);
       } catch (Throwable thr) {
-        // Can't communicate so the only option is to quit
+        // Can't communicate, so the only option is to quit
         Log.warn(thr);
         System.exit(1);
       }
@@ -102,9 +87,10 @@ public class ForkedStepRunner extends StepRunner {
         String dirName = readMessage(connection);
         // Make sure the relative directory of this script is set
         // properly.
-        script.setFile(new File(new File(dirName), script.getFile().getName()));
+        script.setFile(new File(dirName, script.getFile().getName()));
+
         String contents = readMessage(connection);
-        script.load(new StringReader(contents));
+        script.load(new StringReader(contents == null ? "" : contents));
         Log.debug("Successfully loaded script, dir=" + dirName);
         // Make sure we only fork once!
         script.setForked(false);
@@ -118,12 +104,7 @@ public class ForkedStepRunner extends StepRunner {
       }
 
       // add listener to send messages back to the master
-      addStepListener(
-          new StepListener() {
-            public void stateChanged(StepEvent ev) {
-              forwardEvent(ev);
-            }
-          });
+      addStepListener(this::forwardEvent);
 
       // Run the script like we normally would.  The listener handles
       // all events and communication back to the launching process
@@ -163,14 +144,14 @@ public class ForkedStepRunner extends StepRunner {
   Process fork(String vmargs, String[] cmdArgs) throws IOException {
     String java =
         System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-    ArrayList args = new ArrayList();
+    List<String> args = new ArrayList<>();
     args.add(java);
     args.add("-cp");
     String cp = System.getProperty("java.class.path");
     // Ensure the framework is included in the class path
     String acp = System.getProperty("abbot.class.path");
     if (acp != null) {
-      cp += System.getProperty("path.separator") + acp;
+      cp += File.pathSeparator + acp;
     }
     args.add(cp);
     if (vmargs != null) {
@@ -184,9 +165,8 @@ public class ForkedStepRunner extends StepRunner {
       args.add("--debug");
       args.add(getClass().getName());
     }
-    cmdArgs = (String[]) args.toArray(new String[args.size()]);
-    Process p = Runtime.getRuntime().exec(cmdArgs);
-    return p;
+    cmdArgs = args.toArray(new String[0]);
+    return Runtime.getRuntime().exec(cmdArgs);
   }
 
   /**
@@ -218,16 +198,16 @@ public class ForkedStepRunner extends StepRunner {
   }
 
   /**
-   * Running the step in a separate VM should be indistinguishable from running a regular script.   When running as
-   * master, nothing actually runs locally.  We just fork a subprocess and run the script in that, reporting back its
-   * progress as if it were running locally.
+   * Running the step in a separate VM should be indistinguishable from running a regular script.
+   * When running as master, nothing actually runs locally.  We just fork a subprocess and run the
+   * script in that, reporting back its progress as if it were running locally.
    */
   public void runStep(Step step) throws Throwable {
     Log.debug("run step " + step);
     // Fire the start event prior to forking, then ignore the subsequent
     // forked script start event when we get it.
     fireStepStart(step);
-    process = null;
+    Process process = null;
     try {
       Script script = (Script) step;
       process = forkProcess(script.getVMArgs());
@@ -237,6 +217,7 @@ public class ForkedStepRunner extends StepRunner {
         try {
           process.waitFor();
         } catch (InterruptedException e) {
+          // ignore
         }
         try {
           process.exitValue();
@@ -244,8 +225,8 @@ public class ForkedStepRunner extends StepRunner {
           try {
             Thread.sleep(TERMINATE_TIMEOUT);
           } catch (InterruptedException ie) {
+            // ignore
           }
-          // check again?
         }
       } catch (IOException io) {
         fireStepError(script, io);
@@ -288,7 +269,6 @@ public class ForkedStepRunner extends StepRunner {
   }
 
   private void sendScript(Script script) throws IOException {
-    // send script data
     StringWriter writer = new StringWriter();
     script.save(writer);
     writeMessage(connection, script.getDirectory().toString());
@@ -300,7 +280,7 @@ public class ForkedStepRunner extends StepRunner {
     while (!stopped() && (ev = receiveEvent(script)) != null) {
       Log.debug("Forked event received: " + ev);
       // If it's the script start event, ignore it since we
-      // already sent one prior to launching the process
+      // already sent one before launching the process
       if (ev.getStep() == script
           && (StepEvent.STEP_START.equals(ev.getType())
               || StepEvent.STEP_END.equals(ev.getType()))) {
@@ -312,7 +292,7 @@ public class ForkedStepRunner extends StepRunner {
       if (err != null) {
         setError(ev.getStep(), err);
         fireStepEvent(ev);
-        if (err instanceof AssertionFailedError) {
+        if (err instanceof ForkedFailure) {
           if (getStopOnFailure()) {
             throw (ForkedFailure) err;
           }
@@ -346,7 +326,7 @@ public class ForkedStepRunner extends StepRunner {
   /**
    * Encode the given step into a set of indices.
    */
-  static String encodeStep(Sequence root, Step step) {
+  private static String encodeStep(Sequence root, Step step) {
     if (root.equals(step)) {
       return "-1";
     }
@@ -356,9 +336,7 @@ public class ForkedStepRunner extends StepRunner {
         return String.valueOf(index);
       }
       index = 0;
-      Iterator iter = root.steps().iterator();
-      while (iter.hasNext()) {
-        Step seq = (Step) iter.next();
+      for (Step seq : root.steps()) {
         if (seq instanceof Sequence) {
           String encoding = encodeStep((Sequence) seq, step);
           if (encoding != null) {
@@ -372,14 +350,14 @@ public class ForkedStepRunner extends StepRunner {
   }
 
   /**
-   * Receive a serialized event on the connection and convert it back into a real event, setting the local
-   * representation of the given step's exception/error if necessary.
+   * Receive a serialized event on the connection and convert it back into a real event, setting the
+   * local representation of the given step's exception/error if necessary.
    */
   private StepEvent receiveEvent(Script script) throws IOException {
     String buf = readMessage(connection);
     if (buf == null) {
       Log.debug("End of stream");
-      return null; // end of stream
+      return null;
     }
     StringTokenizer st = new StringTokenizer(buf, "\n");
     String code = st.nextToken();
@@ -388,36 +366,33 @@ public class ForkedStepRunner extends StepRunner {
     Step step = decodeStep(script, code);
     Throwable thr = null;
     if (st.hasMoreTokens()) {
-      String msg = st.nextToken();
-      String string;
-      String trace;
-      msg = msg.substring(4);
+      StringBuilder msg = new StringBuilder(st.nextToken());
+      msg = new StringBuilder(msg.substring(4));
       String next = st.nextToken();
       while (!next.startsWith("STR:")) {
-        msg += next;
+        msg.append(next);
         next = st.nextToken();
       }
-      string = next.substring(4);
+      StringBuilder string = new StringBuilder(next.substring(4));
       next = st.nextToken();
       while (!next.startsWith("TRC:")) {
-        string += next;
+        string.append(next);
         next = st.nextToken();
       }
-      trace = next.substring(4);
+      StringBuilder trace = new StringBuilder(next.substring(4));
       while (st.hasMoreTokens()) {
-        trace = trace + "\n" + st.nextToken();
+        trace.append("\n").append(st.nextToken());
       }
 
       if (type.equals(StepEvent.STEP_FAILURE)) {
         Log.debug("Creating local forked step failure");
-        thr = new ForkedFailure(msg, string, trace);
+        thr = new ForkedFailure(msg.toString(), string.toString(), trace.toString());
       } else {
         Log.debug("Creating local forked step error");
-        thr = new ForkedError(msg, string, trace);
+        thr = new ForkedError(msg.toString(), string.toString(), trace.toString());
       }
     }
-    StepEvent event = new StepEvent(step, type, Integer.parseInt(id), thr);
-    return event;
+    return new StepEvent(step, type, Integer.parseInt(id), thr);
   }
 
   private static void writeMessage(Socket connection, String msg) throws IOException {
@@ -454,14 +429,14 @@ public class ForkedStepRunner extends StepRunner {
       }
       offset += count;
     }
-    String msg = new String(buf, 0, len);
-    return msg;
+    return new String(buf, 0, len);
   }
 
   /**
    * An exception that for all purposes looks like another exception.
    */
-  class ForkedFailure extends AssertionFailedError {
+  private static class ForkedFailure extends AssertionFailedError {
+
     private final String msg;
     private final String str;
     private final String trace;
@@ -500,7 +475,8 @@ public class ForkedStepRunner extends StepRunner {
   /**
    * An exception that for all purposes looks like another exception.
    */
-  class ForkedError extends RuntimeException {
+  private static class ForkedError extends RuntimeException {
+
     private final String msg;
     private final String str;
     private final String trace;
@@ -544,14 +520,7 @@ public class ForkedStepRunner extends StepRunner {
       runner.setStopOnFailure("true".equals(args[1]));
       runner.setStopOnError("true".equals(args[2]));
       runner.setTerminateOnError("true".equals(args[3]));
-      new Thread(
-              new Runnable() {
-                public void run() {
-                  runner.launchSlave(port);
-                }
-              },
-              "Forked script")
-          .start();
+      new Thread(() -> runner.launchSlave(port), "Forked script").start();
     } catch (Throwable e) {
       System.err.println("usage: abbot.script.ForkedStepRunner <port>");
       System.exit(1);

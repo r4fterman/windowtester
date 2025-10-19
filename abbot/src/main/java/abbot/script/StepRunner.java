@@ -3,7 +3,6 @@ package abbot.script;
 import abbot.AssertionFailedError;
 import abbot.ExitException;
 import abbot.Log;
-import abbot.NoExitSecurityManager;
 import abbot.finder.Hierarchy;
 import abbot.finder.TestHierarchy;
 import abbot.i18n.Strings;
@@ -109,37 +108,6 @@ public class StepRunner {
   }
 
   /**
-   * Create a security manager to use for the duration of this runner's execution. The default
-   * prevents invoked applications from invoking {@link System#exit(int)} and invokes
-   * {@link #terminate()} instead.
-   *
-   * @return security manager
-   */
-  protected SecurityManager createSecurityManager() {
-    return new ExitHandler();
-  }
-
-  /**
-   * Install a security manager to ensure we prevent the AUT from exiting and can clean up when it
-   * tries to.
-   */
-  protected synchronized void installSecurityManager() {
-    String doInstall = System.getProperty("abbot.use_security_manager", "false");
-    if (System.getSecurityManager() == null && !"false".equals(doInstall)) {
-      // When the application tries to exit, throw control back to the
-      // step runner to dispose of it
-      Log.debug("Installing sm");
-      System.setSecurityManager(createSecurityManager());
-    }
-  }
-
-  protected synchronized void removeSecurityManager() {
-    if (System.getSecurityManager() instanceof ExitHandler) {
-      System.setSecurityManager(null);
-    }
-  }
-
-  /**
    * If the given context is not the current one, terminate the current one and set this one as
    * current.
    */
@@ -185,7 +153,6 @@ public class StepRunner {
       updateContext(context);
     }
 
-    installSecurityManager();
     clearErrors();
 
     try {
@@ -209,7 +176,6 @@ public class StepRunner {
       if (step instanceof Script && (stopped() && terminateOnStop)) {
         terminate();
       }
-      removeSecurityManager();
     }
   }
 
@@ -416,20 +382,6 @@ public class StepRunner {
       if (stopOnError) {
         stop(terminateOnError);
       }
-    }
-  }
-
-  protected class ExitHandler extends NoExitSecurityManager {
-
-    @Override
-    public void checkRead(String file) {
-      // avoid annoying drive a: bug on w32 VM
-    }
-
-    @Override
-    protected void exitCalled(int status) {
-      Log.debug("Terminating from security manager");
-      terminate();
     }
   }
 }

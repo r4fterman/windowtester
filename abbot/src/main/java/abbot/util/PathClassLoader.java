@@ -35,18 +35,6 @@ public class PathClassLoader extends java.net.URLClassLoader {
     return classPath;
   }
 
-  protected synchronized Class loadClass(String name, boolean resolve)
-      throws ClassNotFoundException {
-    int i = name.lastIndexOf('.');
-    if (i != -1) {
-      SecurityManager sm = System.getSecurityManager();
-      if (sm != null) {
-        sm.checkPackageAccess(name.substring(0, i));
-      }
-    }
-    return super.loadClass(name, resolve);
-  }
-
   /**
    * Returns an array of URLs based on the given classpath string.
    */

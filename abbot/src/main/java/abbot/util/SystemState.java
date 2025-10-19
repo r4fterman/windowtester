@@ -25,7 +25,6 @@ public class SystemState {
   private final Properties oldProps;
   private final PrintStream oldOut;
   private final PrintStream oldErr;
-  private final SecurityManager oldsm;
   private final String oldLookAndFeel;
   private final boolean[] lockingKeys;
   private static Robot robot = null;
@@ -34,6 +33,7 @@ public class SystemState {
     try {
       robot = new Robot();
     } catch (AWTException e) {
+      // ignore
     }
   }
 
@@ -50,9 +50,8 @@ public class SystemState {
           toolkit.setLockingKeyState(CODES[i], false);
         } catch (UnsupportedOperationException e) {
           // Manually toggle the key
-          if (lockingKeys[i] && robot != null) {
-            robot.keyPress(CODES[i]);
-            robot.keyRelease(CODES[i]);
+          if (lockingKeys[i]) {
+            toggleKey(i);
           }
         }
       } catch (UnsupportedOperationException e) {
@@ -65,14 +64,12 @@ public class SystemState {
     System.setOut(new ProtectedStream(oldOut));
     System.setErr(new ProtectedStream(oldErr));
     oldProps = (Properties) System.getProperties().clone();
-    oldsm = System.getSecurityManager();
   }
 
   /**
    * Restore the state captured in the ctor.
    */
   public void restore() {
-    System.setSecurityManager(oldsm);
     System.setProperties(oldProps);
     System.setOut(oldOut);
     System.setErr(oldErr);
@@ -89,44 +86,53 @@ public class SystemState {
           try {
             toolkit.setLockingKeyState(CODES[i], lockingKeys[i]);
           } catch (UnsupportedOperationException e) {
-            if (robot != null) {
-              robot.keyPress(CODES[i]);
-              robot.keyRelease(CODES[i]);
-            }
+            toggleKey(i);
           }
         }
       } catch (UnsupportedOperationException e) {
-        // Oh, well
+        // ignore
       }
+    }
+  }
+
+  private void toggleKey(int i) {
+    if (robot != null) {
+      robot.keyPress(CODES[i]);
+      robot.keyRelease(CODES[i]);
     }
   }
 
   /**
    * Provide a wrapper that prevents the original stream from being closed.
    */
-  private class ProtectedStream extends PrintStream {
+  private static class ProtectedStream extends PrintStream {
+
     private boolean closed = false;
 
     public ProtectedStream(PrintStream original) {
       super(original);
     }
 
+    @Override
     public void flush() {
       if (!closed) {
         super.flush();
       }
     }
 
+    @Override
     public void close() {
       closed = true;
     }
 
+    @Override
     public void write(int b) {
       if (!closed) {
         super.write(b);
       }
     }
 
+    @Override
     public void write(byte[] buf, int off, int len) {
       if (!closed) {
         super.write(buf, off, len);
