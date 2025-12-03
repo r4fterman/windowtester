@@ -16,14 +16,15 @@ import java.util.Stack;
 import javax.swing.SwingUtilities;
 
 /**
- * Class to keep track of a given input state.  Includes mouse/pointer position and keyboard modifier key state.<p>
- * Synchronization assumes that any given instance might be called from more than one event dispatch thread.
+ * Class to keep track of a given input state. Includes mouse/pointer position and keyboard modifier
+ * key state.<p> Synchronization assumes that any given instance might be called from more than one
+ * event dispatch thread.
  */
 // TODO: add a BitSet with the full keyboard key press state
 public class InputState {
 
   private static final int BUTTON_MASK =
-      (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK);
+      (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK);
 
   /**
    * Current mouse position, in component coordinates.
@@ -36,13 +37,13 @@ public class InputState {
   private Point mouseLocationOnScreen = new Point(0, 0);
 
   /**
-   * Keep a stack of mouse-entered components.  Note that the pointer is still considered within a frame when the
-   * mouse enters a contained component.
+   * Keep a stack of mouse-entered components.  Note that the pointer is still considered within a
+   * frame when the mouse enters a contained component.
    */
-  private final Stack componentStack = new Stack();
+  private final Stack<WeakReference<Component>> componentStack = new Stack<>();
 
-  private final Stack locationStack = new Stack();
-  private final Stack screenLocationStack = new Stack();
+  private final Stack<Point> locationStack = new Stack<>();
+  private final Stack<Point> screenLocationStack = new Stack<>();
   private int buttonsDown;
   private int modifiersDown;
   private long lastEventTime;
@@ -80,7 +81,8 @@ public class InputState {
   }
 
   /**
-   * Explicitly update the internal state.  Allows Robot to update the state with events it has just posted.
+   * Explicitly update the internal state.  Allows Robot to update the state with events it has just
+   * posted.
    */
   void update(AWTEvent event) {
     if (event instanceof MouseEvent) {
@@ -98,7 +100,7 @@ public class InputState {
 
     synchronized (this) {
       lastEventTime = ke.getWhen();
-      modifiersDown = ke.getModifiers();
+      modifiersDown = ke.getModifiersEx();
       // FIXME add state of individual keys
     }
   }
@@ -128,7 +130,7 @@ public class InputState {
       lastEventTime = me.getWhen();
       // When a button is released, only that button appears in the
       // modifier mask
-      int whichButton = me.getModifiers() & BUTTON_MASK;
+      int whichButton = me.getModifiersEx() & BUTTON_MASK;
       if (me.getID() == MouseEvent.MOUSE_RELEASED || me.getID() == MouseEvent.MOUSE_CLICKED) {
         buttonsDown &= ~whichButton;
         modifiersDown &= ~whichButton;
@@ -146,7 +148,7 @@ public class InputState {
       }
 
       if (me.getID() == MouseEvent.MOUSE_ENTERED) {
-        componentStack.push(new WeakReference(me.getComponent()));
+        componentStack.push(new WeakReference<>(me.getComponent()));
         locationStack.push(me.getPoint());
         screenLocationStack.push(screenLocationFound ? eventScreenLoc : me.getPoint());
 
@@ -174,13 +176,15 @@ public class InputState {
   }
 
   /**
-   * Return the component under the given coordinates in the given parent component.  Events are often generated only
-   * for the outermost container, so we have to determine if the pointer is actually within a child.  Basically the
-   * same as Component.getComponentAt, but recurses to the lowest-level component instead of only one level.  Point is
-   * in component coordinates.<p> The default Component.getComponentAt can return invisible components (JRootPane has
-   * an invisible JPanel (glass pane?) which will otherwise swallow everything).<p> NOTE: getComponentAt grabs the
-   * TreeLock, so this should *only* be invoked on the event dispatch thread, preferably with no other locks held. Use
-   * it elsewhere at your own risk.<p> NOTE: What about drags outside a component?
+   * Return the component under the given coordinates in the given parent component.  Events are
+   * often generated only for the outermost container, so we have to determine if the pointer is
+   * actually within a child.  Basically the same as Component.getComponentAt, but recurses to the
+   * lowest-level component instead of only one level.  Point is in component coordinates.<p> The
+   * default Component.getComponentAt can return invisible components (JRootPane has an invisible
+   * JPanel (glass pane?) which will otherwise swallow everything).<p> NOTE: getComponentAt grabs
+   * the TreeLock, so this should *only* be invoked on the event dispatch thread, preferably with no
+   * other locks held. Use it elsewhere at your own risk.<p> NOTE: What about drags outside a
+   * component?
    */
   public static Component getComponentAt(Component parent, Point p) {
     Log.debug("Checking " + p + " in " + Robot.toString(parent));
@@ -202,14 +206,14 @@ public class InputState {
   }
 
   /**
-   * Return the last known Component to contain the pointer, or null if none.  Note that this may not correspond to
-   * the component that actually shows up in AWTEvents.
+   * Return the last known Component to contain the pointer, or null if none.  Note that this may
+   * not correspond to the component that actually shows up in AWTEvents.
    */
   public synchronized Component getMouseComponent() {
     Component comp = null;
     if (!componentStack.empty()) {
-      WeakReference ref = (WeakReference) componentStack.peek();
-      comp = (Component) ref.get();
+      WeakReference<Component> ref = componentStack.peek();
+      comp = ref.get();
       // Make sure we don't return a component that has gone away.
       if (comp == null || !comp.isShowing()) {
         Log.debug("Discarding unavailable component");
@@ -218,8 +222,8 @@ public class InputState {
         screenLocationStack.pop();
         comp = getMouseComponent();
         if (comp != null) {
-          mouseLocation = (Point) locationStack.peek();
-          mouseLocationOnScreen = (Point) screenLocationStack.peek();
+          mouseLocation = locationStack.peek();
+          mouseLocationOnScreen = screenLocationStack.peek();
         }
       }
     }
@@ -288,8 +292,8 @@ public class InputState {
   }
 
   /**
-   * Returns the mouse location relative to the component that currently contains the pointer, or null if outside all
-   * components.
+   * Returns the mouse location relative to the component that currently contains the pointer, or
+   * null if outside all components.
    */
   public synchronized Point getMouseLocation() {
     return mouseLocation != null ? new Point(mouseLocation) : null;

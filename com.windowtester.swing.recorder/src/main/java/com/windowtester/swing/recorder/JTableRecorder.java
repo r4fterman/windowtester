@@ -25,7 +25,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JTable;
 
 /**
- * Record basic semantic events you might find on an JTable. <p>
+ * Record basic semantic events you might find on a JTable. <p>
  * <ul>
  * <li>Click one or more times in a cell
  * </ul>
@@ -40,8 +40,7 @@ public class JTableRecorder extends JComponentRecorder {
 
   @Override
   protected Step createPopupMenuSelection(Component invoker, int x, int y, Component menuItem) {
-    // create windowtester semantic event
-
+    // create a windowtester semantic event
     if (menuItem == null) {
       return null;
     }
@@ -71,7 +70,7 @@ public class JTableRecorder extends JComponentRecorder {
     if (row == -1 || col == -1) {
       methodName = "actionClick";
     }
-    if ((mods != 0 && mods != InputEvent.BUTTON1_MASK) || count > 1) {
+    if ((mods != 0 && mods != InputEvent.BUTTON1_DOWN_MASK) || count > 1) {
       methodName = "actionClick";
       mask = abbot.util.AWT.getMouseModifiers(mods);
       args.add(mask);

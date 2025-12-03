@@ -33,7 +33,7 @@ public class EventNormalizer implements AWTEventListener {
   private AWTEventListener listener;
   private WeakAWTEventListener weakListener;
   private long modifiers;
-  private final Map disposedWindows = new WeakHashMap();
+  private final Map<Window, Boolean> disposedWindows = new WeakHashMap<>();
 
   public void startListening(AWTEventListener listener, long mask) {
     fnKeyDown = false;
@@ -79,10 +79,10 @@ public class EventNormalizer implements AWTEventListener {
 
   // TODO: maybe make this an AWT event listener instead, so we can use one
   // instance instead of one per window.
-  private class DisposalWatcher extends ComponentAdapter {
-    private final Map map;
+  private static class DisposalWatcher extends ComponentAdapter {
+    private final Map<? extends Component, Boolean> map;
 
-    public DisposalWatcher(Map map) {
+    public DisposalWatcher(Map<? extends Component, Boolean> map) {
       this.map = map;
     }
 
@@ -95,8 +95,7 @@ public class EventNormalizer implements AWTEventListener {
   // We want to ignore consecutive event indicating window disposal; there
   // needs to be an intervening SHOWN/OPEN before we're interested again.
   private boolean isDuplicateDispose(AWTEvent event) {
-    if (event instanceof WindowEvent) {
-      WindowEvent we = (WindowEvent) event;
+    if (event instanceof WindowEvent we) {
       switch (we.getID()) {
         case WindowEvent.WINDOW_CLOSED:
           Window w = we.getWindow();
@@ -148,7 +147,7 @@ public class EventNormalizer implements AWTEventListener {
           return true;
         }
       }
-      modifiers = ke.getModifiers();
+      modifiers = ke.getModifiersEx();
     } else if (id == KeyEvent.KEY_RELEASED) {
       KeyEvent ke = (KeyEvent) event;
       lastKeyPress = KeyEvent.VK_UNDEFINED;
@@ -162,7 +161,7 @@ public class EventNormalizer implements AWTEventListener {
       }
       lastKeyRelease = code;
       lastKeyComponent = ke.getComponent();
-      modifiers = ke.getModifiers();
+      modifiers = ke.getModifiersEx();
     } else if (id == KeyEvent.KEY_TYPED) {
       KeyStroke ks = KeyStroke.getKeyStrokeForEvent((KeyEvent) event);
       char ch = ((KeyEvent) event).getKeyChar();
@@ -197,8 +196,8 @@ public class EventNormalizer implements AWTEventListener {
       }
     } else if (event.getID() == KeyEvent.KEY_PRESSED) {
       if (((KeyEvent) event).getKeyCode() == KeyEvent.VK_CONTROL) {
-        int mods = ((KeyEvent) event).getModifiers();
-        if ((mods & KeyEvent.CTRL_MASK) == 0) {
+        int mods = ((KeyEvent) event).getModifiersEx();
+        if ((mods & KeyEvent.CTRL_DOWN_MASK) == 0) {
           fnKeyDown = true;
           return true;
         }

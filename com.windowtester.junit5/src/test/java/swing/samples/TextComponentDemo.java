@@ -4,7 +4,6 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- *
  *  Contributors:
  *  Google, Inc. - initial API and implementation
  *******************************************************************************/
@@ -15,10 +14,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
@@ -63,12 +62,10 @@ public class TextComponentDemo extends JFrame {
 
   private final JTextPane textPane;
   private AbstractDocument doc;
-  private static final int MAX_CHARACTERS = 300;
   private final JTextArea changeLog;
   private final String newline = "\n";
   private Map<Object, Action> actions;
 
-  // undo helpers
   private UndoAction undoAction;
   private RedoAction redoAction;
   private final UndoManager undo = new UndoManager();
@@ -148,21 +145,21 @@ public class TextComponentDemo extends JFrame {
     // invokes the setText and modelToView methods, which
     // must run in the event dispatching thread. We use
     // invokeLater to schedule the code for execution
-    // in the event dispatching thread.
+    // in the event-dispatching thread.
     protected void displaySelectionInfo(int dot, int mark) {
       SwingUtilities.invokeLater(
           () -> {
             if (dot == mark) { // no selection
               try {
-                Rectangle caretCoords = textPane.modelToView(dot);
+                Rectangle2D caretCoords = textPane.modelToView2D(dot);
                 // Convert it to view coordinates.
                 setText(
                     "caret: text position: "
                         + dot
                         + ", view location = ["
-                        + caretCoords.x
+                        + caretCoords.getX()
                         + ", "
-                        + caretCoords.y
+                        + caretCoords.getY()
                         + "]"
                         + newline);
               } catch (BadLocationException ble) {
@@ -372,7 +369,7 @@ public class TextComponentDemo extends JFrame {
   }
 
   private Action getActionByName(String name) {
-    return (Action) (actions.get(name));
+    return actions.get(name);
   }
 
   private class UndoAction extends AbstractAction {
@@ -416,7 +413,6 @@ public class TextComponentDemo extends JFrame {
       try {
         undo.redo();
       } catch (CannotRedoException ex) {
-        System.out.println("Unable to redo: " + ex);
         ex.printStackTrace();
       }
       updateRedoState();

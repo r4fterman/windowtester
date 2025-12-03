@@ -39,7 +39,7 @@ public class ExpressionEditor extends StepEditor {
         new KeyAdapter() {
           public void keyReleased(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_ENTER
-                && (e.getModifiers() & InputEvent.SHIFT_DOWN_MASK) != 0) {
+                && (e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
               run.doClick();
             }
           }

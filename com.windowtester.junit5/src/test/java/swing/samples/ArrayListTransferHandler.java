@@ -10,6 +10,8 @@
  *******************************************************************************/
 package swing.samples;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -37,7 +39,7 @@ public class ArrayListTransferHandler extends TransferHandler {
           DataFlavor.javaJVMLocalObjectMimeType + ";class=java.util.ArrayList";
       localListFlavor = new DataFlavor(localArrayListType);
     } catch (ClassNotFoundException e) {
-      System.out.println("ArrayListTransferHandler: unable to create data flavor");
+      fail("ArrayListTransferHandler: unable to create data flavor", e);
     }
     serialListFlavor = new DataFlavor(ArrayList.class, "ArrayList");
   }
@@ -60,11 +62,7 @@ public class ArrayListTransferHandler extends TransferHandler {
       } else {
         return false;
       }
-    } catch (UnsupportedFlavorException ufe) {
-      System.out.println("importData: unsupported data flavor");
-      return false;
-    } catch (IOException ioe) {
-      System.out.println("importData: I/O exception");
+    } catch (UnsupportedFlavorException | IOException e) {
       return false;
     }
 

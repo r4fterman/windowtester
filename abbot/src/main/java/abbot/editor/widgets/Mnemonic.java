@@ -29,7 +29,7 @@ import javax.swing.KeyStroke;
 public class Mnemonic {
 
   /**
-   * The unencoded text.  For example "&amp;File" results in "File".
+   * The unencoded text.  For example, "&amp;File" results in "File".
    */
   public String text;
 
@@ -57,7 +57,7 @@ public class Mnemonic {
     }
     try {
       Method m = c.getClass().getMethod("setDisplayedMnemonicIndex", int.class);
-      m.invoke(c, new Integer(index));
+      m.invoke(c, index);
     } catch (Exception e) {
       // ignore errors
     }
@@ -88,10 +88,10 @@ public class Mnemonic {
     // NOTE: 1.4-only
     try {
       Method m = JTabbedPane.class.getMethod("setMnemonicAt", int.class, int.class);
-      m.invoke(tabbedPane, new Integer(tabIndex), new Integer(keycode));
+      m.invoke(tabbedPane, tabIndex, keycode);
       m = JTabbedPane.class.getMethod("setDisplayedMnemonicIndexAt", int.class, int.class);
       if (index != -1) {
-        m.invoke(tabbedPane, new Integer(tabIndex), new Integer(index));
+        m.invoke(tabbedPane, tabIndex, index);
       }
     } catch (Exception e) {
       // ignore errors
@@ -101,11 +101,8 @@ public class Mnemonic {
   public void setMnemonic(Action action) {
     action.putValue(Action.NAME, text);
     if (keycode != KeyEvent.VK_UNDEFINED) {
-      action.putValue(Action.MNEMONIC_KEY, new Integer(keycode));
+      action.putValue(Action.MNEMONIC_KEY, keycode);
     }
-    // Don't think buttons listen for mnemonic index changes anyway...
-    // if (index != -1)
-    // action.putValue(Action.MNEMONIC_INDEX, new Integer(index));
   }
 
   /**

@@ -32,48 +32,50 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 /**
- * Provides read/write of locale-specific mappings for virtual keycode-based KeyStrokes to characters and vice versa.
+ * Provides read/write of locale-specific mappings for virtual keycode-based KeyStrokes to
+ * characters and vice versa.
  * <p>
- * If your locale's map is not present in src/abbot/tester/keymaps, please run this class's {@link #main(String[])}
- * method to generate them and
+ * If your locale's map is not present in src/abbot/tester/keymaps, please run this class's
+ * {@link #main(String[])} method to generate them and
  * <a href="http://sourceforge.net/tracker/?group_id=50939&atid=461492">submit
  * them to the project</a> for inclusion.
  * <p>
- * Variations among locales and OSes are expected; if a map for a locale+OS is not found, the system falls back to the
- * locale map.
+ * Variations among locales and OSes are expected; if a map for a locale+OS is not found, the system
+ * falls back to the locale map.
  */
 public class MapGenerator extends KeyStrokeMap {
+
   private static boolean setModifiers(Robot robot, int mask, boolean press) {
     try {
-      if ((mask & KeyEvent.SHIFT_MASK) != 0) {
+      if ((mask & KeyEvent.SHIFT_DOWN_MASK) != 0) {
         if (press) {
           robot.keyPress(KeyEvent.VK_SHIFT);
         } else {
           robot.keyRelease(KeyEvent.VK_SHIFT);
         }
       }
-      if ((mask & KeyEvent.CTRL_MASK) != 0) {
+      if ((mask & KeyEvent.CTRL_DOWN_MASK) != 0) {
         if (press) {
           robot.keyPress(KeyEvent.VK_CONTROL);
         } else {
           robot.keyRelease(KeyEvent.VK_CONTROL);
         }
       }
-      if ((mask & KeyEvent.ALT_MASK) != 0) {
+      if ((mask & KeyEvent.ALT_DOWN_MASK) != 0) {
         if (press) {
           robot.keyPress(KeyEvent.VK_ALT);
         } else {
           robot.keyRelease(KeyEvent.VK_ALT);
         }
       }
-      if ((mask & KeyEvent.META_MASK) != 0) {
+      if ((mask & KeyEvent.META_DOWN_MASK) != 0) {
         if (press) {
           robot.keyPress(KeyEvent.VK_META);
         } else {
           robot.keyRelease(KeyEvent.VK_META);
         }
       }
-      if ((mask & KeyEvent.ALT_GRAPH_MASK) != 0) {
+      if ((mask & KeyEvent.ALT_GRAPH_DOWN_MASK) != 0) {
         if (press) {
           robot.keyPress(KeyEvent.VK_ALT_GRAPH);
         } else {
@@ -90,6 +92,7 @@ public class MapGenerator extends KeyStrokeMap {
   }
 
   private static class KeyWatcher extends KeyAdapter {
+
     public char keyChar;
     public boolean keyTyped;
     public boolean keyPressed;
@@ -97,36 +100,11 @@ public class MapGenerator extends KeyStrokeMap {
 
     public void keyPressed(KeyEvent e) {
       keyPressed = true;
-      // For debug only; activating this stuff tends to interfere with
-      // key capture
-      /*
-      Document d = ((JTextComponent)e.getComponent()).getDocument();
-      try {
-          String insert = codeName != null
-              ? insert = "\n" + codeName + "=" : "";
-          d.insertString(d.getLength(), insert, null);
-      }
-      catch(BadLocationException ble) {
-      }
-      */
     }
 
     public void keyTyped(KeyEvent e) {
       keyChar = e.getKeyChar();
       keyTyped = true;
-      // For debug only; activating this stuff tends to interfere with
-      // key capture
-      /*
-      Document d = ((JTextComponent)e.getComponent()).getDocument();
-      char[] data = { keyChar };
-      try {
-          String insert = new String(data)
-              + " (" + String.valueOf((int)keyChar) + ")";
-          d.insertString(d.getLength(), insert, null);
-      }
-      catch(BadLocationException ble) {
-      }
-      */
       codeName = null;
     }
   }
@@ -139,24 +117,17 @@ public class MapGenerator extends KeyStrokeMap {
   private static final int ERROR = -5;
 
   private static int generateKey(
-      final Window w,
-      final Component c,
-      final Robot robot,
-      Point p,
-      String name,
-      int code,
-      final boolean refocus) {
+      final Window w, final Component c, final Robot robot, Point p, String name, int code) {
     if (watcher == null) {
       watcher = new KeyWatcher();
       c.addKeyListener(watcher);
     }
     try {
       robot.waitForIdle();
-      if (refocus) {
-        SwingUtilities.invokeAndWait(
-            new Runnable() {
-              public void run() {
-                w.show();
+      SwingUtilities.invokeAndWait(
+          (Runnable)
+              () -> {
+                w.setVisible(true);
                 w.toFront();
                 c.requestFocus();
                 if (Platform.isWindows() || Platform.isMacintosh()) {
@@ -164,9 +135,7 @@ public class MapGenerator extends KeyStrokeMap {
                   robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
                   robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                 }
-              }
-            });
-      }
+              });
       robot.mouseMove(p.x, p.y);
       robot.waitForIdle();
       try {
@@ -184,13 +153,11 @@ public class MapGenerator extends KeyStrokeMap {
         if (!watcher.keyPressed) {
           // alt-tab, alt-f4 and the like which get eaten by the OS
           return SYSTEM;
-        } else if (!watcher.keyTyped)
-        // keys which result in KEY_TYPED event
-        {
+        } else if (!watcher.keyTyped) {
+          // keys which result in KEY_TYPED event
           return UNTYPED;
-        } else if (watcher.keyChar == KeyEvent.CHAR_UNDEFINED)
-        // usually the same as UNTYPED, but just in case
-        {
+        } else if (watcher.keyChar == KeyEvent.CHAR_UNDEFINED) {
+          // usually the same as UNTYPED, but just in case
           return UNDEFINED;
         } else {
           return watcher.keyChar;
@@ -212,30 +179,29 @@ public class MapGenerator extends KeyStrokeMap {
         Integer.parseInt(name.substring(4));
         return true;
       } catch (NumberFormatException e) {
+        // ignore
       }
     }
     return false;
   }
 
-  private static final Comparator FIELD_COMPARATOR =
-      new Comparator() {
-        public int compare(Object o1, Object o2) {
-          try {
-            String n1 = ((Field) o1).getName();
-            String n2 = ((Field) o2).getName();
-            return n1.compareTo(n2);
-          } catch (Exception e) {
-            return 0;
-          }
+  private static final Comparator<Field> FIELD_COMPARATOR =
+      (o1, o2) -> {
+        try {
+          String n1 = o1.getName();
+          String n2 = o2.getName();
+          return n1.compareTo(n2);
+        } catch (Exception e) {
+          return 0;
         }
       };
 
-  // From a VK_ code + modifiers, produce a simluated KEY_TYPED
+  // From a VK_ code + modifiers, produce a simulated KEY_TYPED
   // From a keychar, determine the necessary VK_ code + modifiers
   private static void generateKeyStrokeMap(Window w, JTextComponent c) {
     // TODO: invoke modifiers for multi-byte input sequences?
     // Skip known modifiers and locking keys
-    Collection skip =
+    Collection<String> skip =
         Arrays.asList(
             "VK_UNDEFINED",
             // modifiers
@@ -265,7 +231,7 @@ public class MapGenerator extends KeyStrokeMap {
             "VK_JAPANESE_ROMAN",
             "VK_KANA_LOCK",
             "VK_INPUT_METHOD_ON_OFF");
-    System.out.println("Generating keystroke map");
+
     try {
       Robot robot = new Robot();
       // Make sure the window is ready for input
@@ -275,17 +241,16 @@ public class MapGenerator extends KeyStrokeMap {
       }
       robot.delay(500);
       Field[] fields = KeyEvent.class.getDeclaredFields();
-      Set codes = new TreeSet(FIELD_COMPARATOR);
-      for (int i = 0; i < fields.length; i++) {
-        String name = fields[i].getName();
+      Set<Field> codes = new TreeSet<>(FIELD_COMPARATOR);
+      for (Field field : fields) {
+        String name = field.getName();
         if (name.startsWith("VK_")
             && !skip.contains(name)
             && !name.startsWith("VK_DEAD_")
             && !isFunctionKey(name)) {
-          codes.add(fields[i]);
+          codes.add(field);
         }
       }
-      System.out.println("Total VK_ fields read: " + codes.size());
       Point p = c.getLocationOnScreen();
       p.x += c.getWidth() / 2;
       p.y += c.getHeight() / 2;
@@ -293,38 +258,37 @@ public class MapGenerator extends KeyStrokeMap {
       // arises
       int[] modifierCombos = {
         0,
-        KeyEvent.SHIFT_MASK,
-        KeyEvent.CTRL_MASK,
-        KeyEvent.META_MASK,
-        KeyEvent.ALT_MASK,
-        KeyEvent.ALT_GRAPH_MASK,
+        KeyEvent.SHIFT_DOWN_MASK,
+        KeyEvent.CTRL_DOWN_MASK,
+        KeyEvent.META_DOWN_MASK,
+        KeyEvent.ALT_DOWN_MASK,
+        KeyEvent.ALT_GRAPH_DOWN_MASK,
       };
+
       String[] MODIFIERS = {
         "none", "shift", "control", "meta", "alt", "alt graph",
       };
+
       // These modifiers might trigger window manager functions
-      int needRefocus = KeyEvent.META_MASK | KeyEvent.ALT_MASK;
-      Map[] maps = new Map[modifierCombos.length];
+      Map<Field, Object>[] maps = new Map[modifierCombos.length];
       for (int m = 0; m < modifierCombos.length; m++) {
-        Map map = new TreeMap(FIELD_COMPARATOR);
+        TreeMap<Field, Object> map = new TreeMap<>(FIELD_COMPARATOR);
         int mask = modifierCombos[m];
         if (!setModifiers(robot, mask, true)) {
           System.out.println("Modifier " + MODIFIERS[m] + " is not currently valid");
           continue;
         }
-        System.out.println("Generating keys with mask=" + MODIFIERS[m]);
-        Iterator iter = codes.iterator();
+
+        Iterator<Field> iter = codes.iterator();
         // Always try to fix the focus; who knows what keys have
         // been mapped to the WM
         boolean focus = true;
         while (iter.hasNext()) {
-          Field f = (Field) iter.next();
+          Field f = iter.next();
           int code = f.getInt(null);
-          // System.out.println(f.getName() + ".");
           System.out.print(".");
-          int value =
-              generateKey(w, c, robot, p, f.getName(), code, focus || (mask & needRefocus) != 0);
-          map.put(f, new Integer(value));
+          int value = generateKey(w, c, robot, p, f.getName(), code);
+          map.put(f, value);
         }
         setModifiers(robot, modifierCombos[m], false);
         System.out.println();
@@ -332,39 +296,24 @@ public class MapGenerator extends KeyStrokeMap {
       }
 
       Properties props = new Properties();
-      Iterator iter = maps[0].keySet().iterator();
-      while (iter.hasNext()) {
-        Field key = (Field) iter.next();
+      for (Field key : maps[0].keySet()) {
         for (int m = 0; m < modifierCombos.length; m++) {
-          Map map = maps[m];
+          Map<Field, Object> map = maps[m];
           if (map == null) {
             continue;
           }
           String name = key.getName().substring(3);
           name += "." + Integer.toHexString(modifierCombos[m]);
-          Integer v = (Integer) map.get(key);
-          int value = v.intValue();
-          String hex;
-          switch (value) {
-            case UNTYPED:
-              hex = "untyped";
-              break;
-            case UNDEFINED:
-              hex = "undefined";
-              break;
-            case ILLEGAL:
-              hex = "illegal";
-              break;
-            case SYSTEM:
-              hex = "system";
-              break;
-            case ERROR:
-              hex = "error";
-              break;
-            default:
-              hex = Integer.toHexString(value);
-              break;
-          }
+          int value = (Integer) map.get(key);
+          String hex =
+              switch (value) {
+                case UNTYPED -> "untyped";
+                case UNDEFINED -> "undefined";
+                case ILLEGAL -> "illegal";
+                case SYSTEM -> "system";
+                case ERROR -> "error";
+                default -> Integer.toHexString(value);
+              };
           props.setProperty(name, hex);
         }
       }
@@ -372,7 +321,6 @@ public class MapGenerator extends KeyStrokeMap {
       String[] desc = getMapDescriptions();
       for (int i = 0; i < names.length; i++) {
         String fn = getFilename(names[i]);
-        System.out.println("Saving " + names[i] + " as " + fn);
         FileOutputStream fos = new FileOutputStream(fn);
         props.store(fos, "Key mappings for " + desc[i]);
       }
@@ -391,7 +339,7 @@ public class MapGenerator extends KeyStrokeMap {
     if (language != null) {
       String country = System.getProperty("abbot.locale.country", "");
       String variant = System.getProperty("abbot.locale.variant", "");
-      Locale.setDefault(new Locale(language, country, variant));
+      Locale.setDefault(Locale.of(language, country, variant));
     }
 
     final JFrame frame = new JFrame("KeyStroke mapping generator");
@@ -404,33 +352,17 @@ public class MapGenerator extends KeyStrokeMap {
     frame.addWindowListener(
         new WindowAdapter() {
           public void windowClosing(final WindowEvent e) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                  public void run() {
-                    e.getWindow().show();
-                  }
-                });
+            SwingUtilities.invokeLater(() -> e.getWindow().setVisible(true));
           }
         });
-    frame.show();
-    if (Platform.isOSX()) {
-      // NOT Supported in Mac Java5+
-      //            // avoid exit on cmd-Q
-      //            com.apple.mrj.MRJApplicationUtils.registerQuitHandler(new
-      // com.apple.mrj.MRJQuitHandler() {
-      //                public void handleQuit() { }
-      //                });
-    }
+    frame.setVisible(true);
     SwingUtilities.invokeLater(
-        new Runnable() {
-          public void run() {
+        () ->
             new Thread("keymap generator") {
               public void run() {
                 generateKeyStrokeMap(frame, text);
                 System.exit(0);
               }
-            }.start();
-          }
-        });
+            }.start());
   }
 }

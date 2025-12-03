@@ -85,14 +85,14 @@ public class ComponentRecorder extends abbot.editor.recorder.ComponentRecorder {
   }
 
   @Override
-  protected Step createInputMethod(ArrayList codes, String text) {
+  protected Step createInputMethod(List<Integer> codes, String text) {
     return super.createInputMethod(codes, text);
   }
 
   @Override
   protected Step createKey(Component comp, char keychar, int mods) {
     // Create semantic event and notify listener
-    IUISemanticEvent semanticEvent = UISemanticEventFactory.createKeyDownEvent(comp, keychar, mods);
+    IUISemanticEvent semanticEvent = UISemanticEventFactory.createKeyDownEvent(comp, keychar);
     notify(semanticEvent);
 
     return super.createKey(comp, keychar, mods);

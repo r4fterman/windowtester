@@ -34,6 +34,7 @@ public class FileDialogRecorder extends DialogRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int type) {
     super.init(type);
     dialog = null;
@@ -41,6 +42,7 @@ public class FileDialogRecorder extends DialogRecorder {
     originalDir = null;
   }
 
+  @Override
   protected boolean parseWindowEvent(AWTEvent event) {
     boolean consumed = true;
     if (event.getSource() instanceof FileDialog) {
@@ -115,6 +117,7 @@ public class FileDialogRecorder extends DialogRecorder {
     return seq;
   }
 
+  @Override
   protected Step createStep() {
     if (getRecordingType() == SE_WINDOW) {
       return createFileDialogEvents(dialog, originalDir, originalFile);

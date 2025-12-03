@@ -16,14 +16,13 @@ import com.windowtester.junit5.SwingUIContext;
 import com.windowtester.junit5.UIUnderTest;
 import com.windowtester.junit5.WindowtesterExtension;
 import com.windowtester.runtime.IUIContext;
-import com.windowtester.runtime.WidgetSearchException;
 import com.windowtester.runtime.locator.IWidgetLocator;
 import com.windowtester.runtime.locator.IWidgetReference;
 import com.windowtester.runtime.swing.condition.WindowShowingCondition;
 import com.windowtester.runtime.swing.locator.JListLocator;
 import com.windowtester.runtime.swing.locator.NamedWidgetLocator;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.JList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,38 +35,45 @@ class NamedListTest {
   private SwingList panel = new SwingList();
 
   @Test
-  void testNamedLists(@SwingUIContext IUIContext ui) throws WidgetSearchException {
+  void panel_with_list1_should_contain_element_one(@SwingUIContext IUIContext ui) throws Exception {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
 
-    // named locator
     IWidgetLocator locator = ui.click(new JListLocator("one", new NamedWidgetLocator("list1")));
-    JList jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[] {"one"});
-
-    locator = ui.click(new JListLocator("four", new NamedWidgetLocator("list2")));
-    jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[] {"four"});
-
-    locator = ui.click(new JListLocator("seven", new NamedWidgetLocator("list3")));
-    jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[] {"seven"});
-
-    locator = ui.click(new JListLocator("five", new NamedWidgetLocator("list1")));
-    jlist = (JList) ((IWidgetReference) locator).getWidget();
-    assertContainsExactly(jlist.getSelectedValues(), new String[] {"five"});
+    JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
+    assertContainsExactly(jlist.getSelectedValuesList(), List.of("one"));
   }
 
-  ////////////////////////////////////////////////////////////////////////
-  //
-  // Assertion helpers
-  //
-  ////////////////////////////////////////////////////////////////////////
+  @Test
+  void panel_with_list2_should_contain_element_four(@SwingUIContext IUIContext ui)
+      throws Exception {
+    ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
 
-  private void assertContainsExactly(Collection<?> host, Collection<?> elems) {
+    IWidgetLocator locator = ui.click(new JListLocator("four", new NamedWidgetLocator("list2")));
+    JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
+    assertContainsExactly(jlist.getSelectedValuesList(), List.of("four"));
+  }
+
+  @Test
+  void panel_with_list3_should_contain_element_seven(@SwingUIContext IUIContext ui)
+      throws Exception {
+    ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+
+    IWidgetLocator locator = ui.click(new JListLocator("seven", new NamedWidgetLocator("list3")));
+    JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
+    assertContainsExactly(jlist.getSelectedValuesList(), List.of("seven"));
+  }
+
+  @Test
+  void panel_with_list1_should_contain_element_five(@SwingUIContext IUIContext ui)
+      throws Exception {
+    ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+
+    IWidgetLocator locator = ui.click(new JListLocator("five", new NamedWidgetLocator("list1")));
+    JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
+    assertContainsExactly(jlist.getSelectedValuesList(), List.of("five"));
+  }
+
+  private void assertContainsExactly(Collection<String> host, Collection<String> elems) {
     assertTrue(host.containsAll(elems));
-  }
-
-  private void assertContainsExactly(Object[] hosts, Object[] elems) {
-    assertContainsExactly(Arrays.asList(hosts), Arrays.asList(elems));
   }
 }

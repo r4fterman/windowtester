@@ -11,64 +11,67 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.KeyStroke;
 
 /**
- * Provides read of local-specific mappings for virtual keycode-based KeyStrokes to characters and vice versa. The map
- * format is a properties file with each line containing an entry of the form<br>
+ * Provides read of local-specific mappings for virtual keycode-based KeyStrokes to characters and
+ * vice versa. The map format is a properties file with each line containing an entry of the
+ * form<br>
  * <code>VKNAME.MOD=VALUE</code><br>
- * The VKNAME is the String suffix of the KeyEvent VK_ keycode.  MOD is the integer value of the current modifier mask
- * (assumes only a single modifier has any effect on key output, interesting values are considered to be 0, 1, 2, 8).
- * VALUE is the char value of the KEY_TYPED keyChar corresponding to the VK_ keycode and modifiers, as an integer
- * value.
+ * The VKNAME is the String suffix of the KeyEvent VK_ keycode.  MOD is the integer value of the
+ * current modifier mask (assumes only a single modifier has any effect on key output, interesting
+ * values are considered to be 0, 1, 2, 8). VALUE is the char value of the KEY_TYPED keyChar
+ * corresponding to the VK_ keycode and modifiers, as an integer value.
  */
 public class KeyStrokeMap implements KeyStrokeMapProvider {
 
   /**
    * Map of Characters to virtual keycode-based KeyStrokes.
    */
-  private static final Map keycodes = getKeyStrokeMap();
+  private static final Map<Character, KeyStroke> keycodes = getKeyStrokeMap();
 
   /**
    * Map of keycode-based KeyStrokes to Characters.
    */
-  private static final Map chars = getCharacterMap();
+  private static final Map<KeyStroke, Character> chars = getCharacterMap();
 
   /**
-   * Return the keycode-based KeyStroke corresponding to the given character, as best we can guess it, or null if we
-   * don't know how to generate it.
+   * Return the keycode-based KeyStroke corresponding to the given character, as best we can guess
+   * it, or null if we don't know how to generate it.
    */
   public static KeyStroke getKeyStroke(char ch) {
-    return (KeyStroke) keycodes.get(new Character(ch));
+    return keycodes.get(ch);
   }
 
   /**
-   * Given a keycode-based KeyStroke, return the equivalent character. Defined properly for US keyboards only.  Please
-   * contribute your own.
+   * Given a keycode-based KeyStroke, return the equivalent character. Defined properly for US
+   * keyboards only.  Please contribute your own.
    *
    * @return KeyEvent.VK_UNDEFINED if the result is unknown.
    */
   public static char getChar(KeyStroke ks) {
-    Character ch = (Character) chars.get(ks);
+    Character ch = chars.get(ks);
     if (ch == null) {
-      // Try again, but strip all modifiers but shift
-      int mask = ks.getModifiers() & ~KeyEvent.SHIFT_MASK;
+      // Try again but strip all modifiers but shift
+      int mask = ks.getModifiers() & ~KeyEvent.SHIFT_DOWN_MASK;
       ks = KeyStroke.getKeyStroke(ks.getKeyCode(), mask);
-      ch = (Character) chars.get(ks);
+      ch = chars.get(ks);
       if (ch == null) {
         return KeyEvent.CHAR_UNDEFINED;
       }
     }
-    return ch.charValue();
+    return ch;
   }
 
   private static KeyStrokeMapProvider generator = null;
 
   /**
-   * If available, provide a dedicated class to provide mappings between keystrokes and generated characters.
+   * If available, provide a dedicated class to provide mappings between keystrokes and generated
+   * characters.
    */
   private static KeyStrokeMapProvider getGenerator() {
     if (generator == null) {
@@ -76,7 +79,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         String gname =
             System.getProperty("abbot.keystroke_map_generator", "abbot.tester.KeyStrokeMap");
         if (gname != null) {
-          generator = (KeyStrokeMapProvider) Class.forName(gname).newInstance();
+          generator =
+              (KeyStrokeMapProvider) Class.forName(gname).getDeclaredConstructor().newInstance();
         }
       } catch (Exception e) {
         Log.warn(e);
@@ -85,45 +89,40 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
     return generator;
   }
 
-  private static Map getCharacterMap() {
+  private static Map<KeyStroke, Character> getCharacterMap() {
     KeyStrokeMapProvider generator = getGenerator();
-    Map m = generator != null ? generator.loadCharacterMap() : null;
+    Map<KeyStroke, Character> m = generator != null ? generator.loadCharacterMap() : null;
     return m != null ? m : generateCharacterMappings();
   }
 
   /**
    * Generate a map from characters to virtual keycode-based KeyStrokes.
    */
-  private static Map generateCharacterMappings() {
+  private static Map<KeyStroke, Character> generateCharacterMappings() {
     Log.debug("Generating default character mappings");
-    Map map = new HashMap();
-    Iterator iter = keycodes.keySet().iterator();
-    while (iter.hasNext()) {
-      Object key = iter.next();
+    Map<KeyStroke, Character> map = new HashMap<>();
+    for (Character key : keycodes.keySet()) {
       map.put(keycodes.get(key), key);
     }
     return map;
   }
 
-  private static Map getKeyStrokeMap() {
+  private static Map<Character, KeyStroke> getKeyStrokeMap() {
     KeyStrokeMapProvider generator = getGenerator();
-    Map m = generator != null ? generator.loadKeyStrokeMap() : null;
+    Map<Character, KeyStroke> m = generator != null ? generator.loadKeyStrokeMap() : null;
     return m != null ? m : generateKeyStrokeMappings();
   }
 
   /**
-   * Generate the mapping between characters and key codes.   This is invoked exactly once per VM invocation. We don't
-   * have complete coverage, so if you use this fallback map in AWT mode some events may be missing that would
-   * otherwise be generated in robot mode.
+   * Generate the mapping between characters and key codes.   This is invoked exactly once per VM
+   * invocation. We don't have complete coverage, so if you use this fallback map in AWT mode some
+   * events may be missing that would otherwise be generated in robot mode.
    */
-  private static Map generateKeyStrokeMappings() {
+  private static Map<Character, KeyStroke> generateKeyStrokeMappings() {
     Log.debug("Generating default keystroke mappings");
     // character, keycode, modifiers
     int shift = InputEvent.SHIFT_DOWN_MASK;
-    // int alt = InputEvent.ALT_DOWN_MASK;
-    // int altg = InputEvent.ALT_GRAPH_DOWN_MASK;
     int ctrl = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-    // int meta = InputEvent.META_DOWN_MASK;
     // These are assumed to be standard across all keyboards (?)
     int[][] universalMappings = {
       {'', KeyEvent.VK_ESCAPE, 0}, // No escape sequence exists
@@ -243,12 +242,12 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         '"', KeyEvent.VK_QUOTE, shift,
       },
     };
-    HashMap map = new HashMap();
+
+    Map<Character, KeyStroke> map = new HashMap<>();
     // Universal mappings
-    for (int i = 0; i < universalMappings.length; i++) {
-      int[] entry = universalMappings[i];
+    for (int[] entry : universalMappings) {
       KeyStroke stroke = KeyStroke.getKeyStroke(entry[1], entry[2]);
-      map.put(new Character((char) entry[0]), stroke);
+      map.put((char) entry[0], stroke);
     }
 
     // If the locale is not en_US/GB, provide only a very basic map and
@@ -260,45 +259,44 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
     }
 
     // Basic symbol/punctuation mappings
-    for (int i = 0; i < mappings.length; i++) {
-      int[] entry = mappings[i];
+    for (int[] entry : mappings) {
       KeyStroke stroke = KeyStroke.getKeyStroke(entry[1], entry[2]);
-      map.put(new Character((char) entry[0]), stroke);
+      map.put((char) entry[0], stroke);
     }
+
     // Lowercase
     for (int i = 'a'; i <= 'z'; i++) {
       KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_A + i - 'a', 0);
-      map.put(new Character((char) i), stroke);
+      map.put((char) i, stroke);
       // control characters
       stroke = KeyStroke.getKeyStroke(KeyEvent.VK_A + i - 'a', ctrl);
-      Character key = new Character((char) (i - 'a' + 1));
+      Character key = (char) (i - 'a' + 1);
       // Make sure we don't overwrite something already there
-      if (map.get(key) == null) {
-        map.put(key, stroke);
-      }
+      map.putIfAbsent(key, stroke);
     }
+
     // Capitals
     for (int i = 'A'; i <= 'Z'; i++) {
       KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_A + i - 'A', shift);
-      map.put(new Character((char) i), stroke);
+      map.put((char) i, stroke);
     }
     // digits
     for (int i = '0'; i <= '9'; i++) {
       KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_0 + i - '0', 0);
-      map.put(new Character((char) i), stroke);
+      map.put((char) i, stroke);
     }
     return map;
   }
 
-  private static Map characterMap = null;
-  private static Map keyStrokeMap = null;
+  private static Map<KeyStroke, Character> characterMap = null;
+  private static Map<Character, KeyStroke> keyStrokeMap = null;
   private static boolean loaded = false;
 
   private static InputStream findMap() {
     String[] names = getMapNames();
-    for (int i = 0; i < names.length; i++) {
-      Log.debug("Trying " + names[i]);
-      String name = getFilename(names[i]);
+    for (String s : names) {
+      Log.debug("Trying " + s);
+      String name = getFilename(s);
       InputStream is = KeyStrokeMapProvider.class.getResourceAsStream("keymaps/" + name);
       if (is != null) {
         return is;
@@ -312,8 +310,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
       return;
     }
     Properties props = new Properties();
-    Map cmap = null;
-    Map kmap = null;
+    Map<KeyStroke, Character> cmap = null;
+    Map<Character, KeyStroke> kmap = null;
     try {
       InputStream is = findMap();
       if (is == null) {
@@ -322,9 +320,9 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         return;
       }
       props.load(is);
-      Iterator iter = props.keySet().iterator();
-      cmap = new HashMap();
-      kmap = new HashMap();
+      Iterator<Object> iter = props.keySet().iterator();
+      cmap = new HashMap<>();
+      kmap = new HashMap<>();
       while (iter.hasNext()) {
         String key = (String) iter.next();
         Log.debug("Property " + key + "=" + props.getProperty(key));
@@ -332,7 +330,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
           String codeName = key.substring(0, key.indexOf("."));
           int mask = Integer.parseInt(key.substring(key.indexOf(".") + 1), 16);
           int value = Integer.parseInt(props.getProperty(key), 16);
-          Character ch = new Character((char) value);
+          Character ch = (char) value;
           Field field = KeyEvent.class.getField("VK_" + codeName);
           int code = field.getInt(null);
           KeyStroke ks = KeyStroke.getKeyStroke(code, mask);
@@ -341,7 +339,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
           // masks.
           KeyStroke existing = (KeyStroke) kmap.get(ch);
           if (existing == null
-              || ((existing.getModifiers() != 0 && existing.getModifiers() != KeyEvent.SHIFT_MASK)
+              || ((existing.getModifiers() != 0
+                      && existing.getModifiers() != KeyEvent.SHIFT_DOWN_MASK)
                   || (mask == 0
                       && (existing.getModifiers() != 0
                           || ks.toString().length() < existing.toString().length())))) {
@@ -356,6 +355,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         }
       }
     } catch (IOException io) {
+      // ignore
     }
     Log.debug("Successfully loaded character/keystroke map");
     characterMap = cmap;
@@ -364,17 +364,19 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Load a map for the current locale to translate a character into a corresponding virtual keycode-based KeyStroke.
+   * Load a map for the current locale to translate a character into a corresponding virtual
+   * keycode-based KeyStroke.
    */
-  public Map loadCharacterMap() {
+  public Map<KeyStroke, Character> loadCharacterMap() {
     loadMaps();
     return characterMap;
   }
 
   /**
-   * Load a map for the current locale to translate a virtual keycode into a character-based KeyStroke.
+   * Load a map for the current locale to translate a virtual keycode into a character-based
+   * KeyStroke.
    */
-  public Map loadKeyStrokeMap() {
+  public Map<Character, KeyStroke> loadKeyStrokeMap() {
     loadMaps();
     return keyStrokeMap;
   }
@@ -383,7 +385,6 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
    * Convert a String containing a unique identifier for the map into a unique filename.
    */
   protected static String getFilename(String base) {
-    // return Integer.toHexString(base.hashCode()) + ".map";
     return base + ".map";
   }
 
@@ -396,52 +397,29 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Return the keystroke map filenames that should be available for this locale/OS/VM version/architecture.  Assume
-   * most changes across locale, then OS, then VM version, then os version/architecture.
+   * Return the keystroke map filenames that should be available for this locale/OS/VM
+   * version/architecture.  Assume most changes across locale, then OS, then VM version, then os
+   * version/architecture.
    */
   private static String[] getMapStrings(boolean desc) {
-    ArrayList list = new ArrayList();
+    List<String> list = new ArrayList<>();
     Locale locale = Locale.getDefault();
     String name = locale.toString();
     if (desc) {
       name = "locale=" + name;
     }
-    list.add(0, name);
+    list.addFirst(name);
 
     String os = "-" + getOSType();
     if (desc) {
       os = " (os=" + System.getProperty("os.name") + ", " + System.getProperty("os.version") + ")";
     }
     name += os;
-    list.add(0, name);
-    /*
-    String vm = System.getProperty("java.version");
-    name += " vm=" + vm;
-    list.add(0, name);
-    String version = System.getProperty("os.version");
-    name += " version=" + version;
-    list.add(0, name);
-    String arch = System.getProperty("os.arch");
-    name += " arch=" + arch;
-    list.add(0, name);
-    */
-    return (String[]) list.toArray(new String[list.size()]);
+    list.addFirst(name);
+    return list.toArray(new String[0]);
   }
 
   private static String getOSType() {
     return Platform.isMacintosh() ? "mac" : (Platform.isWindows() ? "w32" : "x11");
-  }
-
-  /**
-   * Return currently available locales.
-   */
-  public static void main(String[] args) {
-    Locale[] available = Locale.getAvailableLocales();
-    System.out.println("Available Locales");
-    for (int i = 0; i < available.length; i++) {
-      System.out.print(available[i].toString());
-      System.out.print(" ");
-    }
-    System.exit(1);
   }
 }

@@ -53,17 +53,18 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 /**
- * Provides a component to edit a test script.  A cursor indicates where insertions will be positioned.  Supports drag &amp;
- * drop within the component itself. Actions supported:<br> move-rows-up<br> move-rows-down<br> toggle<br>
+ * Provides a component to edit a test script.  A cursor indicates where insertions will be
+ * positioned.  Supports drag &amp; drop within the component itself. Actions supported:<br>
+ * move-rows-up<br> move-rows-down<br> toggle<br>
  */
 public class ScriptTable extends JTable implements Autoscroll {
+
   private int cursorRow = 0;
   private Sequence cursorParent = null;
   private int cursorParentIndex = 0;
   private int cursorDepth = 0;
   private boolean isDragging = false;
 
-  private DragSource dragSource;
   private DragSourceListener dragSourceListener;
   private static final Icon openIcon;
   private static final Icon closedIcon;
@@ -102,12 +103,12 @@ public class ScriptTable extends JTable implements Autoscroll {
 
     initDragDrop();
 
-    // Detect clicks on the table in order to position the cursor
-    // and expand entries.
+    // Detect clicks on the table to position the cursor and expand entries.
     MouseListener ml =
         new MouseAdapter() {
+          @Override
           public void mouseClicked(MouseEvent me) {
-            if (me.getModifiers() != InputEvent.BUTTON1_DOWN_MASK) {
+            if (me.getModifiersEx() != InputEvent.BUTTON1_DOWN_MASK) {
               return;
             }
             if (me.getClickCount() == 2) {
@@ -126,6 +127,7 @@ public class ScriptTable extends JTable implements Autoscroll {
     map.put(
         "move-rows-up",
         new AbstractAction() {
+          @Override
           public void actionPerformed(ActionEvent ev) {
             moveUp();
           }
@@ -133,6 +135,7 @@ public class ScriptTable extends JTable implements Autoscroll {
     map.put(
         "move-rows-down",
         new AbstractAction() {
+          @Override
           public void actionPerformed(ActionEvent ev) {
             moveDown();
           }
@@ -140,6 +143,7 @@ public class ScriptTable extends JTable implements Autoscroll {
     map.put(
         "toggle",
         new AbstractAction() {
+          @Override
           public void actionPerformed(ActionEvent ev) {
             int selRow = getSelectedRow();
             if (selRow != -1) {
@@ -178,6 +182,7 @@ public class ScriptTable extends JTable implements Autoscroll {
     }
   }
 
+  @Override
   public Rectangle getCellRect(int row, int col, boolean includeBorder) {
     Rectangle rect = super.getCellRect(row, col, includeBorder);
     int indent = getIndentation(row);
@@ -215,8 +220,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   private void initDragDrop() {
-    int action = DnDConstants.ACTION_MOVE;
-    dragSource = DragSource.getDefaultDragSource();
+    final int action = DnDConstants.ACTION_MOVE;
+    DragSource dragSource = DragSource.getDefaultDragSource();
     DragGestureListener dgl = new DGListener();
     dragSource.createDefaultDragGestureRecognizer(this, action, dgl);
     dragSourceListener = new DSListener();
@@ -268,7 +273,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   /**
-   * Given an arbitrary point within the table, return the nearest valid row for the cursor to be placed.
+   * Given an arbitrary point within the table, return the nearest valid row for the cursor to be
+   * placed.
    */
   private int getCursorRowAtPoint(Point where) {
     int row = rowAtPoint(where);
@@ -304,7 +310,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   /**
-   * Set the cursor location, using the given indentation to determine the appropriate target parent sequence.
+   * Set the cursor location, using the given indentation to determine the appropriate target parent
+   * sequence.
    */
   private void setCursorLocation(int row, int indentation) {
     Rectangle oldRect = getCursorBounds();
@@ -312,7 +319,7 @@ public class ScriptTable extends JTable implements Autoscroll {
     if (script == null) {
       return;
     }
-    // Can't position the cursor after a terminate step
+    // Can't position the cursor after a terminated step
     if (script.hasTerminate() && row == getRowCount()) {
       --row;
     } else if (script.hasLaunch() && row == 0) {
@@ -363,11 +370,13 @@ public class ScriptTable extends JTable implements Autoscroll {
     ((Graphics2D) g).fill(getCursorBounds());
   }
 
+  @Override
   public void paint(Graphics g) {
     super.paint(g);
     drawCursor(g, cursorRow == getRowCount() ? cursorRow - 1 : cursorRow);
   }
 
+  @Override
   public void autoscroll(Point pt) {
     Rectangle bounds = getBounds();
     Log.debug("autoscroll at " + pt + " bounds " + bounds);
@@ -392,6 +401,7 @@ public class ScriptTable extends JTable implements Autoscroll {
 
   private static final int AUTOSCROLL_MARGIN = 12;
 
+  @Override
   public Insets getAutoscrollInsets() {
     // Calculate the insets for the JTree, not the viewport the tree is
     // in.
@@ -405,6 +415,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   private class ScriptTableCellRenderer extends DefaultTableCellRenderer {
+
+    @Override
     public Component getTableCellRendererComponent(
         JTable table, Object value, boolean sel, boolean focus, int row, int col) {
       // We know that the default renderer for a JTable
@@ -429,14 +441,14 @@ public class ScriptTable extends JTable implements Autoscroll {
     return getSelectedRowCount() > 0 ? model.getStepAt(getSelectedRow()) : null;
   }
 
-  public List getSelectedSteps() {
-    ArrayList list = new ArrayList();
+  public List<Step> getSelectedSteps() {
+    List<Step> list = new ArrayList<>();
     int[] rows = getSelectedRows();
     if (rows.length > 0) {
       Step step = model.getStepAt(rows[0]);
       Sequence parent = model.getParent(step);
-      for (int i = 0; i < rows.length; i++) {
-        step = model.getStepAt(rows[i]);
+      for (int row : rows) {
+        step = model.getStepAt(row);
         if (model.getParent(step) == parent) {
           list.add(step);
         }
@@ -461,12 +473,12 @@ public class ScriptTable extends JTable implements Autoscroll {
     if (!canMoveUp()) {
       return;
     }
-    List list = getSelectedSteps();
+    List<Step> list = getSelectedSteps();
     int leadRow = getSelectedRow();
-    Step lead = (Step) list.get(0);
+    Step lead = list.getFirst();
     Sequence parent = model.getParent(lead);
     Step prev = model.getStepAt(leadRow - 1);
-    int targetIndex = 0;
+    int targetIndex;
     // If the previous row to the selection is its parent, move previous
     // to the parent.
     if (parent.indexOf(lead) == 0) {
@@ -496,8 +508,8 @@ public class ScriptTable extends JTable implements Autoscroll {
       Log.warn("Unexpected move down state");
       return;
     }
-    List list = getSelectedSteps();
-    Step lead = (Step) list.get(0);
+    List<Step> list = getSelectedSteps();
+    Step lead = list.getFirst();
     Sequence leadParent = model.getParent(lead);
     int[] rows = getSelectedRows();
     Step next = model.getStepAt(rows[rows.length - 1] + 1);
@@ -520,8 +532,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   public void moveSelectedRows(Sequence parent, int index) {
-    List steps = getSelectedSteps();
-    Step first = (Step) steps.get(0);
+    List<Step> steps = getSelectedSteps();
+    Step first = steps.getFirst();
     if (parent.indexOf(first) == index) {
       return;
     }
@@ -538,6 +550,8 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   private class DGListener implements DragGestureListener {
+
+    @Override
     public void dragGestureRecognized(DragGestureEvent e) {
       Point where = e.getDragOrigin();
       int firstRow = getSelectedRow();
@@ -574,7 +588,9 @@ public class ScriptTable extends JTable implements Autoscroll {
     }
   }
 
-  private class DSListener implements DragSourceListener {
+  private static class DSListener implements DragSourceListener {
+
+    @Override
     public void dragDropEnd(DragSourceDropEvent e) {
       Log.debug("drag drop end " + e.getDropAction());
       // OSX bug makes this fail, so do it in the target listener instead
@@ -583,6 +599,7 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void dragEnter(DragSourceDragEvent e) {
       Log.debug("drag enter " + e.getDropAction());
       DragSourceContext context = e.getDragSourceContext();
@@ -596,10 +613,13 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void dragOver(DragSourceDragEvent e) {}
 
+    @Override
     public void dragExit(DragSourceEvent e) {}
 
+    @Override
     public void dropActionChanged(DragSourceDragEvent e) {
       Log.debug("action changed " + e.getDropAction());
       DragSourceContext context = e.getDragSourceContext();
@@ -611,6 +631,8 @@ public class ScriptTable extends JTable implements Autoscroll {
    * Listens to events coming from the target of the drag action.
    */
   private class DTListener implements DropTargetListener {
+
+    @Override
     public void dragEnter(DropTargetDragEvent e) {
       if (!isDragAcceptable(e)) {
         e.rejectDrag();
@@ -619,8 +641,10 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void dragExit(DropTargetEvent e) {}
 
+    @Override
     public void dropActionChanged(DropTargetDragEvent e) {
       if (!isDragAcceptable(e)) {
         e.rejectDrag();
@@ -629,6 +653,7 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void dragOver(DropTargetDragEvent e) {
       Log.debug("drag over target " + e.getDropAction());
       if (isDragAcceptable(e)) {
@@ -643,6 +668,7 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void drop(DropTargetDropEvent e) {
       Log.debug("drop successful " + e.getDropAction());
       if (!isDropAcceptable(e)) {
@@ -666,10 +692,11 @@ public class ScriptTable extends JTable implements Autoscroll {
   }
 
   /**
-   * If any sub-steps of a sequence are selected, they <i>all</i> must be selected.  Also select all children when
-   * selecting an open sequence.
+   * If any sub-steps of a sequence are selected, they <i>all</i> must be selected. Also, select all
+   * children when selecting an open sequence.
    */
   private class SelectionModel extends DefaultListSelectionModel {
+
     public SelectionModel() {
       setSelectionMode(SINGLE_INTERVAL_SELECTION);
     }
@@ -684,7 +711,8 @@ public class ScriptTable extends JTable implements Autoscroll {
       // minimum depth.
       int anchor = getAnchorSelectionIndex();
       int lead = getLeadSelectionIndex();
-      int lo, hi;
+      int lo;
+      int hi;
       if (anchor < lead) {
         lo = anchor;
         hi = lead;
@@ -724,36 +752,43 @@ public class ScriptTable extends JTable implements Autoscroll {
       }
     }
 
+    @Override
     public void addSelectionInterval(int index0, int index1) {
       super.addSelectionInterval(index0, index1);
       fixSelection();
     }
 
+    @Override
     public void removeSelectionInterval(int index0, int index1) {
       super.removeSelectionInterval(index0, index1);
       fixSelection();
     }
 
+    @Override
     public void setAnchorSelectionIndex(int index) {
       super.setAnchorSelectionIndex(index);
       fixSelection();
     }
 
+    @Override
     public void setLeadSelectionIndex(int index) {
       super.setLeadSelectionIndex(index);
       fixSelection();
     }
 
+    @Override
     public void setSelectionInterval(int index0, int index1) {
       super.setSelectionInterval(index0, index1);
       fixSelection();
     }
 
-    public void insertIndexInterval(int index, int length, boolean bfore) {
-      super.insertIndexInterval(index, length, bfore);
+    @Override
+    public void insertIndexInterval(int index, int length, boolean before) {
+      super.insertIndexInterval(index, length, before);
       fixSelection();
     }
 
+    @Override
     public void removeIndexInterval(int idx0, int idx1) {
       super.removeIndexInterval(idx0, idx1);
       fixSelection();

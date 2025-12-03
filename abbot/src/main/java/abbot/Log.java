@@ -58,7 +58,7 @@ public final class Log {
   private Log() {}
 
   /**
-   * Global final to determine whether debugging code is generated.  This should be changed to false
+   * Global final to determine whether debugging code is generated. This should be changed too false
    * to build production code.
    */
   public static final boolean DEBUG_BUILD = true;
@@ -69,7 +69,7 @@ public final class Log {
   public static final int FULL_STACK = 0;
 
   /**
-   * Mnemonic to print the default number of lines of stack trace.
+   * Mnemonic to print the default lines of a stack trace.
    */
   private static final int CLASS_STACK_DEPTH = -1;
 
@@ -78,7 +78,7 @@ public final class Log {
    * static final int WARNING = 0x0002; public static final int DEBUG   = 0x0004; public static
    * final int INFO    = 0x0008;
    */
-  private static class LogSynchronizer extends Object {}
+  private static class LogSynchronizer {}
 
   /**
    * Synchronize message output.
@@ -133,13 +133,6 @@ public final class Log {
 
   private static final java.text.DateFormat timestampFormat =
       new java.text.SimpleDateFormat("yyMMdd HH:mm:ss:SSS ");
-
-  /**
-   * Strip this out of output, since it doesn't add information to see it repeatedly.  Some projects
-   * have
-   * <i>really</i> long prefixes.
-   */
-  private static final String COMMON_PREFIX = null;
 
   /**
    * Store which classes we want to see debug info for.  FIXME make it a map and make the value the
@@ -201,57 +194,60 @@ public final class Log {
     }
     ArrayList<String> newArgs = new ArrayList<>(args.length);
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equals("--enable-warnings")) {
-        printConsoleWarnings = true;
-      } else if (args[i].equals("--no-timestamp")) {
-        showTimestamp = false;
-      } else if (args[i].equals("--show-threads")) {
-        showThreads = true;
-      } else if (args[i].equals("--stack-depth")) {
-        if (++i < args.length) {
-          try {
-            debugStackDepth = Integer.parseInt(args[i]);
-          } catch (Exception exc) {
-          }
-        } else {
-          internalWarn("Ignoring --stack-depth with no argument");
-        }
-      } else if (args[i].equals("--exception-depth")) {
-        if (++i < args.length) {
-          try {
-            excStackDepth = Integer.parseInt(args[i]);
-          } catch (Exception exc) {
-          }
-        } else {
-          internalWarn("Ignoring --exception-depth with no argument");
-        }
-      } else if (args[i].equals("--debug") || args[i].equals("--no-debug")) {
-        // since we're enabling some debugging, set the other settings
-        // to debug defaults...
-        boolean exclude = args[i].startsWith("--no");
-
-        // Re-enable stdout/stderr if they were removed
-        if (!DEBUG_BUILD) {
-          System.setOut(systemOut);
-          System.setErr(systemErr);
-        }
-        if (++i < args.length) {
-          if (exclude) {
-            removeDebugClass(args[i]);
+      switch (args[i]) {
+        case "--enable-warnings" -> printConsoleWarnings = true;
+        case "--no-timestamp" -> showTimestamp = false;
+        case "--show-threads" -> showThreads = true;
+        case "--stack-depth" -> {
+          if (++i < args.length) {
+            try {
+              debugStackDepth = Integer.parseInt(args[i]);
+            } catch (Exception e) {
+              // ignore
+            }
           } else {
-            addDebugClass(args[i]);
+            internalWarn("Ignoring --stack-depth with no argument");
           }
-        } else {
-          internalWarn("Ignoring " + args[i - 1] + " with no argument");
         }
-      } else if (args[i].equals("--log")) {
-        String filename = DEFAULT_LOGFILE_NAME;
-        if (++i < args.length) {
-          filename = args[i];
+        case "--exception-depth" -> {
+          if (++i < args.length) {
+            try {
+              excStackDepth = Integer.parseInt(args[i]);
+            } catch (Exception e) {
+              // ignore
+            }
+          } else {
+            internalWarn("Ignoring --exception-depth with no argument");
+          }
         }
-        enableLogging(filename);
-      } else {
-        newArgs.add(args[i]);
+        case "--debug", "--no-debug" -> {
+          // since we're enabling some debugging, set the other settings
+          // to debug defaults...
+          boolean exclude = args[i].startsWith("--no");
+
+          // Re-enable stdout/stderr if they were removed
+          if (!DEBUG_BUILD) {
+            System.setOut(systemOut);
+            System.setErr(systemErr);
+          }
+          if (++i < args.length) {
+            if (exclude) {
+              removeDebugClass(args[i]);
+            } else {
+              addDebugClass(args[i]);
+            }
+          } else {
+            internalWarn("Ignoring " + args[i - 1] + " with no argument");
+          }
+        }
+        case "--log" -> {
+          String filename = DEFAULT_LOGFILE_NAME;
+          if (++i < args.length) {
+            filename = args[i];
+          }
+          enableLogging(filename);
+        }
+        default -> newArgs.add(args[i]);
       }
     }
     String[] result = new String[newArgs.size()];
@@ -332,7 +328,7 @@ public final class Log {
 
   public static void addDebugClass(Class<?> c, int depth) {
     expectDebugOutput = true;
-    debugged.put(c, new Integer(depth));
+    debugged.put(c, depth);
     notdebugged.remove(c);
     Log.debug("Debugging enabled for " + c);
   }
@@ -556,8 +552,7 @@ public final class Log {
   }
 
   public static void warn(String message) {
-    String stack = getStackTrace(1, debugStackDepth);
-    internalWarn(stack + ": " + message);
+    warn(message, debugStackDepth);
   }
 
   public static void warn(String message, int lines) {
@@ -660,7 +655,8 @@ public final class Log {
       log("Log closed");
       try {
         log.close();
-      } catch (Exception exc) {
+      } catch (Exception e) {
+        // ignore
       }
     }
   }

@@ -10,9 +10,8 @@
  *******************************************************************************/
 package context2.testcases;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import abbot.tester.ActionFailedException;
 import com.windowtester.junit5.SwingUIContext;
 import com.windowtester.junit5.UIUnderTest;
 import com.windowtester.junit5.WindowtesterExtension;
@@ -46,21 +45,12 @@ class SwingTextTest {
     ui.enterText(" Smith");
     ui.assertThat(new LabeledTextLocator("Name").hasText("Jane Smith"));
 
-    // context clicks
-    ui.contextClick(
-        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice2"));
+    var locator = new JTextComponentLocator(JTextField.class, 0, null);
 
-    ui.contextClick(
-        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice1"));
+    ui.contextClick(locator, new JMenuItemLocator("choice2"));
+    ui.contextClick(locator, new JMenuItemLocator("choice1"));
 
-    try {
-      ui.contextClick(
-          new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("bogus"));
-      fail("should have thrown a CNF exception");
-    } catch (ActionFailedException e) {
-      fail("should not have thrown " + e);
-    } catch (WidgetSearchException e) {
-      // pass
-    }
+    assertThrows(
+        WidgetSearchException.class, () -> ui.contextClick(locator, new JMenuItemLocator("bogus")));
   }
 }

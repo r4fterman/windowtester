@@ -26,8 +26,7 @@ public class JTabbedPaneLocation extends ComponentLocation {
 
   public JTabbedPaneLocation(int index) {
     if (index < 0) {
-      String msg =
-          Strings.get("tester.JTabbedPane.invalid_index", new Object[] {new Integer(index)});
+      String msg = Strings.get("tester.JTabbedPane.invalid_index", new Object[] {index});
       throw new LocationUnavailableException(msg);
     }
     this.index = index;
@@ -46,8 +45,7 @@ public class JTabbedPaneLocation extends ComponentLocation {
    */
   private Point indexToPoint(JTabbedPane tabs, int index) {
     if (index < 0 || index >= tabs.getTabCount()) {
-      String msg =
-          Strings.get("tester.JTabbedPane.invalid_index", new Object[] {new Integer(index)});
+      String msg = Strings.get("tester.JTabbedPane.invalid_index", new Object[] {index});
       throw new LocationUnavailableException(msg);
     }
     Log.debug("converting index " + index);
@@ -98,8 +96,7 @@ public class JTabbedPaneLocation extends ComponentLocation {
 
   // FIXME if they correspond to the same tab, are they equal?
   public boolean equals(Object o) {
-    if (o instanceof JTabbedPaneLocation) {
-      JTabbedPaneLocation loc = (JTabbedPaneLocation) o;
+    if (o instanceof JTabbedPaneLocation loc) {
       if (tabName != null) {
         return tabName.equals(loc.tabName);
       }
@@ -137,7 +134,7 @@ public class JTabbedPaneLocation extends ComponentLocation {
    * This exception is thrown if a given tab is not currently visible. Some LAFs may not display all tabs
    * concurrently.  OSX, for example, puts tabs that don't fit into a popup menu.
    */
-  class TabNotVisibleException extends LocationUnavailableException {
+  static class TabNotVisibleException extends LocationUnavailableException {
     public int index;
 
     public TabNotVisibleException(int index) {

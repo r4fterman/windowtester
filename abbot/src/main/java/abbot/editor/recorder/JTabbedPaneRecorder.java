@@ -29,6 +29,7 @@ public class JTabbedPaneRecorder extends JComponentRecorder {
     super(resolver);
   }
 
+  @Override
   public boolean accept(AWTEvent event) {
     if (isClick(event)) {
       MouseEvent me = (MouseEvent) event;
@@ -71,6 +72,7 @@ public class JTabbedPaneRecorder extends JComponentRecorder {
   /**
    * Special case for OSX tab selection from popup menu.
    */
+  @Override
   protected Step createMenuSelection(Component menuItem) {
     ComponentReference ref = getResolver().addComponent(tabbedPane);
     ComponentLocation loc = new JTabbedPaneLocation(((JMenuItem) menuItem).getText());
@@ -88,6 +90,7 @@ public class JTabbedPaneRecorder extends JComponentRecorder {
   /**
    * Parse clicks, notably those that select a tab.
    */
+  @Override
   protected Step createClick(Component target, int x, int y, int mods, int count) {
     ComponentReference cr = getResolver().addComponent(target);
     JTabbedPane tp = (JTabbedPane) target;

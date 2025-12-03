@@ -26,8 +26,9 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -104,8 +105,8 @@ public class ComponentBrowser extends JPanel implements ActionListener {
   private final LocalHierarchy hierarchy;
 
   public ComponentBrowser(Resolver r, Hierarchy h) {
-    this.resolver = r;
-    this.hierarchy = new LocalHierarchy(h);
+    resolver = r;
+    hierarchy = new LocalHierarchy(h);
     setName("browser");
     equip(this);
     setSelectedComponent(null);
@@ -134,6 +135,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     componentTree.setName("browser.hierarchy");
     componentTree.addTreeSelectionListener(
         new TreeSelectionListener() {
+          @Override
           public void valueChanged(TreeSelectionEvent e) {
             if (!ignoreHierarchyChange) {
               setSelectedComponent(getSelectedComponentFromTree());
@@ -173,6 +175,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     refModel = new ReferencesModel(resolver);
     refTable =
         new JTable(refModel) {
+          @Override
           public void setRowSelectionInterval(int start, int end) {
             super.setRowSelectionInterval(start, end);
             // Make sure the selection is always visible.
@@ -188,6 +191,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     refTable.clearSelection();
     ListSelectionListener lsl =
         new ListSelectionListener() {
+          @Override
           public void valueChanged(ListSelectionEvent lse) {
             if (!lse.getValueIsAdjusting()) {
               referenceListSelectionChanged(lse);
@@ -208,6 +212,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
   private Component createLeftPanel() {
     tabs =
         new JTabbedPane() {
+          @Override
           public Dimension getPreferredSize() {
             return new Dimension(250, 200);
           }
@@ -218,6 +223,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     tabs.setToolTipTextAt(1, Strings.get("browser.references.tip"));
     tabs.addChangeListener(
         new ChangeListener() {
+          @Override
           public void stateChanged(ChangeEvent e) {
             tabChanged(e);
           }
@@ -240,6 +246,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     propTable.setDefaultRenderer(Object.class, new PropertyRenderer());
     ListSelectionListener lsl =
         new ListSelectionListener() {
+          @Override
           public void valueChanged(ListSelectionEvent lse) {
             if (!lse.getValueIsAdjusting()) {
               enableAssertSampleButtons();
@@ -251,6 +258,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     addAssertButton = new JButton("");
     addAssertButton.addActionListener(
         new ActionListener() {
+          @Override
           public void actionPerformed(ActionEvent ev) {
             firePropertyCheck(false);
           }
@@ -261,6 +269,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     addSampleButton = new JButton(Strings.get("SampleProperty"));
     addSampleButton.addActionListener(
         new ActionListener() {
+          @Override
           public void actionPerformed(ActionEvent ev) {
             firePropertyCheck(true);
           }
@@ -314,6 +323,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
 
     tabs2 =
         new JTabbedPane() {
+          @Override
           public Dimension getPreferredSize() {
             return new Dimension(300, 150);
           }
@@ -382,8 +392,8 @@ public class ComponentBrowser extends JPanel implements ActionListener {
   }
 
   /**
-   * Flag to avoid responding to list/tree selection changes when they're made programmatically instead of by the
-   * user.
+   * Flag to avoid responding to list/tree selection changes when they're made programmatically
+   * instead of by the user.
    */
   private boolean ignoreHierarchyChange = false;
 
@@ -431,6 +441,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     return refTable.getSelectedRow() != -1;
   }
 
+  @Override
   public void setEnabled(boolean state) {
     super.setEnabled(state);
     if (state) {
@@ -441,6 +452,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
   public void refresh() {
     SwingUtilities.invokeLater(
         new Runnable() {
+          @Override
           public void run() {
             componentTree.reload(null);
           }
@@ -453,20 +465,22 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     try {
       comp = ref.getComponent();
     } catch (ComponentSearchException e) {
-      if (e instanceof MultipleComponentsFoundException) {
+      if (e instanceof MultipleComponentsFoundException mc) {
         // FIXME query the user to select the right one?
         // the right one may not exist at this point in time.
-        MultipleComponentsFoundException mc = (MultipleComponentsFoundException) e;
         Component[] list = mc.getComponents();
-        String warning = "Multiple components found for " + ref.toXMLString() + ": ";
+        StringBuilder warning =
+            new StringBuilder("Multiple components found for " + ref.toXMLString() + ": ");
         for (int i = 0; i < list.length; i++) {
-          warning += "\n" + Robot.toHierarchyPath(mc.getComponents()[i]);
+          warning.append("\n").append(Robot.toHierarchyPath(mc.getComponents()[i]));
         }
-        Log.warn(warning);
+        Log.warn(warning.toString());
       }
       try {
         fakeComponent = true;
-        comp = (Component) (Class.forName(ref.getRefClassName())).newInstance();
+        comp =
+            (Component)
+                (Class.forName(ref.getRefClassName())).getDeclaredConstructor().newInstance();
         comp.setName(Strings.get("browser.hierarchy.proxy", new Object[] {ref.getID()}));
         if (comp instanceof Window) {
           // make sure it never appears in the hierarchy
@@ -504,6 +518,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     return filter;
   }
 
+  @Override
   public void actionPerformed(ActionEvent e) {
     if (e.getSource() == refreshButton) {
       refresh();
@@ -553,8 +568,7 @@ public class ComponentBrowser extends JPanel implements ActionListener {
 
   private Component getSelectedComponentFromTree() {
     ComponentNode node = (ComponentNode) componentTree.getLastSelectedPathComponent();
-    Component comp = node != null ? node.getComponent() : null;
-    return comp;
+    return node != null ? node.getComponent() : null;
   }
 
   private ComponentReference getReferenceAt(int row) {
@@ -599,25 +613,23 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     }
   }
 
-  private ArrayList listeners = new ArrayList();
+  private List<ComponentBrowserListener> listeners = new ArrayList<>();
 
   public void addSelectionListener(ComponentBrowserListener cbl) {
-    ArrayList list = new ArrayList(listeners);
+    List<ComponentBrowserListener> list = new ArrayList<>(listeners);
     list.add(cbl);
     listeners = list;
   }
 
   public void removeSelectionListener(ComponentBrowserListener cbl) {
-    ArrayList list = new ArrayList(listeners);
+    List<ComponentBrowserListener> list = new ArrayList<>(listeners);
     list.remove(cbl);
     listeners = list;
   }
 
   protected void fireSelectionChanged() {
-    Iterator iter = listeners.iterator();
-    while (iter.hasNext()) {
-      ((ComponentBrowserListener) iter.next())
-          .selectionChanged(this, selectedComponent, selectedReference);
+    for (ComponentBrowserListener listener : listeners) {
+      listener.selectionChanged(this, selectedComponent, selectedReference);
     }
   }
 
@@ -628,35 +640,39 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     }
     Method m = (Method) propertyModel.getValueAt(row, ComponentPropertyModel.METHOD_OBJECT);
     Object value = propertyModel.getValueAt(row, ComponentPropertyModel.PROPERTY_VALUE);
-    Iterator iter = listeners.iterator();
-    while (iter.hasNext()) {
-      ((ComponentBrowserListener) iter.next()).propertyAction(this, m, value, sample);
+    for (ComponentBrowserListener listener : listeners) {
+      listener.propertyAction(this, m, value, sample);
     }
   }
 
   /**
    * Provides filtering of another hierarchy to remove locally-spawned throwaway components.
    */
-  private class LocalHierarchy extends CompactHierarchy {
-    private final Map filtered = new WeakHashMap();
+  private static class LocalHierarchy extends CompactHierarchy {
+
+    private final Map<Component, Boolean> filtered = new WeakHashMap<>();
     private final Hierarchy raw = new AWTHierarchy();
 
     public LocalHierarchy(Hierarchy h) {
       super(h);
     }
 
-    public Collection getRoots() {
-      Collection roots = isCompact() ? super.getRoots() : raw.getRoots();
+    @Override
+    public Collection<Component> getRoots() {
+      Collection<Component> roots = isCompact() ? super.getRoots() : raw.getRoots();
       roots.removeAll(filtered.keySet());
       return roots;
     }
 
-    public Collection getComponents(Component component) {
-      Collection kids = isCompact() ? super.getComponents(component) : raw.getComponents(component);
+    @Override
+    public Collection<Component> getComponents(Component component) {
+      Collection<Component> kids =
+          isCompact() ? super.getComponents(component) : raw.getComponents(component);
       kids.removeAll(filtered.keySet());
       return kids;
     }
 
+    @Override
     public boolean contains(Component component) {
       return (isCompact() ? super.contains(component) : raw.contains(component))
           && !filtered.containsKey(component);
@@ -668,8 +684,10 @@ public class ComponentBrowser extends JPanel implements ActionListener {
   }
 
   private class AttributeListener implements TableModelListener {
+
     private boolean messaging = false;
 
+    @Override
     public void tableChanged(TableModelEvent e) {
       // Preserve the reference table selection
       // NOTE: only really need to message on ID changes, since that's
@@ -690,16 +708,13 @@ public class ComponentBrowser extends JPanel implements ActionListener {
     if (SwingUtilities.isEventDispatchThread()) {
       refModel.fireTableDataChanged();
     } else {
-      SwingUtilities.invokeLater(
-          new Runnable() {
-            public void run() {
-              referencesChanged();
-            }
-          });
+      SwingUtilities.invokeLater(() -> referencesChanged());
     }
   }
 
   private class PropertyRenderer extends DefaultTableCellRenderer {
+
+    @Override
     public Component getTableCellRendererComponent(
         JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       Component c =
@@ -714,10 +729,11 @@ public class ComponentBrowser extends JPanel implements ActionListener {
       return c;
     }
 
+    @Override
     protected void setValue(Object value) {
       String str = ArgumentParser.toString(value);
       setToolTipText(str);
-      super.setValue(str == ArgumentParser.DEFAULT_TOSTRING ? value.toString() : str);
+      super.setValue(Objects.equals(str, ArgumentParser.DEFAULT_TOSTRING) ? value.toString() : str);
     }
   }
 }
