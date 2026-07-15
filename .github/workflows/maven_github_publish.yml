@@ -3,6 +3,11 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to publish (e.g. v6.0.1)'
+        required: true
 
 jobs:
   publish:
@@ -14,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-java@v5
         with:
           java-version: '21'
@@ -33,12 +40,11 @@ jobs:
           servers: |
             [{
                 "id": "github",
-                "username": "r4fterman",
-                "password": "${{ secrets.GH_TOKEN }}"
+                "username": "${{ github.actor }}",
+                "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       - name: Publish package
         run: mvn -B deploy -Prelease -DskipTests
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GPG_SECRET_KEY_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
