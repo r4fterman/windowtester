@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,10 +55,10 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   public static char getChar(KeyStroke ks) {
     Character ch = chars.get(ks);
     if (ch == null) {
-      // Try again but strip all modifiers but shift
-      int mask = ks.getModifiers() & ~KeyEvent.SHIFT_DOWN_MASK;
-      ks = KeyStroke.getKeyStroke(ks.getKeyCode(), mask);
-      ch = chars.get(ks);
+      // Try again, but strip all modifiers but shift
+      int mask = ks.getModifiers() & ~InputEvent.SHIFT_DOWN_MASK;
+      var keyStroke = KeyStroke.getKeyStroke(ks.getKeyCode(), mask);
+      ch = chars.get(keyStroke);
       if (ch == null) {
         return KeyEvent.CHAR_UNDEFINED;
       }
@@ -101,16 +100,16 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   private static Map<KeyStroke, Character> generateCharacterMappings() {
     Log.debug("Generating default character mappings");
     Map<KeyStroke, Character> map = new HashMap<>();
-    for (Character key : keycodes.keySet()) {
-      map.put(keycodes.get(key), key);
+    for (Map.Entry<Character, KeyStroke> entry : keycodes.entrySet()) {
+      map.put(entry.getValue(), entry.getKey());
     }
     return map;
   }
 
   private static Map<Character, KeyStroke> getKeyStrokeMap() {
     KeyStrokeMapProvider generator = getGenerator();
-    Map<Character, KeyStroke> m = generator != null ? generator.loadKeyStrokeMap() : null;
-    return m != null ? m : generateKeyStrokeMappings();
+    Map<Character, KeyStroke> map = generator != null ? generator.loadKeyStrokeMap() : null;
+    return map != null ? map : generateKeyStrokeMappings();
   }
 
   /**
@@ -120,14 +119,12 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
    */
   private static Map<Character, KeyStroke> generateKeyStrokeMappings() {
     Log.debug("Generating default keystroke mappings");
-    // character, keycode, modifiers
     int shift = InputEvent.SHIFT_DOWN_MASK;
     int ctrl = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-    // These are assumed to be standard across all keyboards (?)
     int[][] universalMappings = {
-      {'', KeyEvent.VK_ESCAPE, 0}, // No escape sequence exists
+      {'', KeyEvent.VK_ESCAPE, 0},
       {'\b', KeyEvent.VK_BACK_SPACE, 0},
-      {'', KeyEvent.VK_DELETE, 0}, // None for this one either
+      {'', KeyEvent.VK_DELETE, 0},
       {'\n', KeyEvent.VK_ENTER, 0},
       {'\r', KeyEvent.VK_ENTER, 0},
     };
@@ -309,9 +306,10 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
     if (loaded) {
       return;
     }
+    Map<KeyStroke, Character> cmap = new HashMap<>();
+    Map<Character, KeyStroke> kmap = new HashMap<>();
+
     Properties props = new Properties();
-    Map<KeyStroke, Character> cmap = null;
-    Map<Character, KeyStroke> kmap = null;
     try {
       InputStream is = findMap();
       if (is == null) {
@@ -320,11 +318,9 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         return;
       }
       props.load(is);
-      Iterator<Object> iter = props.keySet().iterator();
-      cmap = new HashMap<>();
-      kmap = new HashMap<>();
-      while (iter.hasNext()) {
-        String key = (String) iter.next();
+
+      for (Object o : props.keySet()) {
+        String key = (String) o;
         Log.debug("Property " + key + "=" + props.getProperty(key));
         try {
           String codeName = key.substring(0, key.indexOf("."));
@@ -337,7 +333,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
           // May be more than one KeyStroke mapping to a given key
           // character; prefer no mask or shift mask over any other
           // masks.
-          KeyStroke existing = (KeyStroke) kmap.get(ch);
+          KeyStroke existing = kmap.get(ch);
           if (existing == null
               || ((existing.getModifiers() != 0
                       && existing.getModifiers() != KeyEvent.SHIFT_DOWN_MASK)
@@ -420,6 +416,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   private static String getOSType() {
-    return Platform.isMacintosh() ? "mac" : (Platform.isWindows() ? "w32" : "x11");
+    var osType = Platform.isWindows() ? "w32" : "x11";
+    return Platform.isMacintosh() ? "mac" : osType;
   }
 }

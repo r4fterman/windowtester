@@ -17,7 +17,7 @@ import com.windowtester.junit5.UIUnderTest;
 import com.windowtester.junit5.WindowtesterExtension;
 import com.windowtester.runtime.IUIContext;
 import com.windowtester.runtime.WidgetSearchException;
-import com.windowtester.runtime.swing.SwingWidgetLocator;
+import com.windowtester.runtime.condition.HasTextCondition;
 import com.windowtester.runtime.swing.condition.WindowShowingCondition;
 import com.windowtester.runtime.swing.locator.JMenuItemLocator;
 import com.windowtester.runtime.swing.locator.JTextComponentLocator;
@@ -38,8 +38,11 @@ class SwingTextTest {
     ui.wait(new WindowShowingCondition("Swing Text"));
 
     ui.pause(200);
-    ui.click(new SwingWidgetLocator(JTextField.class, "textField"));
-    ui.enterText("foo\b\n");
+
+    var textField = new JTextComponentLocator(0, JTextField.class, "textField");
+    ui.click(textField);
+    ui.enterText("foo:ÄÖÜ-#+*$%?");
+    ui.assertThat(new HasTextCondition(textField, "foo:ÄÖÜ-#+*$%?"));
 
     ui.click(new LabeledTextLocator("Name"));
     ui.enterText(" Smith");
