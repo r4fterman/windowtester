@@ -48,12 +48,16 @@ class SwingTextTest {
     ui.enterText(" Smith");
     ui.assertThat(new LabeledTextLocator("Name").hasText("Jane Smith"));
 
-    var locator = new JTextComponentLocator(JTextField.class, 0, null);
-
-    ui.contextClick(locator, new JMenuItemLocator("choice2"));
-    ui.contextClick(locator, new JMenuItemLocator("choice1"));
+    ui.contextClick(
+        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice2"));
+    ui.contextClick(
+        new JTextComponentLocator(JTextField.class, 0, null), new JMenuItemLocator("choice1"));
 
     assertThrows(
-        WidgetSearchException.class, () -> ui.contextClick(locator, new JMenuItemLocator("bogus")));
+        WidgetSearchException.class,
+        () ->
+            ui.contextClick(
+                new JTextComponentLocator(JTextField.class, 0, null),
+                new JMenuItemLocator("bogus")));
   }
 }
