@@ -37,6 +37,7 @@ class NamedListTest {
   @Test
   void panel_with_list1_should_contain_element_one(@SwingUIContext IUIContext ui) throws Exception {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+    ui.pause(200);
 
     IWidgetLocator locator = ui.click(new JListLocator("one", new NamedWidgetLocator("list1")));
     JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
@@ -47,6 +48,7 @@ class NamedListTest {
   void panel_with_list2_should_contain_element_four(@SwingUIContext IUIContext ui)
       throws Exception {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+    ui.pause(200);
 
     IWidgetLocator locator = ui.click(new JListLocator("four", new NamedWidgetLocator("list2")));
     JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
@@ -57,6 +59,7 @@ class NamedListTest {
   void panel_with_list3_should_contain_element_seven(@SwingUIContext IUIContext ui)
       throws Exception {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+    ui.pause(200);
 
     IWidgetLocator locator = ui.click(new JListLocator("seven", new NamedWidgetLocator("list3")));
     JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
@@ -67,6 +70,7 @@ class NamedListTest {
   void panel_with_list1_should_contain_element_five(@SwingUIContext IUIContext ui)
       throws Exception {
     ui.wait(new WindowShowingCondition("Swing List Demo"), 1_000);
+    ui.pause(200);
 
     IWidgetLocator locator = ui.click(new JListLocator("five", new NamedWidgetLocator("list1")));
     JList<String> jlist = (JList<String>) ((IWidgetReference) locator).getWidget();
