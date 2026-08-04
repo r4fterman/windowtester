@@ -275,6 +275,14 @@ public class SwingWidgetLocator extends com.windowtester.runtime.WidgetLocator
     return matcher.matches(widget);
   }
 
+  @Override
+  public void reset() {
+    // propagate to the delegate matcher chain so stateful (e.g. index) matchers start fresh
+    if (matcher != null) {
+      matcher.reset();
+    }
+  }
+
   public IWidgetMatcher getMatcher() {
     return matcher;
   }

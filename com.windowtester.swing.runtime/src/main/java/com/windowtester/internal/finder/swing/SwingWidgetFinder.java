@@ -45,6 +45,8 @@ public class SwingWidgetFinder implements IWidgetFinder {
   @Override
   public IWidgetLocator[] findAll(IWidgetLocator locator) {
     var matcher = new AdapterFactory().adapt(locator);
+    // clear any traversal-scoped matcher state (e.g. index counters) before this fresh search
+    matcher.reset();
 
     var matchingComponents = new HashSet<Component>();
     addMatchingComponents(matcher, matchingComponents);

@@ -29,24 +29,37 @@ public class CompositeMatcher extends AbstractMatcher {
 
   @Override
   public boolean matches(final Component component) {
-    boolean result = true; /* ANDing things together, so start true */
     boolean atLeastOneMatcherPresent = false; /* If that construction this should be checked! */
-    for (int i = 0; i < matchers.length; i++) {
-      if (matchers[i] != null) {
-        result = result && matchers[i].matches(component);
+    for (Matcher matcher : matchers) {
+      if (matcher != null) {
         atLeastOneMatcherPresent = true;
+        if (!matcher.matches(component)) {
+          // ANDed together: a single failure means no match, stop evaluating the rest
+          return false;
+        }
       }
     }
-    result = result && atLeastOneMatcherPresent;
-    return result;
+    return atLeastOneMatcherPresent;
+  }
+
+  @Override
+  public void reset() {
+    for (Matcher matcher : matchers) {
+      if (matcher != null) {
+        matcher.reset();
+      }
+    }
   }
 
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("Composite matcher with " + matchers.length + " component matchers:\n");
+    StringBuilder builder = new StringBuilder();
+    builder
+        .append("Composite matcher with ")
+        .append(matchers.length)
+        .append(" component matchers:\n");
     for (int i = 0; i < matchers.length; i++) {
-      buffer.append("[" + i + "] " + matchers[i].toString() + "\n");
+      builder.append("[").append(i).append("] ").append(matchers[i].toString()).append("\n");
     }
-    return buffer.toString();
+    return builder.toString();
   }
 }
