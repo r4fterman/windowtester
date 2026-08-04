@@ -25,6 +25,7 @@ public class JListRecorder extends JComponentRecorder {
   /**
    * Create a click referencing the String value that was clicked.
    */
+  @Override
   protected Step createClick(Component target, int x, int y, int mods, int count) {
     JList list = (JList) target;
     ComponentReference cr = getResolver().addComponent(target);

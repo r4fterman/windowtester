@@ -321,6 +321,8 @@ public interface IUIContext {
    */
   void ensureThat(IConditionHandler conditionHandler) throws Exception;
 
+  void pause(int millis);
+
   /**
    * Wait for the given condition to evaluate to true. Some examples include:
    *
@@ -399,30 +401,6 @@ public interface IUIContext {
    * @since 3.6.2
    */
   IConditionMonitor getConditionMonitor();
-
-  /**
-   * Pause for a given number of milliseconds.
-   * <p>
-   * As a general rule pauses are discouraged in UI tests.  Instead waiting for an appropriate
-   * {@link ICondition} is preferred.  For example, if a pause has been inserted in order for the
-   * test to sync up with an application that is performing a long-running operation, a condition
-   * that tests if the operation is complete should be used instead.  In eclipse, long operations
-   * are often wrapped in platform
-   * <code>Job</code>s so the following wait is a good substitute for a pause:
-   * <p>
-   * <code>
-   * ui.wait(new JobsCompleteCondition());
-   * </code>
-   * </p>
-   * In the rare case where a pause for a set period of time really is desirable, a
-   * {@link com.windowtester.runtime.condition.TimeElapsedCondition} should be used instead.
-   *
-   * </p>
-   *
-   * @param ms the number of milliseconds to wait
-   * @deprecated Use {@link #wait(ICondition)} instead.
-   */
-  void pause(int ms);
 
   /**
    * Find the specified widget.

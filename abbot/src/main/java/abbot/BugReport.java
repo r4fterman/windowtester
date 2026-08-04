@@ -4,7 +4,6 @@ import abbot.i18n.Strings;
 import abbot.tester.Robot;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 
 /**
@@ -13,25 +12,18 @@ import javax.swing.UIManager;
  */
 public class BugReport extends Error implements Version {
 
-  private static final String LS = System.getProperty("line.separator");
-
-  private static final String BUGREPORT_URL = Strings.get("bugreport.url");
+  private static final String LINE_SEPARATOR = System.lineSeparator();
+  private static final String BUG_REPORT_URL = Strings.get("bugreport.url");
 
   private static String getReportingInfo() {
-    return Strings.get("bugreport.info", new Object[] {LS + BUGREPORT_URL + LS});
+    return Strings.get(
+        "bugreport.info", new Object[] {LINE_SEPARATOR + BUG_REPORT_URL + LINE_SEPARATOR});
   }
 
   public static String getSystemInfo() {
-    String desc = "none";
-    LookAndFeel laf = UIManager.getLookAndFeel();
-    if (laf != null) {
-      desc = laf.getName() + " (" + laf.getDescription() + ")";
-    }
-    return ""
-        //     + "abbot version: " + VERSION + LS
-        + "         mode: "
+    return "mode: "
         + Robot.getEventModeDescription()
-        + LS
+        + LINE_SEPARATOR
         + "           OS: "
         + System.getProperty("os.name")
         + " "
@@ -39,16 +31,16 @@ public class BugReport extends Error implements Version {
         + " ("
         + System.getProperty("os.arch")
         + ") "
-        + LS
+        + LINE_SEPARATOR
         + " Java version: "
         + System.getProperty("java.version")
         + " (vm "
         + System.getProperty("java.vm.version")
         + ")"
-        + LS
+        + LINE_SEPARATOR
         + "    Classpath: "
         + System.getProperty("java.class.path")
-        + LS
+        + LINE_SEPARATOR
         + "Look and Feel: "
         + UIManager.getLookAndFeel();
   }
@@ -62,10 +54,11 @@ public class BugReport extends Error implements Version {
 
   public BugReport(String error, Throwable thr) {
     super(error);
-    this.errorMessage = error;
-    this.throwable = thr;
+    errorMessage = error;
+    throwable = thr;
   }
 
+  @Override
   public String toString() {
     String exc = "";
     if (throwable != null) {
@@ -73,6 +66,12 @@ public class BugReport extends Error implements Version {
       throwable.printStackTrace(new PrintWriter(writer));
       exc = writer.toString();
     }
-    return errorMessage + LS + getReportingInfo() + LS + getSystemInfo() + LS + exc;
+    return errorMessage
+        + LINE_SEPARATOR
+        + getReportingInfo()
+        + LINE_SEPARATOR
+        + getSystemInfo()
+        + LINE_SEPARATOR
+        + exc;
   }
 }

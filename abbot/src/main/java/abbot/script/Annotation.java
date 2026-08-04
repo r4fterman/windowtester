@@ -12,12 +12,11 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.JButton;
@@ -32,7 +31,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 /**
- * Provides a method for communicating a message on the display.  May display for a reasonable delay
+ * Provides a method for communicating a message on the display. May display for a reasonable delay
  * or require user input to continue.<p> Usage:<br>
  * <blockquote><code>
  * &lt;annotation [userDismiss="true"] &gt;Text or HTML message&lt;/annotation&gt;<br>
@@ -67,7 +66,7 @@ public class Annotation extends Step {
   private int width = -1;
   private int height = -1;
 
-  class WindowLock {}
+  static class WindowLock {}
 
   private final transient Object WINDOW_LOCK = new WindowLock();
   private transient volatile Frame frame;
@@ -152,7 +151,7 @@ public class Annotation extends Step {
     if (width != -1 && height != -1) {
       win.setSize(new Dimension(width, height));
     }
-    win.show();
+    win.setVisible(true);
   }
 
   public void showAnnotation() {
@@ -170,7 +169,7 @@ public class Annotation extends Step {
   }
 
   public long getDelayTime() {
-    long time = (getText().length() / WORD_SIZE) * delayUnit;
+    long time = (long) (getText().length() / WORD_SIZE) * delayUnit;
     return Math.max(time, minDelay);
   }
 
@@ -185,8 +184,9 @@ public class Annotation extends Step {
     while ((userDismiss && window != null && window.isShowing())
         || (!userDismiss && System.currentTimeMillis() - start < getDelayTime())) {
       try {
-        Thread.sleep(200);
+        Thread.sleep(Duration.ofMillis(200));
       } catch (InterruptedException e) {
+        // ignore
       }
       Thread.yield();
     }
@@ -206,13 +206,13 @@ public class Annotation extends Step {
 
   // expects to have the WINDOW_LOCK
   private AnnotationWindow createWindow() {
-    Component parent = null;
     AnnotationWindow w = null;
     Frame f = null;
     anchorPoint = null;
     if (componentID != null) {
       try {
-        parent = (Component) ArgumentParser.eval(getResolver(), componentID, Component.class);
+        Component parent =
+            (Component) ArgumentParser.eval(getResolver(), componentID, Component.class);
         Point loc = parent.getLocationOnScreen();
         anchorPoint = new Point(loc.x, loc.y);
         while (!(parent instanceof Dialog) && !(parent instanceof Frame)) {
@@ -226,12 +226,9 @@ public class Annotation extends Step {
                 : (title != null
                     ? new AnnotationWindow((Frame) parent, title)
                     : new AnnotationWindow((Frame) parent));
-      } catch (ComponentSearchException e) {
+      } catch (ComponentSearchException | NoSuchReferenceException e) {
         // Ignore the exception and display it in global coords
         Log.warn(e);
-      } catch (NoSuchReferenceException nsr) {
-        // Ignore the exception and display it in global coords
-        Log.warn(nsr);
       }
     }
     if (w == null) {
@@ -249,12 +246,7 @@ public class Annotation extends Step {
       bottom.setBackground(BACKGROUND);
       JButton close = new JButton(Strings.get("annotation.continue"));
       bottom.add(close, BorderLayout.EAST);
-      close.addActionListener(
-          new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-              dispose();
-            }
-          });
+      close.addActionListener(ev -> dispose());
       pane.add(bottom, BorderLayout.SOUTH);
     }
     // If the user closes the window, make sure we continue execution
@@ -292,12 +284,12 @@ public class Annotation extends Step {
   private String replaceNewlines(String text) {
     boolean needsHTML = false;
     String[] breaks = {"\r\n", "\n"};
-    for (int i = 0; i < breaks.length; i++) {
-      int index = text.indexOf(breaks[i]);
+    for (String aBreak : breaks) {
+      int index = text.indexOf(aBreak);
       while (index != -1) {
         needsHTML = true;
-        text = text.substring(0, index) + "<br>" + text.substring(index + breaks[i].length());
-        index = text.indexOf(breaks[i]);
+        text = text.substring(0, index) + "<br>" + text.substring(index + aBreak.length());
+        index = text.indexOf(aBreak);
       }
     }
     if (needsHTML && !text.startsWith("<html>")) {

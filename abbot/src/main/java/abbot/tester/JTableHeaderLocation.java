@@ -22,8 +22,7 @@ public class JTableHeaderLocation extends ComponentLocation {
 
   public JTableHeaderLocation(int col) {
     if (col < 0) {
-      String msg =
-          Strings.get("tester.JTableHeader.invalid_index", new Object[] {new Integer(col)});
+      String msg = Strings.get("tester.JTableHeader.invalid_index", new Object[] {col});
       throw new LocationUnavailableException(msg);
     }
     this.col = col;
@@ -42,8 +41,7 @@ public class JTableHeaderLocation extends ComponentLocation {
    */
   protected Point indexToPoint(JTableHeader header, int index) {
     if (index < 0 || index >= header.getColumnModel().getColumnCount()) {
-      String msg =
-          Strings.get("tester.JTableHeader.invalid_index", new Object[] {new Integer(index)});
+      String msg = Strings.get("tester.JTableHeader.invalid_index", new Object[] {index});
       throw new LocationUnavailableException(msg);
     }
     Rectangle rect = header.getHeaderRect(index);
@@ -89,8 +87,7 @@ public class JTableHeaderLocation extends ComponentLocation {
     JTableHeader header = (JTableHeader) c;
     int index = getIndex(header);
     if (index == -1) {
-      String msg =
-          Strings.get("tester.JTableHeader.invalid_index", new Object[] {new Integer(index)});
+      String msg = Strings.get("tester.JTableHeader.invalid_index", new Object[] {index});
       throw new LocationUnavailableException(msg);
     }
     return header.getHeaderRect(index);

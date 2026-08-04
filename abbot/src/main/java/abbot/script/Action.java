@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,11 +40,11 @@ public class Action extends Call {
 
   // Account for deprecated methods which use String representations of
   // modifier masks.
-  private static final Set stringModifierMethods =
-      new HashSet(Arrays.asList("actionKeyStroke", "actionKeyPress", "actionKeyRelease"));
+  private static final Set<String> stringModifierMethods =
+      new HashSet<>(Arrays.asList("actionKeyStroke", "actionKeyPress", "actionKeyRelease"));
 
-  private static final Set optionalFocusMethods =
-      new HashSet(
+  private static final Set<String> optionalFocusMethods =
+      new HashSet<>(
           Arrays.asList(
               "actionKeyStroke", "actionKeyPress", "actionKeyRelease", "actionKeyString"));
 
@@ -52,14 +53,12 @@ public class Action extends Call {
   /**
    * Provide a default value for the target class name, so that the Call parent class won't choke.
    */
-  private static Map patchAttributes(Map map) {
-    if (map.get(TAG_CLASS) == null) {
-      map.put(TAG_CLASS, DEFAULT_CLASS_NAME);
-    }
+  private static Map<String, String> patchAttributes(Map<String, String> map) {
+    map.putIfAbsent(TAG_CLASS, DEFAULT_CLASS_NAME);
     return map;
   }
 
-  public Action(Resolver resolver, Map attributes) {
+  public Action(Resolver resolver, Map<String, String> attributes) {
     super(resolver, patchAttributes(attributes));
     patchMethodName();
   }
@@ -70,7 +69,11 @@ public class Action extends Call {
   }
 
   public Action(
-      Resolver resolver, String description, String methodName, String[] args, Class targetClass) {
+      Resolver resolver,
+      String description,
+      String methodName,
+      String[] args,
+      Class<?> targetClass) {
     super(resolver, description, targetClass.getName(), methodName, args);
     patchMethodName();
   }
@@ -85,7 +88,7 @@ public class Action extends Call {
 
   @Override
   public void setTargetClassName(String cn) {
-    if (cn == null || "".equals(cn)) {
+    if (cn == null || cn.isEmpty()) {
       cn = DEFAULT_CLASS_NAME;
     }
     super.setTargetClassName(cn);
@@ -97,8 +100,8 @@ public class Action extends Call {
   }
 
   @Override
-  public Map getAttributes() {
-    Map map = super.getAttributes();
+  public Map<String, String> getAttributes() {
+    Map<String, String> map = super.getAttributes();
     // Only save the class attribute if it's not the default
     map.remove(TAG_CLASS);
     if (!DEFAULT_CLASS_NAME.equals(getTargetClassName())) {
@@ -123,12 +126,12 @@ public class Action extends Call {
   }
 
   @Override
-  public Class getTargetClass() throws ClassNotFoundException {
+  public Class<?> getTargetClass() throws ClassNotFoundException {
     return resolveTester(getTargetClassName()).getClass();
   }
 
   @Override
-  protected Object evaluateParameter(Method m, String param, Class type) throws Exception {
+  protected Object evaluateParameter(Method m, String param, Class<?> type) throws Exception {
     // Convert ComponentLocation arguments
     if (ComponentLocation.class.isAssignableFrom(type)) {
       ComponentTester tester = (ComponentTester) getTarget(m);
@@ -136,11 +139,11 @@ public class Action extends Call {
     }
     // Convert virtual key codes and modifier masks into integers
     else if ((type == int.class || type == Integer.class)
-        && (param.startsWith("VK_") || param.indexOf("_MASK") != -1)) {
+        && (param.startsWith("VK_") || param.contains("_MASK"))) {
       if (param.startsWith("VK_")) {
-        return new Integer(AWT.getKeyCode(param));
+        return AWT.getKeyCode(param);
       }
-      return new Integer(AWT.getModifiers(param));
+      return AWT.getModifiers(param);
     } else {
       return super.evaluateParameter(m, param, type);
     }
@@ -152,24 +155,24 @@ public class Action extends Call {
   }
 
   @Override
-  protected Method[] resolveMethods(String name, Class cls, Class returnType)
+  protected Method[] resolveMethods(String name, Class<?> cls, Class<?> returnType)
       throws NoSuchMethodException {
     Method[] methods = super.resolveMethods(name, cls, returnType);
     if (stringModifierMethods.contains(name)) {
       // still have some key methods hanging around which expect a
       // string representation of the VK_ code and/or modifiers.
       // ignore them here.
-      ArrayList list = new ArrayList(Arrays.asList(methods));
-      for (int i = 0; i < methods.length; i++) {
-        Class[] ptypes = methods[i].getParameterTypes();
-        for (int j = 0; j < ptypes.length; j++) {
-          if (ptypes[j] == String.class) {
-            list.remove(methods[i]);
+      List<Method> list = new ArrayList<>(Arrays.asList(methods));
+      for (Method method : methods) {
+        Class<?>[] ptypes = method.getParameterTypes();
+        for (Class<?> ptype : ptypes) {
+          if (ptype == String.class) {
+            list.remove(method);
             break;
           }
         }
       }
-      methods = (Method[]) list.toArray(new Method[list.size()]);
+      methods = list.toArray(new Method[0]);
     }
     return methods;
   }
@@ -186,7 +189,7 @@ public class Action extends Call {
     if (methods.length == 2) {
       // pick between key action variants
       if (optionalFocusMethods.contains(methods[0].getName())) {
-        Class[] params = methods[0].getParameterTypes();
+        Class<?>[] params = methods[0].getParameterTypes();
         Method kcMethod, crefMethod;
         if (params[0] == int.class) {
           kcMethod = methods[0];

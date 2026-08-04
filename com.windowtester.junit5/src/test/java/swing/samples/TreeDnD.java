@@ -123,7 +123,6 @@ class DndTree extends JTree implements Autoscroll {
       TreePath path = tree.getSelectionPath();
       if (path == null) {
         // Nothing selected, nothing to drag
-        System.out.println("Nothing selected - beep");
         tree.getToolkit().beep();
       } else {
         DefaultMutableTreeNode selection = (DefaultMutableTreeNode) path.getLastPathComponent();
@@ -131,7 +130,6 @@ class DndTree extends JTree implements Autoscroll {
           TransferableTreeNode node = new TransferableTreeNode(selection);
           dragGestureEvent.startDrag(DragSource.DefaultCopyDrop, node, new MyDragSourceListener());
         } else {
-          System.out.println("Not a leaf - beep");
           tree.getToolkit().beep();
         }
       }
@@ -201,7 +199,7 @@ class DndTree extends JTree implements Autoscroll {
             dropTargetDropEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
             List<File> fileList = (List<File>) tr.getTransferData(DataFlavor.javaFileListFlavor);
             for (File file : fileList) {
-              addElement(path, file.toURL());
+              addElement(path, file.toURI());
             }
             dropTargetDropEvent.dropComplete(true);
           } else {
@@ -213,7 +211,6 @@ class DndTree extends JTree implements Autoscroll {
           dropTargetDropEvent.rejectDrop();
         }
       } else {
-        System.out.println("Can't drop on a leaf");
         dropTargetDropEvent.rejectDrop();
       }
     }

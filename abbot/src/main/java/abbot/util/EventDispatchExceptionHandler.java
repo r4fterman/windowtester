@@ -7,12 +7,12 @@ import javax.swing.SwingUtilities;
 /**
  * Handler for uncaught exceptions on any event dispatch thread. Once this has been installed, the
  * class must be accessible by any subsequently launched dispatch thread.
- *
- * This handler is installed by setting the System property sun.awt.exception.handler.  See javadoc
- * for java.awt.EventDispatchThread for details.  This is sort of a patch to Sun's implementation,
- * which only checks the property once and caches the result ever after.  This implementation will
+ * <p>
+ * This handler is installed by setting the System property sun.awt.exception.handler. See Javadoc
+ * for java.awt.EventDispatchThread for details. This is sort of a patch to Sun's implementation,
+ * which only checks the property once and caches the result ever after. This implementation will
  * always chain to the handler indicated by the current value of the property.
- *
+ * <p>
  * It is most definitely NOT safe to try to install several of these on different threads.
  */
 public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHandler {
@@ -27,7 +27,7 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
 
   /**
    * Install a handler for event dispatch exceptions.  This is kind of a hack, but it's Sun's hack.
-   * See the javadoc for java.awt.EventDispatchThread for details. NOTE: we throw an exception
+   * See the Javadoc for java.awt.EventDispatchThread for details. NOTE: we throw an exception
    * immediately, which ensures that our handler is installed, since otherwise someone might set
    * this property later. java.awt.EventDispatchThread doesn't actually load the handler specified
    * by the property until an exception is caught by the event dispatch thread. SwingSet2 in 1.4.1
@@ -37,8 +37,8 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
    * @throws IllegalStateException    if this method is invoked from an event dispatch thread.
    * @throws IllegalArgumentException if the given class is not derived from this one.
    *                                  <p>
-   *                                  // TODO: read the private static field // String
-   *                                  EventDispatchThread.handlerClassName and override it if //
+   *                                  // TODO: read the private static field String
+   *                                  EventDispatchThread.handlerClassName and override it if
    *                                  necessary.
    */
   public void install() {
@@ -68,7 +68,6 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
       Log.log("Attempting to install handler " + className);
       Thread.setDefaultUncaughtExceptionHandler(new EventDispatchExceptionHandler());
       class PropertiesHolder {
-
         /** Preserve the system properties state. */
         public java.util.Properties properties = null;
       }
@@ -76,21 +75,16 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
       // Even if it's been set to something else, we can override it
       // if there hasn't been an event exception thrown yet.
       EventQueue.invokeLater(
-          new Runnable() {
-            public void run() {
-              holder.properties = (java.util.Properties) System.getProperties().clone();
-              // Set the property just before throwing the exception;
-              // OSX sets the property as part of AWT startup, so
-              // we have to override it here.
-              System.setProperty(PROP_NAME, className);
-              throw new DummyException();
-            }
+          () -> {
+            holder.properties = (java.util.Properties) System.getProperties().clone();
+            // Set the property just before throwing the exception;
+            // OSX sets the property as part of AWT startup, so
+            // we have to override it here.
+            System.setProperty(PROP_NAME, className);
+            throw new DummyException();
           });
       // Does nothing but wait for the previous invocation to finish
-      AWT.invokeAndWait(
-          new Runnable() {
-            public void run() {}
-          });
+      AWT.invokeAndWait(() -> {});
       System.setProperties(holder.properties);
       String oldHandler = System.getProperty(PROP_NAME);
 
@@ -120,14 +114,10 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
 
   @Override
   public void uncaughtException(Thread thread, Throwable thrown) {
-    handleException(thread.getName(), thrown);
+    handle(thrown);
   }
 
   public void handle(Throwable thrown) {
-    handleException(Thread.currentThread().getName(), thrown);
-  }
-
-  private void handleException(String threadName, Throwable thrown) {
     Log.debug("Handling event dispatch exception: " + thrown);
     String handler = System.getProperty(PROP_NAME);
     boolean handled = false;
@@ -135,15 +125,15 @@ public class EventDispatchExceptionHandler implements Thread.UncaughtExceptionHa
       Log.debug("A user exception handler (" + handler + ") has been set, invoking it");
       try {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Class c = Class.forName(handler, true, cl);
-        c.getMethod("handle", Throwable.class).invoke(c.newInstance(), thrown);
+        Class<?> c = Class.forName(handler, true, cl);
+        c.getMethod("handle", Throwable.class)
+            .invoke(c.getDeclaredConstructor().newInstance(), thrown);
         handled = true;
       } catch (Throwable e) {
         Log.warn("Could not invoke user handler: " + e);
       }
     }
-    // The exception may be created by a different class loader
-    // so compare by name only
+    // The exception may be created by a different class loader, so compare by name only
     if (thrown instanceof DummyException) {
       // Install succeeded
       Log.debug("Installation succeeded");

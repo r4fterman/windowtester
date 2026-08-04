@@ -51,13 +51,7 @@ public class JScrollBarTester extends JComponentTester {
   }
 
   protected void scroll(final JScrollBar bar, final int value) {
-    invokeLater(
-        bar,
-        new Runnable() {
-          public void run() {
-            bar.setValue(value);
-          }
-        });
+    invokeLater(bar, () -> bar.setValue(value));
   }
 
   protected void scroll(JScrollBar bar, int count, boolean block) {
@@ -100,7 +94,7 @@ public class JScrollBarTester extends JComponentTester {
           Strings.get(
               "tester.JScrollBar.out_of_range",
               new Object[] {
-                new Integer(position), new Integer(min), new Integer(max),
+                position, min, max,
               });
       throw new ActionFailedException(msg);
     }

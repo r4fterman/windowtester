@@ -19,6 +19,7 @@ public class AbstractButtonRecorder extends JComponentRecorder {
   /**
    * Usually don't bother tracking drags/drops on buttons.
    */
+  @Override
   protected boolean canDrag() {
     return false;
   }
@@ -26,6 +27,7 @@ public class AbstractButtonRecorder extends JComponentRecorder {
   /**
    * Usually aren't interested in multiple clicks on a button.
    */
+  @Override
   protected boolean canMultipleClick() {
     return false;
   }
@@ -33,6 +35,7 @@ public class AbstractButtonRecorder extends JComponentRecorder {
   /**
    * Create a button-specific click action.
    */
+  @Override
   protected Step createClick(Component target, int x, int y, int mods, int count) {
     // No need to store the coordinates, the center of the button is just
     // fine.   Only care about button 1, though.

@@ -22,7 +22,7 @@ public class ListLocation extends ComponentLocation {
 
   public ListLocation(int row) {
     if (row < 0) {
-      String msg = Strings.get("tester.JList.invalid_index", new Object[] {new Integer(row)});
+      String msg = Strings.get("tester.JList.invalid_index", new Object[] {row});
       throw new LocationUnavailableException(msg);
     }
     this.row = row;
@@ -75,8 +75,7 @@ public class ListLocation extends ComponentLocation {
   }
 
   public boolean equals(Object o) {
-    if (o instanceof ListLocation) {
-      ListLocation loc = (ListLocation) o;
+    if (o instanceof ListLocation loc) {
       if (value != null) {
         return value.equals(loc.value);
       }

@@ -13,12 +13,13 @@ package util;
 import abbot.finder.AWTHierarchy;
 import abbot.finder.Hierarchy;
 import com.windowtester.junit5.WindowtesterExtension;
-import com.windowtester.runtime.WidgetSearchException;
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Iterator;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -54,44 +55,16 @@ class SwingEventRecordingJig {
         }
       };
 
-  //  public SwingEventRecordingJig() {
-
-  // super(DialogDemo.class);
-  //	super(ContactManagerSwing.class);
-  //	super(EditorSample.class);
-
-  //	super(swing.samples.SwingText.class);
-  //	super(swing.samples.SwingMenus.class);
-  //	super(swing.samples.TestTree.class);
-
-  // super(swing.samples.DialogDemo.class); //test dialogs <-- TabPanes...
-  //	super(TextInputDemo.class);
-  // DONE:
-  //	super(swing.samples.SwingTree.class); //test trees
-  //	super(swing.samples.SwingList.class); //test lists
-  //	super(swing.samples.ComboBoxes.class); //test combos
-  //	super(swing.samples.SimpleTable.class); //test tables
-  //	super(swing.samples.SwingTables.class);
-  //	super(DatePickerSample.class);
-  //	super(DateFieldSample.class);
-  //	super(swing.samples.TextComponentDemo.class);
-  //	super(TextComponentDemo.class);
-  //	super(swing.samples.UseTheSampleDialog.class);
-  //	super(swing.samples.JListRendererDemo.class);
-  //    System.out.println("Application opened");
-  //  }
-
   @Test
-  public void testDrive() throws WidgetSearchException {
-    // get the application frame and attach listener
-    System.out.println("Checking for app");
+  public void testDrive() {
+    // get the application frame and attach the listener
     Frame f, frame = null;
     Hierarchy h = AWTHierarchy.getDefault();
-    Iterator i = h.getRoots().iterator();
+    Iterator<Component> i = h.getRoots().iterator();
     boolean done = false;
     while (i.hasNext() && !done) {
       f = (Frame) i.next();
-      if (f.getTitle() != "Abbot Robot Verification") {
+      if (!Objects.equals(f.getTitle(), "Abbot Robot Verification")) {
         frame = f;
         done = true;
       }
@@ -102,7 +75,6 @@ class SwingEventRecordingJig {
     // just watch!
     watcher = new SwingEventRecordingWatcher();
     watcher.watch();
-    System.out.println("watcher started");
 
     // wait for lock to be released
     try {
@@ -110,9 +82,7 @@ class SwingEventRecordingJig {
         lock.wait();
       }
       Thread.sleep(50000);
-      System.out.println("waiting");
     } catch (InterruptedException e) {
-      //
       e.printStackTrace();
     }
   }

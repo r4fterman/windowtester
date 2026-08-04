@@ -13,11 +13,6 @@ public interface XMLConstants {
 
   String TAG_LAUNCH = "launch";
 
-  /**
-   * @deprecated
-   */
-  String TAG_DELEGATE = "delegate";
-
   String TAG_CLASSPATH = "classpath";
   String TAG_THREADED = "threaded";
   String TAG_TERMINATE = "terminate";

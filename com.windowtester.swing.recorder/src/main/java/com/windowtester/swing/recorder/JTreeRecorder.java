@@ -25,7 +25,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JTree;
 
 /**
- * Record basic semantic events you might find on an JTree. <p>
+ * Record basic semantic events you might find on a JTree. <p>
  * <ul>
  * <li>Click one or more times in a cell
  * </ul>
@@ -56,8 +56,8 @@ public class JTreeRecorder extends JComponentRecorder {
       }
     }
 
-    if ((mods != 0 && mods != InputEvent.BUTTON1_MASK) || count > 1) {
-      // using methodName as indication for generation
+    if ((mods != 0 && mods != InputEvent.BUTTON1_DOWN_MASK) || count > 1) {
+      // using methodName as an indication for generation
       // of windowtester semantic events
       // methodName = "actionClick";
       mask = abbot.util.AWT.getMouseModifiers(mods);
@@ -67,9 +67,7 @@ public class JTreeRecorder extends JComponentRecorder {
       }
     }
     // create semantic event
-    if (methodName.equals("actionToggleRow")) {
-      // do nothing, ignore tree expand/collapse
-    } else if (!methodName.equals("actionClick")) {
+    if (!methodName.equals("actionClick")) {
       IUISemanticEvent semanticEvent =
           UISemanticEventFactory.createTreeItemSelectionEvent(
               (JTree) target, x, y, mask, count, getButton());

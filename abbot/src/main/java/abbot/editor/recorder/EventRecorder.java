@@ -28,7 +28,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -63,7 +65,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
   private static final int RELEASE = 2;
   private final boolean captureMotion;
   private long lastStepTime;
-  ArrayList steps = new ArrayList();
+  private final List<Step> steps = new ArrayList<>();
 
   protected AWTEvent capturedEvent;
 
@@ -71,7 +73,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    * Put all built-in recorder classes here.  Don't worry though, 'cause if it doesn't get added here it'll get found
    * dynamically.
    */
-  protected static final Class[] recorderClasses = {
+  protected static final Class<?>[] recorderClasses = {
     AbstractButton.class,
     Button.class,
     Component.class,
@@ -94,15 +96,17 @@ public class EventRecorder extends Recorder implements SemanticEvents {
     super(resolver);
     this.captureMotion = captureMotion;
     // Install existing semantic recorders
-    for (int i = 0; i < recorderClasses.length; i++) {
-      getSemanticRecorder(recorderClasses[i]);
+    for (Class<?> recorderClass : recorderClasses) {
+      getSemanticRecorder(recorderClass);
     }
   }
 
+  @Override
   public String toString() {
     return captureMotion ? Strings.get("actions.capture-all") : Strings.get("actions.capture");
   }
 
+  @Override
   public void start() {
     super.start();
     steps.clear();
@@ -113,14 +117,14 @@ public class EventRecorder extends Recorder implements SemanticEvents {
 
   private boolean isKey(Step step, String code, int type) {
     boolean match = false;
-    if (step instanceof Event) {
-      Event se = (Event) step;
+    if (step instanceof Event se) {
       match =
           "KeyEvent".equals(se.getType())
               && (type == EITHER
                   || (type == PRESS && "KEY_PRESSED".equals(se.getKind()))
                   || (type == RELEASE && "KEY_RELEASED".equals(se.getKind())))
-              && (code == ANY_KEY || code.equals(se.getAttribute(XMLConstants.TAG_KEYCODE)));
+              && (Objects.equals(code, ANY_KEY)
+                  || code.equals(se.getAttribute(XMLConstants.TAG_KEYCODE)));
     }
     return match;
   }
@@ -129,29 +133,23 @@ public class EventRecorder extends Recorder implements SemanticEvents {
     return (step instanceof Action) && ((Action) step).getMethodName().equals("actionKeyString");
   }
 
-  private boolean isKeyStroke(Step step, String keycode) {
-    if (step instanceof Action) {
-      Action action = (Action) step;
-      if (action.getMethodName().equals("actionKeyStroke")) {
-        String[] args = action.getArguments();
-        return (keycode == ANY_KEY
-            || (args.length > 1 && args[1].equals(keycode))
-            || (keycode.startsWith("VK_NUMPAD") && args[1].equals("VK_" + keycode.substring(9))));
-      }
+  private boolean isKeyStroke(Step step) {
+    if (step instanceof Action action) {
+      return action.getMethodName().equals("actionKeyStroke");
     }
     return false;
   }
 
   private void removeTerminalShift() {
     // Remove the terminal SHIFT keypress
-    if (steps.size() > 0) {
-      Step step = (Step) steps.get(steps.size() - 1);
+    if (!steps.isEmpty()) {
+      Step step = steps.getLast();
       while (isKey(step, "VK_SHIFT", PRESS)) {
         steps.remove(step);
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
           break;
         }
-        step = (Step) steps.get(steps.size() - 1);
+        step = steps.getLast();
       }
     }
   }
@@ -162,7 +160,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
   private void removeExtraModifiers() {
     setStatus("Removing extra modifiers");
     for (int i = 0; i < steps.size(); i++) {
-      Step step = (Step) steps.get(i);
+      Step step = steps.get(i);
       if (isKey(step, ANY_KEY, PRESS)) {
         Event se = (Event) step;
         String cs = se.getAttribute(XMLConstants.TAG_KEYCODE);
@@ -171,14 +169,14 @@ public class EventRecorder extends Recorder implements SemanticEvents {
         boolean foundKeyStroke = false;
         if (AWT.isModifier(code)) {
           for (int j = i + 1; j < steps.size(); j++) {
-            Step next = (Step) steps.get(j);
+            Step next = steps.get(j);
             if (isKey(next, cs, RELEASE)) {
               if (foundKeyStroke) {
                 steps.remove(j);
                 remove = true;
               }
               break;
-            } else if (isKeyStroke(next, ANY_KEY) || isKeyString(next)) {
+            } else if (isKeyStroke(next) || isKeyString(next)) {
               foundKeyStroke = true;
               remove = true;
             } else if (!isKey(next, ANY_KEY, EITHER)) {
@@ -226,7 +224,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
   private void coalesceKeyEvents() {
     setStatus("Coalescing key events");
     for (int i = 0; i < steps.size(); i++) {
-      Step step = (Step) steps.get(i);
+      Step step = steps.get(i);
       if (isKey(step, ANY_KEY, PRESS)) {
         // In the case of modifiers, remove only if the presence of
         // the key down/up is redundant.
@@ -247,7 +245,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
         boolean foundKeyStroke = false;
         boolean foundRelease = false;
         for (int j = i + 1; j < steps.size(); j++) {
-          Step next = (Step) steps.get(j);
+          Step next = steps.get(j);
           // If we find the release, remove it and this
           if (isKey(next, cs, RELEASE)) {
             foundRelease = true;
@@ -266,13 +264,13 @@ public class EventRecorder extends Recorder implements SemanticEvents {
                       : new String[] {target, cs, mods});
               Step typed = new Action(getResolver(), null, "actionKeyStroke", args);
               steps.add(i, typed);
-              setStatus("Insert artifical " + typed);
+              setStatus("Insert artificial " + typed);
             } else {
               setStatus("Removed redundant key events (" + cs + ")");
               --i;
             }
             break;
-          } else if (isKeyStroke(next, ANY_KEY) || isKeyString(next)) {
+          } else if (isKeyStroke(next) || isKeyString(next)) {
             foundKeyStroke = true;
             // If it's a numpad keycode, use the numpad
             // keycode instead of the resulting numeric character
@@ -295,32 +293,29 @@ public class EventRecorder extends Recorder implements SemanticEvents {
   // Required for OS X, remove modifier keys when they're only used to
   // invoke MB2/3
   private boolean pruneButtonModifier = false;
-  private int lastButton = 0;
 
   /**
    * Used only on Mac OS, to remove key modifiers that are used to simulate mouse buttons 2 and 3.  Returns whether
    * the event should be ignored.
    */
   private boolean pruneClickModifiers(AWTEvent event) {
-    lastButton = 0;
+    int lastButton = 0;
     boolean ignoreEvent = false;
     if (event.getID() == MouseEvent.MOUSE_PRESSED) {
       MouseEvent me = (MouseEvent) event;
-      int buttons = me.getModifiers() & (MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK);
+      int buttons =
+          me.getModifiersEx() & (MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK);
       pruneButtonModifier = buttons != 0;
-      lastButton = buttons;
     } else if (event.getID() == KeyEvent.KEY_RELEASED && pruneButtonModifier) {
       pruneButtonModifier = false;
       KeyEvent ke = (KeyEvent) event;
       int code = ke.getKeyCode();
       if ((code == KeyEvent.VK_CONTROL
-              || code == KeyEvent.VK_ALT && (lastButton & MouseEvent.BUTTON2_MASK) != 0)
-          || (code == KeyEvent.VK_META && (lastButton & MouseEvent.BUTTON3_MASK) != 0)) {
+              || code == KeyEvent.VK_ALT && (lastButton & MouseEvent.BUTTON2_DOWN_MASK) != 0)
+          || (code == KeyEvent.VK_META && (lastButton & MouseEvent.BUTTON3_DOWN_MASK) != 0)) {
         if (steps.size() > 1) {
-          Step step = (Step) steps.get(steps.size() - 2);
-          if ((code == KeyEvent.VK_CONTROL && isKey(step, "VK_CONTROL", PRESS)
-                  || (code == KeyEvent.VK_ALT && isKey(step, "VK_ALT", PRESS)))
-              || (code == KeyEvent.VK_META && isKey(step, "VK_META", PRESS))) {
+          Step step = steps.get(steps.size() - 2);
+          if (isKey(step, "VK_CONTROL", PRESS)) {
             // might be another one
             steps.remove(steps.size() - 2);
             pruneButtonModifier = true;
@@ -336,8 +331,8 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    * Ignore any key presses at the end of the recording.
    */
   private void removeTrailingKeyPresses() {
-    while (steps.size() > 0 && isKey((Step) steps.get(steps.size() - 1), ANY_KEY, PRESS)) {
-      steps.remove(steps.size() - 1);
+    while (!steps.isEmpty() && isKey(steps.getLast(), ANY_KEY, PRESS)) {
+      steps.removeLast();
     }
   }
 
@@ -346,16 +341,16 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    */
   private void removeShortcutModifierKeyPresses() {
     int current = 0;
-    int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+    int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
     String modifier = AWT.getKeyCode(AWT.maskToKeyCode(mask));
     while (current < steps.size()) {
-      Step step = (Step) steps.get(current);
+      Step step = steps.get(current);
       if (isKey(step, modifier, PRESS)) {
         Log.debug("Found possible extraneous modifier");
         int keyDown = current;
         Action action = null;
         while (++current < steps.size()) {
-          step = (Step) steps.get(current);
+          step = steps.get(current);
           if (step instanceof Action) {
             if ("actionActionMap".equals(((Action) step).getMethodName())) {
               action = (Action) step;
@@ -376,6 +371,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
     }
   }
 
+  @Override
   public void insertStep(Step step) {
     steps.add(step);
     if ((step instanceof Assert) && ((Assert) step).getMethodName().equals("assertFrameShowing")) {
@@ -393,6 +389,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    * Return a sequence containing all the semantic and basic events captured thus far.
    * @return step
    */
+  @Override
   protected Step createStep() {
     removeTerminalShift();
     coalesceKeyEvents();
@@ -414,7 +411,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    *
    * @throws RecordingFailedException if an error was encountered.
    */
-  private boolean saveSemanticEvent() throws RecordingFailedException {
+  private void saveSemanticEvent() throws RecordingFailedException {
     Log.log("Storing event from current semantic recorder");
     try {
       Step step = semanticRecorder.getStep();
@@ -425,7 +422,6 @@ public class EventRecorder extends Recorder implements SemanticEvents {
         setStatus("No semantic event found, events skipped");
       }
       semanticRecorder = null;
-      return step != null;
     } catch (BugReport bug) {
       // changed to windowtester exception
       //   throw new RecordingFailedException(bug);
@@ -434,12 +430,13 @@ public class EventRecorder extends Recorder implements SemanticEvents {
       Log.log("Recording failed when saving action: " + e);
       // 1/3/07 kp: change message to windowtester message
       // String msg = Strings.get("editor.recording.exception");
-      String msg = "Windowtester recording exception";
+      final String msg = "Windowtester recording exception";
       //     throw new RecordingFailedException(new BugReport(msg, e));
       throw new com.windowtester.swing.recorder.RecordingFailedException(new BugReport(msg, e));
     }
   }
 
+  @Override
   public void terminate() throws RecordingFailedException {
     Log.log("EventRecorder terminated");
     if (semanticRecorder != null) {
@@ -454,10 +451,11 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    * that the semantic event has completed.
    * @param event event
    */
+  @Override
   protected void recordEvent(java.awt.AWTEvent event) throws RecordingFailedException {
 
     // Discard any key/button release events at the start of the recording.
-    if (steps.size() == 0 && event.getID() == KeyEvent.KEY_RELEASED) {
+    if (steps.isEmpty() && event.getID() == KeyEvent.KEY_RELEASED) {
       Log.log("Ignoring initial release event");
       return;
     }
@@ -482,7 +480,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
       if (sr.accept(event)) {
         semanticRecorder = newRecorder = sr;
         setStatus("Recording semantic event with " + sr);
-        if (event.getSource() instanceof JInternalFrame) {
+        if (event.getSource() instanceof JInternalFrame f) {
           // Ideally, adding an extra listener would be done by the
           // JInternalFrameRecorder, but the object needs more state
           // than is available to the recorder (notably to be able
@@ -492,7 +490,6 @@ public class EventRecorder extends Recorder implements SemanticEvents {
           //
           // Must add a listener, since COMPONENT_HIDDEN is not sent
           // on JInternalFrame close (1.4.1).
-          JInternalFrame f = (JInternalFrame) event.getSource();
           new InternalFrameWatcher(f);
         }
       }
@@ -521,9 +518,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
    * Capture the given event as a raw event.
    */
   private void captureRawEvent(AWTEvent event) {
-
-    // FIXME maybe measure time delay between events and insert delay
-    // events?
+    // FIXME maybe measure time delay between events and insert delay events?
     int id = event.getID();
     boolean capture = false;
     switch (id) {
@@ -578,6 +573,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
           // required to capture MenuItem actions
           | AWTEvent.ACTION_EVENT_MASK;
 
+  @Override
   public long getEventMask() {
     return RECORDING_EVENT_MASK;
   }
@@ -599,7 +595,9 @@ public class EventRecorder extends Recorder implements SemanticEvents {
     }
     // Account for LAF components of JInternalFrame
     else if (AWT.isInternalFrameDecoration(comp)) {
-      while (!(comp instanceof JInternalFrame)) comp = comp.getParent();
+      while (!(comp instanceof JInternalFrame)) {
+        comp = comp.getParent();
+      }
     }
     return getSemanticRecorder(comp.getClass());
   }
@@ -648,6 +646,7 @@ public class EventRecorder extends Recorder implements SemanticEvents {
       super(f);
     }
 
+    @Override
     protected void dispatch(AWTEvent e) {
       record(e);
     }

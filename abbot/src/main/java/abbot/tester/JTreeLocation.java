@@ -44,7 +44,7 @@ public class JTreeLocation extends ComponentLocation {
    */
   public JTreeLocation(int row, boolean inExpansion) {
     if (row < 0) {
-      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {new Integer(row)});
+      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {row});
       throw new LocationUnavailableException(msg);
     }
     this.row = row;
@@ -80,7 +80,7 @@ public class JTreeLocation extends ComponentLocation {
   protected Point rowToPoint(JTree tree, int row) {
     TreePath path = tree.getPathForRow(row);
     if (path == null) {
-      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {new Integer(row)});
+      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {row});
       throw new LocationUnavailableException(msg);
     }
     return pathToPoint(tree, path);
@@ -168,7 +168,7 @@ public class JTreeLocation extends ComponentLocation {
     }
     Rectangle rect = tree.getRowBounds(row);
     if (rect == null) {
-      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {new Integer(row)});
+      String msg = Strings.get("tester.JTree.row_not_visible", new Object[] {row});
       throw new LocationUnavailableException(msg);
     }
     if (inExpansion) {
@@ -179,8 +179,7 @@ public class JTreeLocation extends ComponentLocation {
   }
 
   public boolean equals(Object o) {
-    if (o instanceof JTreeLocation) {
-      JTreeLocation loc = (JTreeLocation) o;
+    if (o instanceof JTreeLocation loc) {
       if (loc.inExpansion != inExpansion) {
         return false;
       }

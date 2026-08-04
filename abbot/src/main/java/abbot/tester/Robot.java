@@ -406,23 +406,6 @@ public class Robot implements AWTConstants {
     waitForIdle();
   }
 
-  /**
-   * @param action action
-   * @deprecated Method renamed to {@link #invokeLater(Runnable)}
-   */
-  public void invokeAction(Runnable action) {
-    invokeLater(action);
-  }
-
-  /**
-   * @param c      component
-   * @param action action
-   * @deprecated Method renamed to {@link #invokeLater(Component, Runnable)}
-   */
-  public void invokeAction(Component c, Runnable action) {
-    invokeLater(c, action);
-  }
-
   public void invokeLater(Runnable action) {
     invokeLater(null, action);
   }
@@ -1116,15 +1099,6 @@ public class Robot implements AWTConstants {
     setModifiers(keyModifiers, false);
   }
 
-  /**
-   * @param path  path
-   * @param frame frame
-   * @deprecated Renamed to {@link #selectAWTMenuItem(Frame, String)}.
-   */
-  public void selectAWTMenuItemByLabel(Frame frame, String path) {
-    selectAWTMenuItem(frame, path);
-  }
-
   public void selectAWTMenuItem(Frame frame, String path) {
     MenuBar mb = frame.getMenuBar();
     if (mb == null) {
@@ -1141,15 +1115,6 @@ public class Robot implements AWTConstants {
       throw new ActionFailedException(msg);
     }
     selectAWTMenuItem(items[0]);
-  }
-
-  /**
-   * @param invoker invoker
-   * @param path    path
-   * @deprecated Renamed to {@link #selectAWTPopupMenuItem(Component, String)}.
-   */
-  public void selectAWTPopupMenuItemByLabel(Component invoker, String path) {
-    selectAWTPopupMenuItem(invoker, path);
   }
 
   public void selectAWTPopupMenuItem(Component invoker, String path) {
@@ -1550,14 +1515,14 @@ public class Robot implements AWTConstants {
           mouseMove(comp, me.getX(), me.getY());
         } else if (id == MouseEvent.MOUSE_PRESSED) {
           mouseMove(comp, me.getX(), me.getY());
-          mousePress(me.getModifiers() & AWTConstants.BUTTON_DOWN_MASK);
+          mousePress(me.getModifiersEx() & AWTConstants.BUTTON_DOWN_MASK);
         } else if (id == MouseEvent.MOUSE_ENTERED) {
           mouseMove(comp, me.getX(), me.getY());
         } else if (id == MouseEvent.MOUSE_EXITED) {
           mouseMove(comp, me.getX(), me.getY());
         } else if (id == MouseEvent.MOUSE_RELEASED) {
           mouseMove(comp, me.getX(), me.getY());
-          mouseRelease(me.getModifiers() & AWTConstants.BUTTON_DOWN_MASK);
+          mouseRelease(me.getModifiersEx() & AWTConstants.BUTTON_DOWN_MASK);
         }
       } else if (id >= KeyEvent.KEY_FIRST && id <= KeyEvent.KEY_LAST) {
         KeyEvent ke = (KeyEvent) event;
@@ -1676,7 +1641,7 @@ public class Robot implements AWTConstants {
     return obj.toString();
   }
 
-  protected static String descriptiveClassName(Class cls) {
+  protected static String descriptiveClassName(Class<?> cls) {
     StringBuilder desc = new StringBuilder(simpleClassName(cls));
     Class<?> coreClass = getCanonicalClass(cls);
     String coreClassName = coreClass.getName();
@@ -1718,20 +1683,20 @@ public class Robot implements AWTConstants {
     if (event.getID() == KeyEvent.KEY_PRESSED || event.getID() == KeyEvent.KEY_RELEASED) {
       KeyEvent ke = (KeyEvent) event;
       desc += " (" + AWT.getKeyCode(ke.getKeyCode());
-      if (ke.getModifiers() != 0) {
-        desc += "/" + AWT.getKeyModifiers(ke.getModifiers());
+      if (ke.getModifiersEx() != 0) {
+        desc += "/" + AWT.getKeyModifiers(ke.getModifiersEx());
       }
       desc += ")";
     } else if (event.getID() == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED) {
       desc += " (" + ((InputMethodEvent) event).getCommittedCharacterCount() + ")";
     } else if (event.getID() == KeyEvent.KEY_TYPED) {
       char ch = ((KeyEvent) event).getKeyChar();
-      int mods = ((KeyEvent) event).getModifiers();
+      int mods = ((KeyEvent) event).getModifiersEx();
       desc += " ('" + ch + (mods != 0 ? "/" + AWT.getKeyModifiers(mods) : "") + "')";
     } else if (event.getID() >= MouseEvent.MOUSE_FIRST && event.getID() <= MouseEvent.MOUSE_LAST) {
       MouseEvent me = (MouseEvent) event;
-      if (me.getModifiers() != 0) {
-        desc += " <" + AWT.getMouseModifiers(me.getModifiers());
+      if (me.getModifiersEx() != 0) {
+        desc += " <" + AWT.getMouseModifiers(me.getModifiersEx());
         if (me.getClickCount() > 1) {
           desc += "," + me.getClickCount();
         }
@@ -1900,15 +1865,15 @@ public class Robot implements AWTConstants {
     // Generate a click if there are no events between press/release
     // Unfortunately, I can only guess how the VM generates them
     if (eventMode == EM_AWT
+        && ev instanceof MouseEvent me
         && ev.getID() == MouseEvent.MOUSE_RELEASED
         && prev.getID() == MouseEvent.MOUSE_PRESSED) {
-      MouseEvent me = (MouseEvent) ev;
       AWTEvent click =
           new MouseEvent(
               comp,
               MouseEvent.MOUSE_CLICKED,
               System.currentTimeMillis(),
-              me.getModifiers(),
+              me.getModifiersEx(),
               me.getX(),
               me.getY(),
               me.getClickCount(),

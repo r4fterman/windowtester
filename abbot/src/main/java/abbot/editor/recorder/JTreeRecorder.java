@@ -8,6 +8,7 @@ import abbot.tester.JTreeTester;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JTree;
 
 /**
@@ -25,11 +26,12 @@ public class JTreeRecorder extends JComponentRecorder {
   /**
    * Normally, a click in a tree results in selection of a given row.
    */
+  @Override
   protected Step createClick(Component target, int x, int y, int mods, int count) {
     JTree tree = (JTree) target;
     ComponentReference cr = getResolver().addComponent(target);
     String methodName = "actionSelectRow";
-    ArrayList args = new ArrayList();
+    List<String> args = new ArrayList<>();
     args.add(cr.getID());
     args.add(getLocationArgument(target, x, y));
     if (tree.getRowForLocation(x, y) == -1) {
@@ -39,18 +41,13 @@ public class JTreeRecorder extends JComponentRecorder {
         methodName = "actionClick";
       }
     }
-    if ((mods != 0 && mods != MouseEvent.BUTTON1_MASK) || count > 1) {
+    if ((mods != 0 && mods != MouseEvent.BUTTON1_DOWN_MASK) || count > 1) {
       methodName = "actionClick";
       args.add(abbot.util.AWT.getMouseModifiers(mods));
       if (count > 1) {
         args.add(String.valueOf(count));
       }
     }
-    return new Action(
-        getResolver(),
-        null,
-        methodName,
-        (String[]) args.toArray(new String[args.size()]),
-        javax.swing.JTree.class);
+    return new Action(getResolver(), null, methodName, args.toArray(new String[0]), JTree.class);
   }
 }

@@ -32,7 +32,6 @@ public class SwingButton extends JPanel {
     JButton button = new JButton();
     button.addActionListener(
         e -> {
-          System.out.println("button clicked");
           buttonClicked = true;
         });
 
@@ -42,7 +41,6 @@ public class SwingButton extends JPanel {
     JCheckBox checkbox = new JCheckBox("CheckBox", false);
     checkbox.addActionListener(
         e -> {
-          System.out.println("checkbox clicked");
           checkboxClicked = true;
         });
 
@@ -51,7 +49,6 @@ public class SwingButton extends JPanel {
     JRadioButton radioButton = new JRadioButton("RadioButton", false);
     radioButton.addActionListener(
         e -> {
-          System.out.println("radio button clicked");
           radioButtonClicked = true;
         });
 
@@ -60,7 +57,6 @@ public class SwingButton extends JPanel {
     JToggleButton toggleButton = new JToggleButton("ToggleButton", false);
     toggleButton.addActionListener(
         e -> {
-          System.out.println("toggle button clicked");
           toggleButtonClicked = true;
         });
 

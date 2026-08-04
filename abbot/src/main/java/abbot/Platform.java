@@ -24,19 +24,17 @@ public class Platform {
     JAVA_VERSION = parse(JAVA_VERSION_STRING);
   }
 
-  private static final boolean isWindows = OS_NAME.startsWith("Windows");
-  private static final boolean isWindows9X =
-      isWindows
-          && (OS_NAME.indexOf("95") != -1
-              || OS_NAME.indexOf("98") != -1
-              || OS_NAME.indexOf("ME") != -1);
-  private static final boolean isWindowsXP = isWindows && OS_NAME.indexOf("XP") != -1;
-  private static final boolean isMac = System.getProperty("mrj.version") != null;
-  private static final boolean isOSX = isMac && OS_NAME.indexOf("OS X") != -1;
-  private static final boolean isSunOS =
-      (OS_NAME.startsWith("SunOS") || OS_NAME.startsWith("Solaris"));
-  private static final boolean isHPUX = OS_NAME.equals("HP-UX");
-  private static final boolean isLinux = OS_NAME.equals("Linux");
+  private static final boolean IS_WINDOWS = OS_NAME.startsWith("Windows");
+  private static final boolean IS_WINDOWS_9_X =
+      IS_WINDOWS && (OS_NAME.contains("95") || OS_NAME.contains("98") || OS_NAME.contains("ME"));
+
+  private static final boolean IS_WINDOWS_XP = IS_WINDOWS && OS_NAME.contains("XP");
+  private static final boolean IS_MAC = System.getProperty("mrj.version") != null;
+  private static final boolean IS_OSX = IS_MAC && OS_NAME.contains("OS X");
+  private static final boolean IS_SUN_OS =
+      OS_NAME.startsWith("SunOS") || OS_NAME.startsWith("Solaris");
+  private static final boolean IS_HP_UX = OS_NAME.equals("HP-UX");
+  private static final boolean IS_LINUX = OS_NAME.equals("Linux");
 
   /**
    * No instantiations.
@@ -44,65 +42,60 @@ public class Platform {
   private Platform() {}
 
   private static String strip(String number) {
-    while (number.startsWith("0") && number.length() > 1) number = number.substring(1);
+    while (number.startsWith("0") && number.length() > 1) {
+      number = number.substring(1);
+    }
     return number;
   }
 
-  static int parse(String vs) {
+  private static int parse(String potentialVersion) {
     int version = 0;
     try {
-      StringTokenizer st = new StringTokenizer(vs, "._");
-      version = Integer.parseInt(strip(st.nextToken())) * 0x1000;
-      version += Integer.parseInt(strip(st.nextToken())) * 0x100;
-      version += Integer.parseInt(strip(st.nextToken())) * 0x10;
-      version += Integer.parseInt(strip(st.nextToken()));
-    } catch (NumberFormatException nfe) {
-    } catch (java.util.NoSuchElementException nse) {
+      var tokenizer = new StringTokenizer(potentialVersion, "._");
+      version = Integer.parseInt(strip(tokenizer.nextToken())) * 0x1000;
+      version += Integer.parseInt(strip(tokenizer.nextToken())) * 0x100;
+      version += Integer.parseInt(strip(tokenizer.nextToken())) * 0x10;
+      version += Integer.parseInt(strip(tokenizer.nextToken()));
+    } catch (NumberFormatException | java.util.NoSuchElementException nfe) {
+      // ignore
     }
     return version;
   }
 
-  // FIXME this isn't entirely correct, maybe should look for a motif class
-  // instead.
+  // FIXME this isn't entirely correct, maybe should look for a motif class instead.
   public static boolean isX11() {
-    return !isOSX && !isWindows;
+    return !IS_OSX && !IS_WINDOWS;
   }
 
   public static boolean isWindows() {
-    return isWindows;
+    return IS_WINDOWS;
   }
 
   public static boolean isWindows9X() {
-    return isWindows9X;
+    return IS_WINDOWS_9_X;
   }
 
   public static boolean isWindowsXP() {
-    return isWindowsXP;
+    return IS_WINDOWS_XP;
   }
 
   public static boolean isMacintosh() {
-    return isMac;
+    return IS_MAC;
   }
 
   public static boolean isOSX() {
-    return isOSX;
+    return IS_OSX;
   }
 
   public static boolean isSolaris() {
-    return isSunOS;
+    return IS_SUN_OS;
   }
 
   public static boolean isHPUX() {
-    return isHPUX;
+    return IS_HP_UX;
   }
 
   public static boolean isLinux() {
-    return isLinux;
-  }
-
-  public static void main(String[] args) {
-    System.out.println("Java version is " + JAVA_VERSION_STRING);
-    System.out.println("Version number is " + Integer.toHexString(JAVA_VERSION));
-    System.out.println("os.name=" + OS_NAME);
+    return IS_LINUX;
   }
 }

@@ -26,12 +26,14 @@ public class JComponentRecorder extends ContainerRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int rtype) {
     super.init(rtype);
     target = null;
     actionKey = null;
   }
 
+  @Override
   public boolean accept(AWTEvent event) {
     boolean accepted;
     if ((event instanceof KeyEvent)
@@ -56,6 +58,7 @@ public class JComponentRecorder extends ContainerRecorder {
     return getAction(ke) != null;
   }
 
+  @Override
   public boolean parse(AWTEvent event) {
     boolean consumed = true;
     switch (getRecordingType()) {
@@ -95,6 +98,7 @@ public class JComponentRecorder extends ContainerRecorder {
     return true;
   }
 
+  @Override
   protected Step createStep() {
     Step step;
     switch (getRecordingType()) {

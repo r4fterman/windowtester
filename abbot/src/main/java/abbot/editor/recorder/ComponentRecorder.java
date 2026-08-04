@@ -41,8 +41,10 @@ import java.awt.event.WindowEvent;
 import java.text.AttributedCharacterIterator;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToolTip;
@@ -50,7 +52,7 @@ import javax.swing.JWindow;
 import javax.swing.text.JTextComponent;
 
 /**
- * Record basic semantic events you might find on any component.  This class handles the following actions:
+ * Record basic semantic events you might find on any component. This class handles the following actions:
  * <ul>
  * <li>window actions
  * <li>popup menus
@@ -67,7 +69,7 @@ import javax.swing.text.JTextComponent;
  * common that it's easier to handle here instead.  Currently supports
  * tracking show/hide/activate.  TODO: move/resize/iconfify/deiconify.
  * <h3>Popup Menus</h3>
- * Currently only the click/select/click sequence is supported.  The
+ * Currently, only the click/select/click sequence is supported.  The
  * press/drag/release version shouldn't be hard to implement, though.
  * <h3>Click</h3>
  * Simple press/release on a component, storing the exact coordinate of the
@@ -104,7 +106,7 @@ public class ComponentRecorder extends SemanticRecorder {
   /**
    * Mappings for special keys.
    */
-  private static final java.util.HashMap specialMap;
+  private static final Map<String, String> specialMap;
 
   static {
     // Make explicit some special key mappings which we DON'T want to save
@@ -119,7 +121,7 @@ public class ComponentRecorder extends SemanticRecorder {
       {'\n', KeyEvent.VK_ENTER},
       {'\r', KeyEvent.VK_ENTER},
     };
-    specialMap = new java.util.HashMap();
+    specialMap = new HashMap<>();
     for (int i = 0; i < mappings.length; i++) {
       specialMap.put(String.valueOf((char) mappings[i][0]), AWT.getKeyCode(mappings[i][1]));
     }
@@ -158,15 +160,15 @@ public class ComponentRecorder extends SemanticRecorder {
   private int dropx, dropy;
   private boolean nativeDrag;
   // InputMethod
-  private final ArrayList imKeyCodes = new ArrayList();
+  private final List<Integer> imKeyCodes = new ArrayList<>();
   private final StringBuffer imText = new StringBuffer();
 
   /**
    * Keep a short-term memory of windows we've seen open/close already.
    */
-  private static final WeakHashMap closeEventWindows = new WeakHashMap();
+  private static final WeakHashMap<Object, Boolean> closeEventWindows = new WeakHashMap<>();
 
-  private static final WeakHashMap openEventWindows = new WeakHashMap();
+  private static final WeakHashMap<Object, Boolean> openEventWindows = new WeakHashMap<>();
 
   /**
    * Create a ComponentRecorder for use in capturing the semantics of a GUI action.
@@ -206,11 +208,9 @@ public class ComponentRecorder extends SemanticRecorder {
    * @param event event
    * @return true if event has been accepted
    */
+  @Override
   public boolean accept(AWTEvent event) {
-
-    // 	System.out.println(event);
     int rtype = SE_NONE;
-
     if (isWindowEvent(event)) {
       rtype = SE_WINDOW;
     } else if (isMenuEvent(event)) {
@@ -259,7 +259,7 @@ public class ComponentRecorder extends SemanticRecorder {
   protected boolean isToolTip(Object source) {
     // Tooltips appear to be a direct subclass of JWindow and
     // have a single component of class JToolTip
-    if (source instanceof JWindow && !(source instanceof JFrame)) {
+    if (source instanceof JWindow) {
       Container pane = ((JWindow) source).getContentPane();
       while (pane.getComponentCount() == 1) {
         Component child = pane.getComponent(0);
@@ -282,7 +282,7 @@ public class ComponentRecorder extends SemanticRecorder {
     } else if (event.getID() == MouseEvent.MOUSE_PRESSED) {
       MouseEvent me = (MouseEvent) event;
       return me.isPopupTrigger()
-          || ((me.getModifiers() & AWTConstants.POPUP_MASK) != 0)
+          || ((me.getModifiersEx() & AWTConstants.POPUP_MASK) != 0)
           || me.getSource() instanceof JMenu;
     }
     return false;
@@ -295,7 +295,7 @@ public class ComponentRecorder extends SemanticRecorder {
   protected boolean isClick(AWTEvent event) {
     if (event.getID() == MouseEvent.MOUSE_PRESSED) {
       MouseEvent me = (MouseEvent) event;
-      return (me.getModifiers() & MouseEvent.BUTTON1_MASK) != 0;
+      return (me.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0;
     }
     return false;
   }
@@ -334,7 +334,7 @@ public class ComponentRecorder extends SemanticRecorder {
         target = me.getComponent();
         x = me.getX();
         y = me.getY();
-        modifiers = me.getModifiers();
+        modifiers = me.getModifiersEx();
         clickCount = 1;
         button = me.getButton();
         // Add the component immediately, just in case it gets removed
@@ -429,7 +429,7 @@ public class ComponentRecorder extends SemanticRecorder {
   }
 
   protected boolean parseWindowEvent(AWTEvent event) {
-    boolean consumed = true;
+    final boolean consumed = true;
     isClose = isClose(event);
     // Keep track of window open/close state so we don't parse the same
     // semantic event twice (e.g. COMPONENT_SHOWN + WINDOW_OPENED or
@@ -454,8 +454,8 @@ public class ComponentRecorder extends SemanticRecorder {
       KeyEvent typed = (KeyEvent) e;
       target = typed.getComponent();
       keychar = typed.getKeyChar();
-      modifiers = typed.getModifiers();
-      if ((modifiers & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
+      modifiers = typed.getModifiersEx();
+      if ((modifiers & KeyEvent.ALT_DOWN_MASK) == KeyEvent.ALT_DOWN_MASK) {
         Log.debug("Waiting for potential focus accelerator on '" + keychar + "'");
       } else {
         // Ignore KEY_TYPED input for control and alt modifiers, since
@@ -498,7 +498,7 @@ public class ComponentRecorder extends SemanticRecorder {
 
   protected boolean parseMenuSelection(AWTEvent event) {
     int id = event.getID();
-    boolean consumed = true;
+    final boolean consumed = true;
     // press, release, show, [move, show,] press, release
     // press, [drag, show,] release (FIXME not done)
     // ACTION_PERFORMED and ITEM_STATE_CHANGED are only
@@ -527,7 +527,7 @@ public class ComponentRecorder extends SemanticRecorder {
         invoker = me.getComponent();
         menux = me.getX();
         menuy = me.getY();
-        modifiers = me.getModifiers();
+        modifiers = me.getModifiersEx();
         isPopup = me.isPopupTrigger();
         // Must add the listener now, b/c on w32 release/click events
         // are not generated until *after* the awt popup selection.
@@ -571,9 +571,7 @@ public class ComponentRecorder extends SemanticRecorder {
           isPopup = me.isPopupTrigger();
         }
       } else {
-        if (menuTarget != null) {
-          setFinished(true);
-        }
+        setFinished(true);
       }
       Log.log("Menu mouse release");
     } else if (id == MouseEvent.MOUSE_CLICKED && isPopup) {
@@ -600,7 +598,7 @@ public class ComponentRecorder extends SemanticRecorder {
   // drag within a component
   protected boolean parseDrop(AWTEvent event) {
     int id = event.getID();
-    boolean consumed = true;
+    final boolean consumed = true;
 
     // Use enter/exit events to determine what the final destination
     // is, since drag events always use the drag source for the component.
@@ -692,15 +690,14 @@ public class ComponentRecorder extends SemanticRecorder {
         default:
           // Consume other key release events, assuming there was no
           // corresponding key press event.
-          imKeyCodes.add(new Integer(code));
+          imKeyCodes.add(code);
           break;
       }
-    } else if (event instanceof InputMethodEvent) {
-      InputMethodEvent ime = (InputMethodEvent) event;
+    } else if (event instanceof InputMethodEvent ime) {
       if (id == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED) {
         if (ime.getCommittedCharacterCount() > 0) {
           AttributedCharacterIterator iter = ime.getText();
-          StringBuffer sb = new StringBuffer();
+          StringBuilder sb = new StringBuilder();
           for (char ch = iter.first(); ch != CharacterIterator.DONE; ch = iter.next()) {
             sb.append(ch);
           }
@@ -718,12 +715,13 @@ public class ComponentRecorder extends SemanticRecorder {
     return consumed;
   }
 
+  @Override
   public boolean parse(AWTEvent event) {
     if (Log.isClassDebugEnabled(ComponentRecorder.class)) {
       Log.debug("Parsing " + ComponentTester.toString(event) + " as " + TYPES[getRecordingType()]);
     }
 
-    // Default handling is event consumed, and assume not finished
+    // Default handling is an event consumed and assume not finished
     boolean consumed = true;
 
     switch (getRecordingType()) {
@@ -756,8 +754,7 @@ public class ComponentRecorder extends SemanticRecorder {
         setStep(step);
         Log.log("Semantic event recorded: " + step);
       } catch (Throwable thr) {
-        //   String msg = Strings.get("editor.recording.error");
-        String msg = "recording.error";
+        final String msg = "recording.error";
         BugReport br = new BugReport(msg, thr);
         Log.log("Semantic recorder error: " + br);
         setStatus(Strings.get("editor.see_console"));
@@ -782,6 +779,7 @@ public class ComponentRecorder extends SemanticRecorder {
     return false;
   }
 
+  @Override
   protected Step createStep() {
     Step step = null;
     int type = getRecordingType();
@@ -798,7 +796,7 @@ public class ComponentRecorder extends SemanticRecorder {
         if (awtMenuTarget != null) {
           if (invoker == null) {
             MenuContainer mc = awtMenuTarget.getParent();
-            while (mc instanceof MenuComponent && !(mc instanceof Component)) {
+            while (mc instanceof MenuComponent) {
               mc = ((MenuComponent) mc).getParent();
             }
             if (mc == null) {
@@ -836,7 +834,7 @@ public class ComponentRecorder extends SemanticRecorder {
         step = createDrop(dropTarget, dropx, dropy);
         break;
       case SE_IM:
-        if (imText.length() > 0) {
+        if (!imText.isEmpty()) {
           step = createInputMethod(imKeyCodes, imText.toString());
         } else {
           Log.debug("Input method resulted in no text");
@@ -853,7 +851,7 @@ public class ComponentRecorder extends SemanticRecorder {
 
   protected Step createWindowEvent(Window window, boolean isClose) {
     ComponentReference ref = getResolver().addComponent(window);
-    String method = "assertComponentShowing";
+    final String method = "assertComponentShowing";
     Assert step =
         new Assert(
             getResolver(),
@@ -869,8 +867,7 @@ public class ComponentRecorder extends SemanticRecorder {
 
   protected Step createMenuSelection(Component menuItem) {
     ComponentReference cr = getResolver().addComponent(menuItem);
-    Step step = new Action(getResolver(), null, "actionSelectMenuItem", new String[] {cr.getID()});
-    return step;
+    return new Action(getResolver(), null, "actionSelectMenuItem", new String[] {cr.getID()});
   }
 
   protected Step createAWTMenuSelection(Component parent, MenuItem menuItem, boolean isPopup) {
@@ -883,8 +880,7 @@ public class ComponentRecorder extends SemanticRecorder {
     String path = AWT.getPath(menuItem);
     // Do a quick search on the invoker for other popups.  If there are
     // duplicates, include the menu item name
-    Step step = new Action(getResolver(), null, method, new String[] {ref.getID(), path});
-    return step;
+    return new Action(getResolver(), null, method, new String[] {ref.getID(), path});
   }
 
   protected Step createPopupMenuSelection(Component invoker, int x, int y, Component menuItem) {
@@ -940,25 +936,23 @@ public class ComponentRecorder extends SemanticRecorder {
   protected Step createDrag(Component comp, int x, int y) {
     ComponentReference ref = getResolver().addComponent(comp);
     String where = getLocationArgument(comp, x, y);
-    Step step =
-        new Action(
-            getResolver(),
-            null,
-            "actionDrag",
-            new String[] {
-              ref.getID(), where,
-            },
-            comp.getClass());
-    return step;
+    return new Action(
+        getResolver(),
+        null,
+        "actionDrag",
+        new String[] {
+          ref.getID(), where,
+        },
+        comp.getClass());
   }
 
   protected Step createClick(Component target, int x, int y, int mods, int count) {
     Log.debug("creating click");
     ComponentReference cr = getResolver().addComponent(target);
-    ArrayList args = new ArrayList();
+    List<String> args = new ArrayList<>();
     args.add(cr.getID());
     args.add(getLocationArgument(target, x, y));
-    if ((mods != 0 && mods != MouseEvent.BUTTON1_MASK) || count > 1) {
+    if ((mods != 0 && mods != MouseEvent.BUTTON1_DOWN_MASK) || count > 1) {
       // NOTE: this currently saves POPUP or TERTIARY, rather than
       // an explicit button 2 or 3.  I figure that makes more sense
       // than a hard coded button number.
@@ -968,18 +962,15 @@ public class ComponentRecorder extends SemanticRecorder {
       }
     }
     return new Action(
-        getResolver(),
-        null,
-        "actionClick",
-        (String[]) args.toArray(new String[args.size()]),
-        target.getClass());
+        getResolver(), null, "actionClick", args.toArray(new String[0]), target.getClass());
   }
 
-  protected Step createInputMethod(ArrayList codes, String text) {
+  protected Step createInputMethod(List<Integer> codes, String text) {
     Log.debug("Text length is " + text.length());
     return new Action(getResolver(), null, "actionKeyString", new String[] {text});
   }
 
+  @Override
   protected void init(int recordingType) {
     super.init(recordingType);
     target = null;
@@ -1002,8 +993,9 @@ public class ComponentRecorder extends SemanticRecorder {
     imText.delete(0, imText.length());
   }
 
+  @Override
   protected void setFinished(boolean state) {
-    MenuListener listener = null;
+    MenuListener listener;
     synchronized (this) {
       super.setFinished(state);
       listener = menuListener;
@@ -1024,11 +1016,11 @@ public class ComponentRecorder extends SemanticRecorder {
   }
 
   private class MenuListener implements ItemListener {
-    private final ArrayList items = new ArrayList();
+    private final List<MenuItem> items = new ArrayList<>();
 
     public MenuListener(PopupMenu[] popups) {
-      for (int i = 0; i < popups.length; i++) {
-        addRecursive(popups[i]);
+      for (PopupMenu popup : popups) {
+        addRecursive(popup);
       }
     }
 
@@ -1044,15 +1036,16 @@ public class ComponentRecorder extends SemanticRecorder {
       }
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
       dispose();
       parse(e);
     }
 
     public void dispose() {
-      while (items.size() > 0) {
-        ((CheckboxMenuItem) items.get(0)).removeItemListener(this);
-        items.remove(0);
+      while (!items.isEmpty()) {
+        ((CheckboxMenuItem) items.getFirst()).removeItemListener(this);
+        items.removeFirst();
       }
     }
   }
