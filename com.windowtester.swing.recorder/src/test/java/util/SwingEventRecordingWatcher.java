@@ -10,8 +10,6 @@
  *******************************************************************************/
 package util;
 
-import abbot.finder.AWTHierarchy;
-import abbot.finder.Hierarchy;
 import abbot.util.EventNormalizer;
 import abbot.util.SingleThreadedEventListener;
 import com.windowtester.recorder.event.ISemanticEvent;
@@ -23,15 +21,12 @@ import com.windowtester.swing.recorder.RecordingFailedException;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.MenuComponent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SwingEventRecordingWatcher {
 
   private static final long FIXTURE_EVENT_MASK =
       abbot.editor.recorder.EventRecorder.RECORDING_EVENT_MASK;
 
-  private static Hierarchy hierarchy;
   private static SwingGuiTestRecorder recorder;
 
   /**
@@ -41,16 +36,7 @@ public class SwingEventRecordingWatcher {
 
   private static final EventNormalizer normalizer = new EventNormalizer();
 
-  static ActionListener recorderListener =
-      new ActionListener() {
-        public void actionPerformed(final ActionEvent event) {
-          System.out.println(event.getActionCommand());
-        }
-      };
-
   public SwingEventRecordingWatcher() {
-
-    hierarchy = AWTHierarchy.getDefault();
     recorder = new SwingGuiTestRecorder();
     recorder.addListener(new ConsoleReportingListener());
     recorder.addListener(cache);
@@ -60,9 +46,6 @@ public class SwingEventRecordingWatcher {
             codegen();
           }
         });
-
-    //		recorder.addActionListener(recorderListener);
-
   }
 
   /**
@@ -75,17 +58,7 @@ public class SwingEventRecordingWatcher {
   }
 
   public void codegen() {
-    ISemanticEvent[] events = getEvents();
-    System.out.println("cached events: ");
-    for (int i = 0; i < events.length; i++) {
-      System.out.println("\t" + events[i]);
-    }
-    // String src = new SwingTestGenerator("MockTest", "test", "MockApp", new
-    // String[]{}).generate(new EventStream(Arrays.asList(events)));
-    // String src = new CodeGenerator(new SWTTestCaseBuilder("FooTest2", null,
-    // "com.windowtester.swt.tests.apps.InstrumentedApp", null)).generate(new
-    // EventStream(Arrays.asList(events)));
-    // System.out.println(src);
+    // do nothing
   }
 
   public ISemanticEvent[] getEvents() {
@@ -111,22 +84,16 @@ public class SwingEventRecordingWatcher {
     Object src = event.getSource();
     boolean isComponent = src instanceof Component;
 
-    // Keep a log of all events we see on non-filtered components
-    //      System.out.println("ED: " + Robot.toString(event)
-    //                     + " (" + Thread.currentThread() + ")");
-
     // Allow only component events and AWT menu actions
     if (!isComponent && !(src instanceof MenuComponent)) {
-      System.out.println("Source not a Component or MenuComponent: " + event);
       return;
     }
 
     if (recorder != null) {
-      // System.out.println("recorder process event");
       try {
         recorder.startRecordingEvent(event);
       } catch (RecordingFailedException e) {
-        // Stop recording, but keep what we've got so far
+        // Stop recording but keep what we've got so far
         recorder.stop();
         e.printStackTrace();
       }

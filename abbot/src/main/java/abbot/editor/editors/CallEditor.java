@@ -49,7 +49,7 @@ public class CallEditor extends StepEditor {
 
   protected String[] getMethodNames() {
     try {
-      Class cls = call.getTargetClass();
+      Class<?> cls = call.getTargetClass();
       String[] names = getMethodNames(getMethods(cls, Modifier.PUBLIC));
       Arrays.sort(names);
       return names;
@@ -58,7 +58,7 @@ public class CallEditor extends StepEditor {
     }
   }
 
-  protected Class getTargetClass() throws ClassNotFoundException {
+  protected Class<?> getTargetClass() throws ClassNotFoundException {
     try {
       return call.getTargetClass();
     } catch (NoClassDefFoundError e) {
@@ -66,13 +66,13 @@ public class CallEditor extends StepEditor {
     }
   }
 
-  protected Map getMethods(Class cls, int mask) {
-    HashMap processed = new HashMap();
+  protected Map<String, Method> getMethods(Class<?> cls, int mask) {
+    Map<String, Method> processed = new HashMap<>();
     while (cls != null) {
       Method[] methods = cls.getDeclaredMethods();
-      for (int i = 0; i < methods.length; i++) {
-        if ((methods[i].getModifiers() & mask) == mask) {
-          processed.put(methods[i].getName(), methods[i]);
+      for (Method value : methods) {
+        if ((value.getModifiers() & mask) == mask) {
+          processed.put(value.getName(), value);
         }
       }
       cls = cls.getSuperclass();
@@ -80,17 +80,15 @@ public class CallEditor extends StepEditor {
     return processed;
   }
 
-  protected String[] getMethodNames(Map methods) {
-    return (String[]) methods.keySet().toArray(new String[methods.size()]);
+  protected String[] getMethodNames(Map<String, Method> methods) {
+    return methods.keySet().toArray(new String[0]);
   }
 
   protected void validateTargetClass() {
     try {
       call.getTargetClass();
       target.setForeground(DEFAULT_FOREGROUND);
-    } catch (ClassNotFoundException e) {
-      target.setForeground(ERROR_FOREGROUND);
-    } catch (NoClassDefFoundError e) {
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
       target.setForeground(ERROR_FOREGROUND);
     }
   }
@@ -99,11 +97,7 @@ public class CallEditor extends StepEditor {
     try {
       call.getMethod();
       method.setForeground(DEFAULT_FOREGROUND);
-    } catch (IllegalArgumentException e) {
-      method.setForeground(ERROR_FOREGROUND);
-    } catch (NoSuchMethodException e) {
-      method.setForeground(ERROR_FOREGROUND);
-    } catch (ClassNotFoundException e) {
+    } catch (IllegalArgumentException | NoSuchMethodException | ClassNotFoundException e) {
       method.setForeground(ERROR_FOREGROUND);
     } catch (NoClassDefFoundError e) {
       target.setForeground(ERROR_FOREGROUND);
@@ -152,6 +146,7 @@ public class CallEditor extends StepEditor {
     validateMethod();
   }
 
+  @Override
   public void actionPerformed(ActionEvent ev) {
     if (fieldChanging) {
       return;
@@ -169,7 +164,7 @@ public class CallEditor extends StepEditor {
       }
     } else if (src == method) {
       String name = (String) method.getSelectedItem();
-      if (!name.equals(call.getMethodName())) {
+      if (!call.getMethodName().equals(name)) {
         call.setMethodName(name);
         validateMethod();
         fireStepChanged();
@@ -179,9 +174,9 @@ public class CallEditor extends StepEditor {
       // first arg is a component, do popup from available refs
       // FIXME check arguments against method signature
       Object[] values = arguments.getValues();
-      String[] svalues = new String[values.length];
-      System.arraycopy(values, 0, svalues, 0, values.length);
-      call.setArguments(svalues);
+      String[] sValues = new String[values.length];
+      System.arraycopy(values, 0, sValues, 0, values.length);
+      call.setArguments(sValues);
       validateMethod();
       fireStepChanged();
     } else {

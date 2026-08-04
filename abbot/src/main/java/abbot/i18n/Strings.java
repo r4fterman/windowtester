@@ -25,7 +25,7 @@ public class Strings {
     if (language != null) {
       var country = System.getProperty("abbot.locale.country", language.toUpperCase());
       var variant = System.getProperty("abbot.locale.variant", "");
-      var locale = new Locale(language, country, variant);
+      var locale = Locale.of(language, country, variant);
       Locale.setDefault(locale);
     }
     addBundle(BUNDLE);

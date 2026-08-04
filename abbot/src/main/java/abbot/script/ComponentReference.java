@@ -39,8 +39,6 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
@@ -197,7 +195,7 @@ public class ComponentReference
 
   public ComponentReference(Resolver resolver, Element el) throws InvalidScriptException {
     this.resolver = resolver;
-    fromXML(el, true);
+    fromXML(el);
   }
 
   public ComponentReference(Resolver r, Class<?> cls, String[][] attributes) {
@@ -546,53 +544,25 @@ public class ComponentReference
   }
 
   /**
-   * Set all options based on the given XML.
-   *
-   * @param input input
-   * @throws InvalidScriptException invalid script
-   * @deprecated
-   */
-  // This is only used when editing scripts since we don't want to have to hunt down existing
-  // references
-  public void fromXML(String input) throws InvalidScriptException {
-    try {
-      Document doc = DocumentHelper.parseText(input);
-      Element el = doc.getRootElement();
-      if (el == null) {
-        throw new InvalidScriptException("Invalid ComponentReference" + " XML '" + input + "'");
-      }
-      fromXML(el, false);
-    } catch (DocumentException e) {
-      throw new InvalidScriptException(e.getMessage() + " (when parsing " + input + ")");
-    }
-  }
-
-  /**
    * Parse settings from the given XML. Only overwrite the ID if useGivenID is set.
    *
    * @throws InvalidScriptException if the given Element is not valid XML for a ComponentReference.
    */
-  private void fromXML(Element el, boolean useIDFromXML) throws InvalidScriptException {
+  private void fromXML(Element el) throws InvalidScriptException {
     for (Attribute attribute : el.attributes()) {
       String nodeName = attribute.getName();
       String value = attribute.getValue();
-      if (nodeName.equals(TAG_ID) && !useIDFromXML) {
-        continue;
-      }
-
       setAttribute(nodeName, value);
     }
     if (getAttribute(TAG_CLASS) == null) {
       throw new InvalidScriptException("Class must be specified", el);
     }
     String id = getID();
-    if (useIDFromXML) {
-      // Make sure the ID we read in is not already in use by the manager
-      if (id != null) {
-        if (resolver.getComponentReference(id) != null) {
-          String msg = "Persistent ID '" + id + "' is already in use";
-          throw new InvalidScriptException(msg, el);
-        }
+    // Make sure the ID we read in is not already in use by the manager
+    if (id != null) {
+      if (resolver.getComponentReference(id) != null) {
+        String msg = "Persistent ID '" + id + "' is already in use";
+        throw new InvalidScriptException(msg, el);
       }
     }
     if (id == null) {
@@ -611,15 +581,6 @@ public class ComponentReference
       }
     }
     return el;
-  }
-
-  /**
-   * @return editable string
-   * @deprecated Used to be used to edit XML in a text editor.
-   */
-  @Override
-  public String toEditableString() {
-    return toXMLString();
   }
 
   @Override
@@ -1369,58 +1330,6 @@ public class ComponentReference
         }
         return y1 - y2;
       };
-
-  /**
-   * @return name
-   * @deprecated use getAttribute(TAG_NAME) instead.
-   */
-  public String getName() {
-    return getAttribute(TAG_NAME);
-  }
-
-  /**
-   * @return tag value
-   * @deprecated use getAttribute(TAG_TAG) instead.
-   */
-  public String getTag() {
-    return getAttribute(TAG_TAG);
-  }
-
-  /**
-   * @return invoker id
-   * @deprecated use getAttribute(TAG_INVOKER) instead.
-   */
-  public String getInvokerID() {
-    return getAttribute(TAG_INVOKER);
-  }
-
-  /**
-   * @return window id
-   * @deprecated use getAttribute(TAG_WINDOW) instead.
-   */
-  public String getWindowID() {
-    return getAttribute(TAG_WINDOW);
-  }
-
-  /**
-   * @return title
-   * @deprecated use getAttribute(TAG_TITLE) instead.
-   */
-  public String getTitle() {
-    return getAttribute(TAG_TITLE);
-  }
-
-  /**
-   * @return index
-   * @deprecated use getAttribute(TAG_INDEX) instead.
-   */
-  public int getIndex() {
-    try {
-      return Integer.parseInt(getAttribute(TAG_INDEX));
-    } catch (Exception e) {
-      return -1;
-    }
-  }
 
   @Override
   public int compareTo(ComponentReference o) {

@@ -41,7 +41,6 @@ public class SwingButton extends JPanel {
     JCheckBox checkbox = new JCheckBox("CheckBox", false);
     checkbox.addActionListener(
         e -> {
-          System.out.println("checkbox clicked");
           checkboxClicked = true;
         });
 

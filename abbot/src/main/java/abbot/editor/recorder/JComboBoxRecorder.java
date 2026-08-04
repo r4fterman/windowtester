@@ -38,6 +38,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
   /**
    * Make sure we only operate on a JComboBox.
    */
+  @Override
   public boolean accept(AWTEvent event) {
     if (isClick(event) && getComboBox(event) == null) {
       return false;
@@ -45,6 +46,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
     return super.accept(event);
   }
 
+  @Override
   protected void init(int recordingType) {
     super.init(recordingType);
     combo = null;
@@ -69,6 +71,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
     return null;
   }
 
+  @Override
   protected boolean canMultipleClick() {
     return false;
   }
@@ -76,6 +79,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
   /**
    * Parse clicks  to cancel the recording if we get a click that's not in the JList (or ESC).
    */
+  @Override
   protected boolean parseClick(AWTEvent event) {
 
     if (isFinished()) {
@@ -131,6 +135,7 @@ public class JComboBoxRecorder extends JComponentRecorder {
     return consumed;
   }
 
+  @Override
   protected Step createStep() {
     Step step = null;
     if (getRecordingType() == SE_CLICK) {

@@ -15,6 +15,7 @@ public class JMenuItemRecorder extends AbstractButtonRecorder {
   /**
    * Regular clicks get treated as a menu event.
    */
+  @Override
   protected boolean isMenuEvent(AWTEvent e) {
     return isClick(e);
   }

@@ -37,7 +37,7 @@ public class XMLEditor extends AbstractCellEditor implements TableCellEditor, Tr
            * object. */
           public void setValue(Object value) {
             if (value instanceof XMLifiable) {
-              value = ((XMLifiable) value).toEditableString();
+              value = ((XMLifiable) value).toXML();
             }
             textField.setText((value != null) ? value.toString() : "");
           }

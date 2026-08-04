@@ -9,11 +9,13 @@ import java.util.StringTokenizer;
 import javax.swing.JTable;
 
 /**
- * Provides encapsulation of a location on a JTable (notably a row). Use the JTableLocation#JTableLocation(Point) ctor
- * to indicate a specific coordinate.
+ * Provides encapsulation of a location on a JTable (notably a row). Use the
+ * JTableLocation#JTableLocation(Point) ctor to indicate a specific coordinate.
  */
 public class JTableLocation extends ComponentLocation {
+
   public static class Cell {
+
     public int row;
     public int col;
 
@@ -42,9 +44,7 @@ public class JTableLocation extends ComponentLocation {
 
   public JTableLocation(int row, int col) {
     if (row < 0 || col < 0) {
-      String msg =
-          Strings.get(
-              "tester.JTable.invalid_cell", new Object[] {new Integer(row), new Integer(col)});
+      String msg = Strings.get("tester.JTable.invalid_cell", new Object[] {row, col});
       throw new LocationUnavailableException(msg);
     }
     cell = new Cell(row, col);
@@ -63,9 +63,7 @@ public class JTableLocation extends ComponentLocation {
    */
   protected Point cellToPoint(JTable table, int row, int col) {
     if (row < 0 || row >= table.getRowCount() || col < 0 || col >= table.getColumnCount()) {
-      String msg =
-          Strings.get(
-              "tester.JTable.invalid_cell", new Object[] {new Integer(row), new Integer(col)});
+      String msg = Strings.get("tester.JTable.invalid_cell", new Object[] {row, col});
       throw new LocationUnavailableException(msg);
     }
     Rectangle rect = getCellBounds(table, row, col);
@@ -119,20 +117,14 @@ public class JTableLocation extends ComponentLocation {
     JTable table = (JTable) c;
     Cell cell = getCell(table);
     if (cell == null) {
-      String msg =
-          Strings.get(
-              "tester.JTable.invalid_cell",
-              new Object[] {
-                new Integer(cell.row), new Integer(cell.col),
-              });
+      String msg = Strings.get("tester.JTable.invalid_cell", new Object[] {c});
       throw new LocationUnavailableException(msg);
     }
     return getCellBounds(table, cell.row, cell.col);
   }
 
   public boolean equals(Object o) {
-    if (o instanceof JTableLocation) {
-      JTableLocation loc = (JTableLocation) o;
+    if (o instanceof JTableLocation loc) {
       if (value != null) {
         return value.equals(loc.value);
       }

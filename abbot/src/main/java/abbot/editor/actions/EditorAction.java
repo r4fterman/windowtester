@@ -35,13 +35,13 @@ public abstract class EditorAction extends AbstractAction implements EditorConst
     Mnemonic mnemonic = Mnemonic.getMnemonic(Strings.get(key));
     mnemonic.setMnemonic(this);
     if (mnemonic.index != -1) {
-      putValue(MNEMONIC_INDEX, new Integer(mnemonic.index));
+      putValue(MNEMONIC_INDEX, mnemonic.index);
     }
     // Check deprecated usage
     if (mnemonic.keycode == KeyEvent.VK_UNDEFINED) {
       int mn = getMnemonic(key);
       if (mn != KeyEvent.VK_UNDEFINED) {
-        putValue(MNEMONIC_KEY, new Integer(mn));
+        putValue(MNEMONIC_KEY, mn);
       }
     }
 
@@ -80,7 +80,8 @@ public abstract class EditorAction extends AbstractAction implements EditorConst
    * @return the mnemonic
    * @deprecated Encode the mnemonic into the localized label instead.
    */
-  public static int getMnemonic(String key) {
+  @Deprecated
+  private static int getMnemonic(String key) {
     int code = KeyEvent.VK_UNDEFINED;
     // No (visible) mnemonics on OSX
     if (Platform.isOSX()) {
@@ -121,7 +122,6 @@ public abstract class EditorAction extends AbstractAction implements EditorConst
     if (url == null) {
       url = getClass().getResource(base + size + ".gif");
     }
-    ImageIcon icon = url != null ? new ImageIcon(url) : null;
-    return icon;
+    return url != null ? new ImageIcon(url) : null;
   }
 }

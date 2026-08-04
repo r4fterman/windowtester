@@ -3,17 +3,10 @@ package abbot.tester;
 import abbot.BugReport;
 import abbot.Log;
 import abbot.WaitTimedOutError;
-import abbot.finder.AWTHierarchy;
-import abbot.finder.BasicFinder;
-import abbot.finder.ComponentNotFoundException;
 import abbot.finder.ComponentSearchException;
-import abbot.finder.Hierarchy;
-import abbot.finder.MultipleComponentsFoundException;
-import abbot.finder.matchers.WindowMatcher;
 import abbot.i18n.Strings;
 import abbot.script.ComponentReference;
 import abbot.script.Condition;
-import abbot.util.AWT;
 import abbot.util.Bugs;
 import abbot.util.WeakAWTEventListener;
 import java.awt.AWTEvent;
@@ -48,9 +41,9 @@ import javax.accessibility.AccessibleIcon;
  * from a hand-written test.  These actions are distinguished by name, number of arguments, and by
  * argument type.  The actionX methods will be synchronized with the event dispatch thread when
  * invoked, so you should only do synchronization with waitForIdle when you depend on the results of
- * a particular event prior to sending the next one (event.g. scrolling a table cell into view
- * before selecting it). All public action methods should ensure that the actions they trigger are
- * finished on return, or will be finished before any subsequent actions are requested.
+ * a particular event before sending the next one (event.g. scrolling a table cell into view before
+ * selecting it). All public action methods should ensure that the actions they trigger are finished
+ * on return, or will be finished before any later actions are requested.
  *
  * <i>Action</i> methods generally represent user-driven actions such
  * as menu selection, table selection, popup menus, etc.  All actions should have the following
@@ -62,7 +55,7 @@ import javax.accessibility.AccessibleIcon;
  * <p>
  * It is essential that the argument is of type {@link Component}; if you use a more-derived class,
  * then the actual invocation becomes ambiguous since method parsing doesn't attempt to determine
- * which identically-named method is the most-derived.
+ * which identically named method is the most-derived.
  * <p>
  * The {@link ComponentLocation} abstraction allows all derived tester classes to inherit click,
  * popup menu, and drag variants without having to explicitly define new methods for
@@ -89,9 +82,6 @@ import javax.accessibility.AccessibleIcon;
  * <code>public Object getHairpiece(Component component);</code><br>
  * <code>public boolean isRighteouslyIndignant(Component component);</code>
  * </blockquote>
- * Any non-property methods with the property signature, should be added to the
- * {@link #IGNORED_METHODS} set, since property-like methods are scanned dynamically to populate the
- * {@link abbot.editor.ScriptEditor editor}'s action menus.
  *
  * <h2>Extending ComponentTester</h2>
  * Following are the steps required to implement a Tester object for a custom class.
@@ -287,11 +277,12 @@ public class ComponentTester extends Robot {
     } catch (ClassNotFoundException cnf) {
       // Log.debug("Class " + testerName + " not found");
     } catch (ClassCastException cce) {
+      var testerClassLoader = testerClass == null ? null : testerClass.getClassLoader();
       throw new BugReport(
           "Class loader conflict: environment "
               + ComponentTester.class.getClassLoader()
               + " vs. "
-              + testerClass.getClassLoader());
+              + testerClassLoader);
     } catch (InvocationTargetException | NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
@@ -352,8 +343,8 @@ public class ComponentTester extends Robot {
         continue;
       }
       try {
-        method = comp.getClass().getMethod(tagMethod, null);
-        String tmp = (String) method.invoke(comp, null);
+        method = comp.getClass().getMethod(tagMethod, (Class<?>) null);
+        String tmp = (String) method.invoke(comp, (Object) null);
         // Don't ever use empty strings for tags
         if (tmp != null && !tmp.isEmpty()) {
           tag = tmp;
@@ -366,7 +357,7 @@ public class ComponentTester extends Robot {
 
     // In the absence of any other tag, try to derive one from something
     // recognizable on one of its ancestors.
-    if (tag == null || tag.isEmpty()) {
+    if (tag == null) {
       Component parent = comp.getParent();
       if (parent != null) {
         String ptag = getTag(parent);
@@ -403,16 +394,6 @@ public class ComponentTester extends Robot {
   }
 
   /**
-   * @param menuFrame menu frame
-   * @param path      path
-   * @deprecated Renamed to {@link #actionSelectAWTMenuItem(Frame, String)}.
-   */
-  @Deprecated
-  public void actionSelectAWTMenuItemByLabel(Frame menuFrame, String path) {
-    actionSelectAWTMenuItem(menuFrame, path);
-  }
-
-  /**
    * Selects an AWT menu item ({@link java.awt.MenuItem}) and returns when the invocation has
    * triggered (though not necessarily completed).
    *
@@ -432,16 +413,6 @@ public class ComponentTester extends Robot {
       sleep();
     }
     waitForIdle();
-  }
-
-  /**
-   * @param invoker invoker
-   * @param path    path
-   * @deprecated Renamed to {@link #actionSelectAWTPopupMenuItem(Component, String)}.
-   */
-  @Deprecated
-  public void actionSelectAWTPopupMenuItemByLabel(Component invoker, String path) {
-    actionSelectAWTPopupMenuItem(invoker, path);
   }
 
   public void actionSelectAWTPopupMenuItem(Component invoker, String path) {
@@ -614,26 +585,11 @@ public class ComponentTester extends Robot {
   }
 
   public void actionDrag(Component dragSource, ComponentLocation location) {
-    actionDrag(dragSource, location, "BUTTON1_DOWN_MASK");
+    actionDrag(dragSource, location, InputEvent.BUTTON1_DOWN_MASK);
   }
 
   public void actionDrag(Component dragSource) {
     actionDrag(dragSource, new ComponentLocation());
-  }
-
-  /**
-   * Perform a drag action with the given modifiers.
-   *
-   * @param dragSource source of the drag
-   * @param location   identifies location on the given {@link Component} to begin the drag.
-   * @param modifiers  a <code>String</code> representation of key modifiers, event.g. "ALT|SHIFT",
-   *                   based on the {@link InputEvent#ALT_MASK InputEvent fields}.
-   * @deprecated Use the
-   * {@link #actionDrag(Component, ComponentLocation, int) integer modifier mask} version instead.
-   */
-  @Deprecated
-  public void actionDrag(Component dragSource, ComponentLocation location, String modifiers) {
-    actionDrag(dragSource, location, AWT.getModifiers(modifiers));
   }
 
   /**
@@ -651,23 +607,6 @@ public class ComponentTester extends Robot {
 
   public void actionDrag(Component dragSource, int sx, int sy) {
     actionDrag(dragSource, new ComponentLocation(new Point(sx, sy)));
-  }
-
-  /**
-   * Perform a drag action.  Grabs at the given location with the given modifiers.
-   *
-   * @param dragSource source of the drag
-   * @param sx         X coordinate
-   * @param sy         Y coordinate
-   * @param modifiers  a <code>String</code> representation of key modifiers, event.g. "ALT|SHIFT",
-   *                   based on the {@link InputEvent#ALT_DOWN_MASK InputEvent fields}.
-   * @deprecated Use the
-   * {@link #actionDrag(Component, ComponentLocation, int) ComponentLocation/ integer modifier mask}
-   * version instead.
-   */
-  @Deprecated
-  public void actionDrag(Component dragSource, int sx, int sy, String modifiers) {
-    actionDrag(dragSource, new ComponentLocation(new Point(sx, sy)), modifiers);
   }
 
   public void actionDragOver(Component target, ComponentLocation location) {
@@ -694,56 +633,6 @@ public class ComponentTester extends Robot {
   public boolean assertImage(Component component, java.io.File fileImage, boolean ignoreBorder) {
     BufferedImage img = capture(component, ignoreBorder);
     return new ImageComparator().compare(img, fileImage) == 0;
-  }
-
-  /**
-   * Returns whether a Window corresponding to the given String is showing.  The value may be a
-   * plain String or regular expression and may match either the window title (for Frames or
-   * Dialogs) or its Component name.
-   *
-   * @param id id
-   * @return true if frame is showing
-   * @see junit.extensions.abbot.ComponentTestFixture#isShowing(String)
-   * @deprecated This method does not specify the proper context for the lookup.
-   */
-  @Deprecated
-  public boolean assertFrameShowing(String id) {
-    try {
-      Hierarchy hierarchy = AWTHierarchy.getDefault();
-      abbot.finder.ComponentFinder finder = new BasicFinder(hierarchy);
-      return finder.find(new WindowMatcher(id, true)) != null;
-    } catch (ComponentNotFoundException e) {
-      return false;
-    } catch (MultipleComponentsFoundException e) {
-      // Might not be the one you want, but that's what the docs say
-      return true;
-    }
-  }
-
-  /**
-   * Convenience wait for a window to be displayed.  The given value may be a plain String or
-   * regular expression and may match either the window title (for Frames and Dialogs) or its
-   * Component name.  This method is provided as a convenience for hand-coded tests, since scripts
-   * will use a wait step instead.<p> The property abbot.robot.component_delay affects the default
-   * timeout.
-   *
-   * @param identifier id
-   * @see junit.extensions.abbot.ComponentTestFixture#isShowing(String)
-   * @deprecated This method does not provide sufficient context to reliably find a component.
-   */
-  @Deprecated
-  public void waitForFrameShowing(final String identifier) {
-    wait(
-        new Condition() {
-          public boolean test() {
-            return assertFrameShowing(identifier);
-          }
-
-          public String toString() {
-            return Strings.get("tester.Component.show_wait", new Object[] {identifier});
-          }
-        },
-        componentDelay);
   }
 
   public boolean assertComponentShowing(ComponentReference ref) {

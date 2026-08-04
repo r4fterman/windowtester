@@ -10,10 +10,9 @@ import java.io.File;
  */
 public class AssertionFailedError extends RuntimeException {
 
-  private File file;
-  private int line;
-
-  public AssertionFailedError() {}
+  public AssertionFailedError() {
+    this("");
+  }
 
   public AssertionFailedError(String msg) {
     super(msg);
@@ -21,16 +20,6 @@ public class AssertionFailedError extends RuntimeException {
 
   public AssertionFailedError(String msg, Step step) {
     super(getMessage(msg, step));
-    this.file = Script.getFile(step);
-    this.line = Script.getLine(step);
-  }
-
-  public File getFile() {
-    return file;
-  }
-
-  public int getLine() {
-    return line;
   }
 
   private static String getMessage(String msg, Step step) {

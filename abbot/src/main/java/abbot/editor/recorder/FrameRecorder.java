@@ -25,6 +25,7 @@ public class FrameRecorder extends WindowRecorder {
 
   private final int WINDOW_STATE_CHANGED = 9 + WindowEvent.WINDOW_FIRST;
 
+  @Override
   protected synchronized void init(int recordingType) {
     super.init(recordingType);
     frame = null;
@@ -33,11 +34,13 @@ public class FrameRecorder extends WindowRecorder {
   /**
    * Additionally handle state change events (1.4 and later).
    */
+  @Override
   protected boolean isWindowEvent(AWTEvent event) {
     return ((event.getSource() instanceof Frame) && event.getID() == WINDOW_STATE_CHANGED)
         || super.isWindowEvent(event);
   }
 
+  @Override
   protected boolean parseWindowEvent(AWTEvent event) {
     int id = event.getID();
     boolean consumed = true;
@@ -51,6 +54,7 @@ public class FrameRecorder extends WindowRecorder {
     return consumed;
   }
 
+  @Override
   protected Step createStep() {
     if (getRecordingType() == SE_WINDOW && frame != null) {
       return createFrameStateChange(frame, newState);

@@ -18,7 +18,6 @@ import com.windowtester.runtime.swing.SwingWidgetLocator;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -31,10 +30,8 @@ import javax.swing.JLabel;
  *  is more than one match with this locator, then elaborate by adding
  *  parent info. Do this till we get a unique WidgetLocator, or else
  *  return null, to indicate failure.
- *
  *  Only the active window is considered when building the WidgetLocator.
- *
- *  based on com.windowtester.swt.locator.ScopedWidgetIdentifierBuilder
+ *  Based on com.windowtester.swt.locator.ScopedWidgetIdentifierBuilder
  *
  */
 
@@ -46,29 +43,26 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
   private final ComponentFinder _finder = BasicFinder2.getDefault();
 
   /**
-   * For use in elaboration (created once per call it identify)
+   * For use in elaboration (created once per call it identifies)
    */
   private final Hierarchy _hierarchy = AWTHierarchy.getDefault();
 
   /**
-   * Generates a <code>WidgetLocator</code> that uniquely identifies this widget relative to the current widget
-   * hierarchy.  If no uniquely identifying locator is found
+   * Generates a <code>WidgetLocator</code> that uniquely identifies this widget relative to the
+   * current widget hierarchy.  If no uniquely identifying locator is found
    * <code>null</code> is returned.
    */
+  @Override
   public SwingWidgetLocator identify(Component component) {
 
     // get locator describing the target widget itself
     SwingWidgetLocator locator = getLocator(component);
-    // get the top level frame/dailog for the component
-    //		WidgetLocator scope = findTopLevelScope(w);
-    //		locator.setParentInfo(scope); //note: it can be null
 
     Matcher matcher = MatcherFactory.getMatcher(locator);
 
     //	elaborate until done (notice: null locator indicates a failure)
     // Note: not going to look only in active shell, since the find has not
     // been implemented this way.
-    //	while(!isUniquelyIdentifying(matcher, _activeWindow) && locator != null) {
     while (!isUniquelyIdentifying(matcher) && locator != null) {
       locator = elaborate(locator, component);
       if (locator != null) {
@@ -91,7 +85,7 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
       return null;
     }
 
-    /**
+    /*
      * CCombos require special treatment as the chevron is a button and receives the click event.
      * Instead of that button, we want to be identifying the combo itself (the button's parent).
      * TODO!pq: is this true for JCombos?
@@ -110,55 +104,17 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
   }
 
   /**
-   * Find top-level scope (Frame) -- might be <code>null</code>.
-   */
-  /*	private WidgetLocator findTopLevelScope(Component w) {
-  		WidgetLocator rootLocator = null;
-
-  		Collection roots = _hierarchy.getRoots();
-  		boolean found = false;
-  		Iterator it = roots.iterator();
-  		while (it.hasNext() && !found){
-  			Object o = it.next();
-  		//	if (o instanceof java.awt.Container){
-  			if (((Container)o).isAncestorOf(w)){
-  				found = true;
-  				if (o instanceof Frame)
-  					rootLocator = new WidgetLocator(Frame.class,((Frame)o).getTitle());
-  				else if (o instanceof Dialog)
-  					rootLocator = new WidgetLocator(Dialog.class,((Dialog)o).getTitle());
-  			}
-  		}
-  		return rootLocator;
-  	}
-
-  */
-
-  /**
-   * Does this macther uniquely identify a widget in this Hierarchy
+   * Does this matcher uniquely identify a widget in this Hierarchy
    * TODO: limit search to active window
    */
-  //	private boolean isUniquelyIdentifying(Matcher matcher, Window window) {
   private boolean isUniquelyIdentifying(Matcher matcher) {
-    /*	 try {
-    	_finder.find(matcher);
-    	return true;
-    } catch (ComponentNotFoundException e) {
-    	System.out.println("Component not found exception");
-    	e.printStackTrace();
-    	// do nothing, return false
-    } catch (MultipleComponentsFoundException e) {
-    	//	do nothing, return false
-    	System.out.println("multiple Components found exception");
-    	e.printStackTrace();
-    }*/
     int result = ((BasicFinder2) _finder).findAll(matcher);
     return result != -1;
   }
 
   /**
-   * Takes a WidgetLocator object and elaborates on it until is uniquely identifying. If no uniquely identifying
-   * locator can be inferred, a <code>null</code> value is returned.
+   * Takes a WidgetLocator object and elaborates on it until is uniquely identifying. If no uniquely
+   * identifying locator can be inferred, a <code>null</code> value is returned.
    */
   private SwingWidgetLocator elaborate(SwingWidgetLocator info, Component w) {
 
@@ -166,40 +122,29 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
     SwingWidgetLocator root = info;
 
     boolean elaborated = false;
-    SwingWidgetLocator parentInfo = null;
+    SwingWidgetLocator parentInfo;
 
     while (!elaborated) {
-
       // get parent info of the current (top-most) locator
-      // note[!pq]: we need this cast but it's safe since swing locators
+      // note[!pq]: we need this cast, but it's safe since swing locators
       // can only contain other swing locators
       parentInfo = (SwingWidgetLocator) info.getParentInfo();
       // get the parent of the current (top-most) widget in the target's hierarchy
       Component parent = _hierarchy.getParent(w);
       /*
-       * if the parent is null at this point, we've failed to elaborate and we
+       * if the parent is null at this point, we've failed to elaborate, and we
        * need to just return
        */
       if (parent == null) {
-        System.out.println("Failed, returning null");
         return null;
       }
 
-      // if the parent is a scope locator, connect to it
-      // if (isScopeLocator(parentInfo)) {
-      //	handleScopeLocatorCase(info, parentInfo, w, parent);
-      //	elaborated = true;
-      // if the parentinfo is null, create a new parent and attach it
-      // } else if (parentInfo == null) {
       if (parentInfo == null) {
         info.setParentInfo(getLocator(parent));
         setIndex(info, w, parent);
         elaborated = true;
       }
 
-      /*
-       * setup for next iteration
-       */
       w = parent;
       info = parentInfo;
     }
@@ -218,16 +163,14 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
    */
   public int getIndex(Component w, Component parent) {
 
-    List children = getChildren(parent, w.getClass());
+    List<Component> children = getChildren(parent, w.getClass());
     int count = 0; // the match counter
     int index = -1; // the index of our target widget
     // only child case...
     if (children.size() == 1) {
       return index;
     }
-    for (Iterator iter = children.iterator(); iter.hasNext(); ) {
-      Component child = (Component) iter.next();
-
+    for (Component child : children) {
       // using exact matches...
       if (child.getClass().isAssignableFrom(w.getClass())
           && w.getClass().isAssignableFrom(child.getClass())) {
@@ -251,13 +194,12 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
    * @param cls    - the class of child widgets of interest
    * @return a list of children
    */
-  public List getChildren(Component parent, Class cls) {
-    Collection children = _hierarchy.getComponents(parent);
+  public List<Component> getChildren(Component parent, Class<?> cls) {
+    Collection<Component> children = _hierarchy.getComponents(parent);
     // prune non-exact class matches
-    List pruned = new ArrayList();
-    for (Iterator iter = children.iterator(); iter.hasNext(); ) {
-      Object child = iter.next();
-      Class childClass = child.getClass();
+    List<Component> pruned = new ArrayList<>();
+    for (Component child : children) {
+      Class<?> childClass = child.getClass();
       if (cls.isAssignableFrom(childClass) && childClass.isAssignableFrom(cls)) {
         pruned.add(child);
       }
@@ -271,7 +213,7 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
 
     if ((name1 != null) || (name2 != null)) {
       if (name1 == null) {
-        return name2 == null;
+        return false;
       }
       return name1.equals(name2);
     }
@@ -294,35 +236,7 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
     }
   }
 
-  /**
-   * Check to see if the given locator is a scope locator.
-   */
-  /*	private boolean isScopeLocator(WidgetLocator locator) {
-  		return (locator.getTargetClass()== Frame.class) ||
-  				(locator.getTargetClass()== Dialog.class);
-  	}
-  */
-
-  /**
-   * Handle case where parent locator is a scoping locator.
-   */
-  /*	private void handleScopeLocatorCase(WidgetLocator currentTopLocator, WidgetLocator scopeLocator, Component currentWidget, Component widgetParent) {
-
-  			//1. create a new parent
-  			WidgetLocator newParent = getLocator(widgetParent);
-  			//attatch it to our old top locator
-  			currentTopLocator.setParentInfo(newParent);
-  			setIndex(currentTopLocator, currentWidget, widgetParent);
-
-  			int scopeRelativeIndex = getIndex(currentWidget, scopeLocator);
-  			if (scopeRelativeIndex != WidgetLocator.UNASSIGNED)
-  				newParent.setIndex(scopeRelativeIndex);
-
-  			newParent.setParentInfo(scopeLocator);
-  	}
-
-  */
-  public int getIndex(Component w, SwingWidgetLocator scopeLocator) {
+  public int getIndex() {
     // TODO: decide whether we want frame/dialog relative indexes
     return SwingWidgetLocator.UNASSIGNED;
   }
@@ -334,7 +248,6 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
    * @return the widget's text
    */
   public String getWidgetText(Component w) {
-
     if (w instanceof AbstractButton) {
       return (((AbstractButton) w).getText());
     }
@@ -343,7 +256,6 @@ public class ScopedComponentIdentifierBuilder implements IWidgetIdentifierStrate
       return (((JLabel) w).getText());
     }
 
-    // fall through ....
     return null;
   }
 }

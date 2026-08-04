@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -43,15 +44,15 @@ import javax.swing.table.AbstractTableModel;
 
 public class ClientBillingUISwing extends JFrame {
 
-  class Transaction {
+  static class Transaction {
     int transactionID;
     int amount;
     Date date;
     String description;
   }
 
-  class InfoTableTableModel extends AbstractTableModel {
-    private final ArrayList transactions = new ArrayList();
+  static class InfoTableTableModel extends AbstractTableModel {
+    private final List<Transaction> transactions = new ArrayList<>();
 
     public final String[] COLUMN_NAMES = new String[] {"ID", "Amount", "Date", "Description"};
 
@@ -70,18 +71,17 @@ public class ClientBillingUISwing extends JFrame {
     public Object getValueAt(int rowIndex, int columnIndex) {
       Transaction transaction = (Transaction) transactions.get(rowIndex);
 
-      switch (columnIndex) {
-        case 0: // ID column
-          return new Integer(transaction.transactionID);
-        case 1: // Amount column
-          return new Integer(transaction.amount);
-        case 3: // Date column
-          return transaction.date;
-        case 4: // Description column
-          return transaction.description;
-        default:
-          return null;
-      }
+      return switch (columnIndex) {
+        case 0 -> // ID column
+            transaction.transactionID;
+        case 1 -> // Amount column
+            transaction.amount;
+        case 3 -> // Date column
+            transaction.date;
+        case 4 -> // Description column
+            transaction.description;
+        default -> null;
+      };
     }
 
     public void addRow(Transaction transaction) {
@@ -90,70 +90,14 @@ public class ClientBillingUISwing extends JFrame {
     }
   }
 
-  private final JTable infoTable;
-  private final JTextArea descText;
-  private final JTextField dateField;
-  private final JTextField amountField;
-  private final JTextField idField;
-  private final JTextField totalField;
-  private final JButton cancelTransButton;
-  private final JButton saveTransButton;
-  private final JButton editTransButton;
-  private final JButton deleteTransButton;
-  private final JButton newTransButton;
-  private final JTextArea miscText;
-  private final JTextArea addressText;
-  private final JTextField emailField;
-  private final JTextField phoneField;
-  private final JTextField dofBirthField;
-  private final JTextField lastNameField;
-  private final JTextField fNameField;
-  private final JTextField accIdField;
-  private final JButton printButton;
-  private final JButton cancelButton;
-  private final JButton saveClientButton;
-  private final JButton editClientButton;
-  private final JButton deleteClientButton;
-  private final JButton newClientButton;
-  private final ButtonGroup buttonGroup = new ButtonGroup();
-  private final JTextField filterText;
-  private final JList list;
-
   // for debugging widget locators
-  WidgetLocatorService service = new WidgetLocatorService();
-  ActionListener listener =
+  final WidgetLocatorService service = new WidgetLocatorService();
+  final ActionListener listener =
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           WidgetLocator locator = service.inferIdentifyingInfo((Component) e.getSource());
-          System.out.println(locator.toString());
         }
       };
-
-  /**
-   * Launch the application
-   *
-   * @param args
-   */
-  public static void main(String[] args) {
-    try {
-      ClientBillingUISwing frame = new ClientBillingUISwing();
-      // AWTEventListener
-      /**           frame.getToolkit().addAWTEventListener(
-       * new AWTEventListener() {
-       * public void eventDispatched(AWTEvent e) {
-       * System.out.println(e+"\n");
-       * }
-       * }, AWTEvent.ACTION_EVENT_MASK | AWTEvent.CONTAINER_EVENT_MASK |
-       * AWTEvent.COMPONENT_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK |
-       * AWTEvent.FOCUS_EVENT_MASK |AWTEvent.WINDOW_EVENT_MASK |
-       * AWTEvent.KEY_EVENT_MASK
-       * );
-       */
-      frame.setVisible(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 
   /**
    * Create the frame
@@ -194,7 +138,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_2.gridx = 0;
     panel.add(scrollPane, gridBagConstraints_2);
 
-    list = new JList();
+    JList<String> list = new JList<>();
     list.setName("clientList");
     scrollPane.setViewportView(list);
 
@@ -206,7 +150,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_3.gridx = 0;
     panel.add(filterLabel, gridBagConstraints_3);
 
-    filterText = new JTextField();
+    JTextField filterText = new JTextField();
     filterText.addActionListener(listener);
     final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
     gridBagConstraints_4.fill = GridBagConstraints.HORIZONTAL;
@@ -215,6 +159,7 @@ public class ClientBillingUISwing extends JFrame {
     panel.add(filterText, gridBagConstraints_4);
 
     final JRadioButton nameRadio = new JRadioButton();
+    ButtonGroup buttonGroup = new ButtonGroup();
     buttonGroup.add(nameRadio);
     nameRadio.setSelected(true);
     nameRadio.setText("View by name");
@@ -255,18 +200,18 @@ public class ClientBillingUISwing extends JFrame {
     panel_3.setLayout(new GridLayout(1, 0));
     panel_1.add(panel_3, BorderLayout.SOUTH);
 
-    newClientButton = new JButton();
+    JButton newClientButton = new JButton();
     newClientButton.setMargin(new Insets(2, 4, 2, 4));
     newClientButton.setText("New");
     newClientButton.addActionListener(listener);
     panel_3.add(newClientButton);
 
-    deleteClientButton = new JButton();
+    JButton deleteClientButton = new JButton();
     deleteClientButton.setMargin(new Insets(2, 4, 2, 4));
     deleteClientButton.setText("Delete");
     panel_3.add(deleteClientButton);
 
-    editClientButton = new JButton();
+    JButton editClientButton = new JButton();
     editClientButton.setMargin(new Insets(2, 4, 2, 4));
     editClientButton.setText("Edit");
     panel_3.add(editClientButton);
@@ -274,13 +219,13 @@ public class ClientBillingUISwing extends JFrame {
     final JLabel label = new JLabel();
     panel_3.add(label);
 
-    saveClientButton = new JButton();
+    JButton saveClientButton = new JButton();
     saveClientButton.setEnabled(false);
     saveClientButton.setMargin(new Insets(2, 4, 2, 4));
     saveClientButton.setText("Save");
     panel_3.add(saveClientButton);
 
-    cancelButton = new JButton();
+    JButton cancelButton = new JButton();
     cancelButton.setMargin(new Insets(2, 4, 2, 4));
     cancelButton.setText("Cancel");
     cancelButton.setEnabled(false);
@@ -289,7 +234,7 @@ public class ClientBillingUISwing extends JFrame {
     final JLabel label_1 = new JLabel();
     panel_3.add(label_1);
 
-    printButton = new JButton();
+    JButton printButton = new JButton();
     printButton.setMargin(new Insets(2, 4, 2, 4));
     printButton.setText("Print");
     panel_3.add(printButton);
@@ -305,7 +250,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_22.insets = new Insets(5, 5, 5, 5);
     panel_4.add(accountIdLabel, gridBagConstraints_22);
 
-    accIdField = new JTextField();
+    JTextField accIdField = new JTextField();
     accIdField.setEditable(false);
     final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
     gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
@@ -323,7 +268,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_7.gridx = 0;
     panel_4.add(firstNameLabel, gridBagConstraints_7);
 
-    fNameField = new JTextField();
+    JTextField fNameField = new JTextField();
     final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
     gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
     gridBagConstraints_15.weightx = 1;
@@ -340,7 +285,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_8.gridx = 0;
     panel_4.add(lastNameLabel, gridBagConstraints_8);
 
-    lastNameField = new JTextField();
+    JTextField lastNameField = new JTextField();
     final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
     gridBagConstraints_16.fill = GridBagConstraints.HORIZONTAL;
     gridBagConstraints_16.weightx = 1;
@@ -357,7 +302,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_9.gridx = 0;
     panel_4.add(dateOfBirthLabel, gridBagConstraints_9);
 
-    dofBirthField = new JTextField();
+    JTextField dofBirthField = new JTextField();
     dofBirthField.setEditable(false);
     final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
     gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
@@ -375,7 +320,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_10.gridx = 0;
     panel_4.add(phoneNoLabel, gridBagConstraints_10);
 
-    phoneField = new JTextField();
+    JTextField phoneField = new JTextField();
     phoneField.setEditable(false);
     final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
     gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
@@ -393,7 +338,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_11.gridx = 0;
     panel_4.add(emailIdLabel, gridBagConstraints_11);
 
-    emailField = new JTextField();
+    JTextField emailField = new JTextField();
     emailField.setEditable(false);
     final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
     gridBagConstraints_19.fill = GridBagConstraints.HORIZONTAL;
@@ -418,7 +363,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_20.gridx = 1;
     panel_4.add(scrollPane_1, gridBagConstraints_20);
 
-    addressText = new JTextArea();
+    JTextArea addressText = new JTextArea();
     addressText.setEditable(false);
     scrollPane_1.setViewportView(addressText);
 
@@ -440,7 +385,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_21.gridx = 1;
     panel_4.add(scrollPane_2, gridBagConstraints_21);
 
-    miscText = new JTextArea();
+    JTextArea miscText = new JTextArea();
     miscText.setEditable(false);
     scrollPane_2.setViewportView(miscText);
 
@@ -463,7 +408,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_32.gridy = 0;
     panel_5.add(scrollPane_4, gridBagConstraints_32);
 
-    infoTable = new JTable();
+    JTable infoTable = new JTable();
     infoTable.setModel(new InfoTableTableModel());
     infoTable.getTableHeader().setReorderingAllowed(false);
     scrollPane_4.setViewportView(infoTable);
@@ -476,7 +421,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_33.gridy = 1;
     panel_5.add(totalLabel, gridBagConstraints_33);
 
-    totalField = new JTextField();
+    JTextField totalField = new JTextField();
     totalField.setEditable(false);
     final GridBagConstraints gridBagConstraints_26 = new GridBagConstraints();
     gridBagConstraints_26.fill = GridBagConstraints.HORIZONTAL;
@@ -494,7 +439,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_23.gridx = 0;
     panel_5.add(idLabel, gridBagConstraints_23);
 
-    idField = new JTextField();
+    JTextField idField = new JTextField();
     final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
     gridBagConstraints_27.fill = GridBagConstraints.HORIZONTAL;
     gridBagConstraints_27.gridy = 2;
@@ -511,7 +456,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_24.gridx = 0;
     panel_5.add(amountLabel, gridBagConstraints_24);
 
-    amountField = new JTextField();
+    JTextField amountField = new JTextField();
     final GridBagConstraints gridBagConstraints_28 = new GridBagConstraints();
     gridBagConstraints_28.fill = GridBagConstraints.HORIZONTAL;
     gridBagConstraints_28.gridy = 3;
@@ -537,7 +482,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_31.gridx = 3;
     panel_5.add(scrollPane_3, gridBagConstraints_31);
 
-    descText = new JTextArea();
+    JTextArea descText = new JTextArea();
     descText.setWrapStyleWord(true);
     descText.setEditable(false);
     descText.setLineWrap(true);
@@ -552,7 +497,7 @@ public class ClientBillingUISwing extends JFrame {
     gridBagConstraints_25.gridx = 0;
     panel_5.add(dateLabel, gridBagConstraints_25);
 
-    dateField = new JTextField();
+    JTextField dateField = new JTextField();
     dateField.setEditable(false);
     final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
     gridBagConstraints_29.fill = GridBagConstraints.HORIZONTAL;
@@ -565,18 +510,18 @@ public class ClientBillingUISwing extends JFrame {
     panel_6.setLayout(new GridLayout(1, 0));
     panel_2.add(panel_6, BorderLayout.SOUTH);
 
-    newTransButton = new JButton();
+    JButton newTransButton = new JButton();
     newTransButton.setMargin(new Insets(2, 4, 2, 4));
     newTransButton.setText("New");
     newTransButton.addActionListener(listener);
     panel_6.add(newTransButton);
 
-    deleteTransButton = new JButton();
+    JButton deleteTransButton = new JButton();
     deleteTransButton.setMargin(new Insets(2, 4, 2, 4));
     deleteTransButton.setText("Delete");
     panel_6.add(deleteTransButton);
 
-    editTransButton = new JButton();
+    JButton editTransButton = new JButton();
     editTransButton.setMargin(new Insets(2, 4, 2, 4));
     editTransButton.setText("Edit");
     panel_6.add(editTransButton);
@@ -584,13 +529,13 @@ public class ClientBillingUISwing extends JFrame {
     final JLabel label_2 = new JLabel();
     panel_6.add(label_2);
 
-    saveTransButton = new JButton();
+    JButton saveTransButton = new JButton();
     saveTransButton.setMargin(new Insets(2, 4, 2, 4));
     saveTransButton.setText("Save");
     saveTransButton.setEnabled(false);
     panel_6.add(saveTransButton);
 
-    cancelTransButton = new JButton();
+    JButton cancelTransButton = new JButton();
     cancelTransButton.setMargin(new Insets(2, 4, 2, 4));
     cancelTransButton.setText("Cancel");
     cancelTransButton.setEnabled(false);

@@ -25,11 +25,11 @@ public class Event extends Step {
   private String componentID = null;
   private String type = null;
   private String kind = null;
-  private final Map eventAttributes = new HashMap();
+  private final Map<String, String> eventAttributes = new HashMap<>();
 
-  public Event(Resolver resolver, Map attributes) {
+  public Event(Resolver resolver, Map<String, String> attributes) {
     super(resolver, attributes);
-    componentID = (String) attributes.get(TAG_COMPONENT);
+    componentID = attributes.get(TAG_COMPONENT);
     // can't create events without a component, so creation of the event
     // is deferred.  we do check for validity, though.
     parseEvent(attributes);
@@ -41,8 +41,7 @@ public class Event extends Step {
     type = simpleClassName(event.getClass());
     kind = ComponentTester.getEventID(event);
     Component comp = ((ComponentEvent) event).getComponent();
-    if (event instanceof MouseEvent) {
-      MouseEvent me = (MouseEvent) event;
+    if (event instanceof MouseEvent me) {
       ComponentReference ref = resolver.addComponent(comp);
       componentID = ref.getID();
       eventAttributes.put(TAG_X, String.valueOf(me.getX()));
@@ -58,11 +57,10 @@ public class Event extends Step {
       if (me.isPopupTrigger()) {
         eventAttributes.put(TAG_TRIGGER, "true");
       }
-    } else if (event instanceof KeyEvent) {
-      KeyEvent ke = (KeyEvent) event;
+    } else if (event instanceof KeyEvent ke) {
       ComponentReference ref = resolver.addComponent(comp);
       componentID = ref.getID();
-      if (ke.getModifiers() != 0) {
+      if (ke.getModifiersEx() != 0) {
         eventAttributes.put(TAG_MODIFIERS, AWT.getModifiers(ke));
       }
       if (id == KeyEvent.KEY_TYPED) {
@@ -76,6 +74,7 @@ public class Event extends Step {
     }
   }
 
+  @Override
   public String getDefaultDescription() {
     String desc = type + "." + kind;
     if (type.equals("KeyEvent")) {
@@ -87,16 +86,19 @@ public class Event extends Step {
     return desc;
   }
 
+  @Override
   public String getXMLTag() {
     return TAG_EVENT;
   }
 
+  @Override
   public String getUsage() {
     return USAGE;
   }
 
-  public Map getAttributes() {
-    Map map = super.getAttributes();
+  @Override
+  public Map<String, String> getAttributes() {
+    Map<String, String> map = super.getAttributes();
     map.put(TAG_COMPONENT, componentID);
     map.put(TAG_TYPE, type);
     if (kind != null) {
@@ -106,6 +108,7 @@ public class Event extends Step {
     return map;
   }
 
+  @Override
   public void runStep() throws Throwable {
     ComponentTester.getTester(java.awt.Component.class)
         .sendEvent(createEvent(System.currentTimeMillis()));
@@ -114,19 +117,19 @@ public class Event extends Step {
   /**
    * Validate the attributes are sufficient to construct an event.
    */
-  private void parseEvent(Map map) {
-    type = (String) map.get(TAG_TYPE);
-    componentID = (String) map.get(TAG_COMPONENT);
-    kind = (String) map.get(TAG_KIND);
+  private void parseEvent(Map<String, String> map) {
+    type = map.get(TAG_TYPE);
+    componentID = map.get(TAG_COMPONENT);
+    kind = map.get(TAG_KIND);
     if (type == null) {
       usage("AWT event type missing");
     }
     if (type.endsWith("MouseEvent")) {
-      String modifiers = (String) map.get(TAG_MODIFIERS);
-      String x = (String) map.get(TAG_X);
-      String y = (String) map.get(TAG_Y);
-      String count = (String) map.get(TAG_COUNT);
-      String trigger = (String) map.get(TAG_TRIGGER);
+      String modifiers = map.get(TAG_MODIFIERS);
+      String x = map.get(TAG_X);
+      String y = map.get(TAG_Y);
+      String count = map.get(TAG_COUNT);
+      String trigger = map.get(TAG_TRIGGER);
       if (kind == null) {
         usage("MouseEvent must specify a kind");
       }
@@ -152,10 +155,10 @@ public class Event extends Step {
       if (kind == null) {
         usage("KeyEvent must specify a kind");
       }
-      String keyCode = (String) map.get(TAG_KEYCODE);
-      String modifiers = (String) map.get(TAG_MODIFIERS);
+      String keyCode = map.get(TAG_KEYCODE);
+      String modifiers = map.get(TAG_MODIFIERS);
       // Saved characters might be XML-encoded
-      String keyChar = (String) map.get(TAG_KEYCHAR);
+      String keyChar = map.get(TAG_KEYCHAR);
       if (keyCode == null) {
         if (!kind.equals("KEY_TYPED")) {
           usage("KeyPress/Release require a keyCode");
@@ -170,7 +173,7 @@ public class Event extends Step {
       } else if (kind.equals("KEY_TYPED")) {
         eventAttributes.put(TAG_KEYCHAR, keyChar);
       }
-      if (modifiers != null && !"".equals(modifiers)) {
+      if (modifiers != null && !modifiers.isEmpty()) {
         eventAttributes.put(TAG_MODIFIERS, modifiers);
       }
     }
@@ -201,40 +204,43 @@ public class Event extends Step {
     if (componentID != null) {
       comp = resolve(componentID);
     }
-    long when = timestamp;
     if (type.endsWith("MouseEvent")) {
       int x = (comp.getSize().width + 1) / 2;
       int y = (comp.getSize().height + 1) / 2;
       int count = 1;
       boolean trigger = false;
-      String modifiers = (String) eventAttributes.get(TAG_MODIFIERS);
+      String modifiers = eventAttributes.get(TAG_MODIFIERS);
       int mods = modifiers != null ? AWT.getModifiers(modifiers) : 0;
       try {
-        x = Integer.parseInt((String) eventAttributes.get(TAG_X));
+        x = Integer.parseInt(eventAttributes.get(TAG_X));
       } catch (Exception exc) {
+        // ignore
       }
       try {
-        y = Integer.parseInt((String) eventAttributes.get(TAG_Y));
+        y = Integer.parseInt(eventAttributes.get(TAG_Y));
       } catch (Exception exc) {
+        // ignore
       }
       try {
-        count = Integer.parseInt((String) eventAttributes.get(TAG_COUNT));
+        count = Integer.parseInt(eventAttributes.get(TAG_COUNT));
       } catch (Exception exc) {
+        // ignore
       }
       try {
-        trigger = Boolean.getBoolean((String) eventAttributes.get(TAG_TRIGGER));
+        trigger = Boolean.getBoolean(eventAttributes.get(TAG_TRIGGER));
       } catch (Exception exc) {
+        // ignore
       }
       int id = ComponentTester.getEventID(MouseEvent.class, kind);
-      return new MouseEvent(comp, id, when, mods, x, y, count, trigger);
+      return new MouseEvent(comp, id, timestamp, mods, x, y, count, trigger);
     } else if (type.equals("KeyEvent")) {
-      String modifiers = (String) eventAttributes.get(TAG_MODIFIERS);
+      String modifiers = eventAttributes.get(TAG_MODIFIERS);
       int mods = modifiers != null ? AWT.getModifiers(modifiers) : 0;
-      int code = AWT.getKeyCode((String) eventAttributes.get(TAG_KEYCODE));
-      String ch = (String) eventAttributes.get(TAG_KEYCHAR);
+      int code = AWT.getKeyCode(eventAttributes.get(TAG_KEYCODE));
+      String ch = eventAttributes.get(TAG_KEYCHAR);
       char keyChar = ch != null ? ch.charAt(0) : (char) code;
       int id = ComponentTester.getEventID(KeyEvent.class, kind);
-      return new KeyEvent(comp, id, when, mods, code, keyChar);
+      return new KeyEvent(comp, id, timestamp, mods, code, keyChar);
     }
     throw new IllegalArgumentException("Bad event type " + type);
   }
@@ -264,7 +270,7 @@ public class Event extends Step {
   }
 
   public String getAttribute(String tag) {
-    return (String) eventAttributes.get(tag);
+    return eventAttributes.get(tag);
   }
 
   public void setAttribute(String tag, String value) {
