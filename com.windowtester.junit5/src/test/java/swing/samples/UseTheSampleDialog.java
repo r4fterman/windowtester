@@ -50,9 +50,7 @@ public class UseTheSampleDialog implements ActionListener {
 
   public void actionPerformed(ActionEvent e) {
     if (myButton == e.getSource()) {
-      System.err.println("Opening dialog.");
       SampleDialog myDialog = new SampleDialog(mainFrame, "Do you like Java?");
-      System.err.println("After opening dialog.");
       if (myDialog.getAnswer()) {
         System.err.println(
             "The answer stored in CustomDialog is 'true' (i.e. user clicked yes button.)");
