@@ -16,8 +16,6 @@ import com.windowtester.runtime.swing.SwingWidgetLocator;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
@@ -95,33 +93,15 @@ public class WidgetLocatorService {
    * @return a list of children
    */
   public List<Component> getChildren(Component parent, Class<?> cls) {
-    var children = new ArrayList<Component>();
-    if (parent instanceof Container container) {
-      var components = container.getComponents();
-      addCheck(children, Arrays.asList(components));
-    }
-
-    // prune non-exact class matches
     var pruned = new ArrayList<Component>();
-    for (Component child : children) {
-      var childClass = child.getClass();
-      if (cls.isAssignableFrom(childClass) && childClass.isAssignableFrom(cls)) {
-        pruned.add(child);
+    if (parent instanceof Container container) {
+      for (Component child : container.getComponents()) {
+        if (child.getClass() == cls) {
+          pruned.add(child);
+        }
       }
     }
     return pruned;
-  }
-
-  /**
-   * Add the contents of this collection to this other collection only if it is non-empty.
-   *
-   * @param dest - the destination collection
-   * @param src  - the source collection
-   */
-  private void addCheck(Collection<Component> dest, Collection<Component> src) {
-    if (!src.isEmpty()) {
-      dest.addAll(src);
-    }
   }
 
   /**

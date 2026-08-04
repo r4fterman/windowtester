@@ -137,6 +137,11 @@ public class WindowtesterExtension
     } catch (InvocationTargetException | InterruptedException e) {
       throw new RuntimeException("Fail to close window.", e);
     }
+    // The window is now shown and is the UI under test: mark it ready for input directly so the
+    // first interaction does not have to wait out the readiness fallback timeout (see
+    // WindowTracker#setWindowReady). The event-based fast path is unreliable when the window is
+    // not the focused/foreground window (e.g. headless-ish CI or background test runs).
+    abbot.tester.WindowTracker.getTracker().setWindowReady(window);
   }
 
   private boolean isSwingUIContextParameter(

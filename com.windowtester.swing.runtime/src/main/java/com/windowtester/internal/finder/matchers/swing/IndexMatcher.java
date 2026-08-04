@@ -16,37 +16,42 @@ import java.awt.Component;
 
 public class IndexMatcher implements Matcher {
 
-  private final Matcher _matcher;
-  private final int _index;
-  private int _current = -1;
+  private final Matcher matcher;
+  private final int index;
+  private int current = -1;
 
   public IndexMatcher(Matcher matcher, int index) {
-    _index = index;
-    _matcher = matcher;
+    this.index = index;
+    this.matcher = matcher;
   }
 
   @Override
   public boolean matches(Component component) {
     boolean matches = false;
-    if (_matcher.matches(component)) {
-      _current++;
+    if (matcher.matches(component)) {
+      current++;
       Log.debug(
           "Found match for matcher:\n"
-              + _matcher
+              + matcher
               + "\n Must check index:["
-              + _current
+              + current
               + "=="
-              + _index
+              + index
               + "]");
-      if (_current == _index) {
+      if (current == index) {
         matches = true;
       }
     }
     return matches;
   }
 
+  @Override
+  public void reset() {
+    current = -1;
+    matcher.reset();
+  }
+
   public String toString() {
-    // return "\nCould NOT MATCH INDEX:"+_index+"\nFor:\n"+_matcher.toString();
-    return "Index Matcher (" + _matcher + ", " + _index + ")";
+    return "Index Matcher (" + matcher + ", " + index + ")";
   }
 }
