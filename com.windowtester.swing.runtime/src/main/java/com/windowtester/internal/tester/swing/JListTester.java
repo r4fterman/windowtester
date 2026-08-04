@@ -23,6 +23,18 @@ import javax.swing.JList;
  */
 public class JListTester extends abbot.tester.JListTester {
 
+  private static final int SELECTION_RETRY_COUNT = 3;
+
+  private static final int KEYBOARD_MODIFIER_MASK =
+      InputEvent.SHIFT_DOWN_MASK
+          | InputEvent.CTRL_DOWN_MASK
+          | InputEvent.META_DOWN_MASK
+          | InputEvent.ALT_DOWN_MASK
+          | InputEvent.ALT_GRAPH_DOWN_MASK;
+
+  private static final int OTHER_BUTTON_MASK =
+      InputEvent.BUTTON2_DOWN_MASK | InputEvent.BUTTON3_DOWN_MASK;
+
   /**
    * Select the first item in the list matching the given String representation of the item.<p>
    * Equivalent to actionSelectRow(c, new JListLocation(item),buttons).
@@ -83,5 +95,29 @@ public class JListTester extends abbot.tester.JListTester {
     }
 
     super.actionClick(component, location, mask, clickCount);
+
+    // A plain single left click should leave the target row selected.  Under load (for
+    // example on a busy CI server) the AWT Robot occasionally drops the generated mouse
+    // event, so the selection is not updated at all.  Only for a simple left click - i.e.
+    // without modifier keys that would deliberately extend (SHIFT) or toggle (CTRL/META)
+    // the selection - verify the outcome and click again if it did not take.
+    if (clickCount == 1 && isPlainLeftClick(mask)) {
+      for (var attempt = 0;
+          attempt < SELECTION_RETRY_COUNT && list.getSelectedIndex() != index;
+          attempt++) {
+        super.actionClick(component, location, mask, clickCount);
+      }
+    }
+  }
+
+  /**
+   * Answer whether the given mask represents a plain left mouse click, i.e. the left button
+   * without any keyboard modifiers (SHIFT/CTRL/META/ALT) or other mouse buttons that would
+   * deliberately extend or toggle the list selection.
+   */
+  private static boolean isPlainLeftClick(int mask) {
+    return (mask & InputEvent.BUTTON1_DOWN_MASK) != 0
+        && (mask & OTHER_BUTTON_MASK) == 0
+        && (mask & KEYBOARD_MODIFIER_MASK) == 0;
   }
 }

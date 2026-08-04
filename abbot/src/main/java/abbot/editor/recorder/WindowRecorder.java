@@ -25,6 +25,7 @@ public class WindowRecorder extends ContainerRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int recordingType) {
     super.init(recordingType);
     window = null;
@@ -32,6 +33,7 @@ public class WindowRecorder extends ContainerRecorder {
     size = null;
   }
 
+  @Override
   protected boolean isWindowEvent(AWTEvent event) {
     return (event.getSource() instanceof Window
             // Checking for window ready avoids picking up
@@ -44,6 +46,7 @@ public class WindowRecorder extends ContainerRecorder {
         || super.isWindowEvent(event);
   }
 
+  @Override
   protected boolean parseWindowEvent(AWTEvent event) {
     int id = event.getID();
     boolean consumed = true;
@@ -64,6 +67,7 @@ public class WindowRecorder extends ContainerRecorder {
     return consumed;
   }
 
+  @Override
   protected Step createStep() {
     Step step;
     if (getRecordingType() == SE_WINDOW && window != null) {

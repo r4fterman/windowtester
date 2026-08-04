@@ -178,6 +178,14 @@ public class UIContextSwing extends UIContextCommon {
     return Optional.empty();
   }
 
+  public void pause(int millis) {
+    if (threadMonitor != null) {
+      threadMonitor.expectDelay(millis);
+    }
+    handleConditions();
+    getDriver().pause(millis);
+  }
+
   @Override
   public void wait(ICondition condition) throws WaitTimedOutException {
     wait(condition, UIDriverSwing.getDefaultTimeout());
@@ -201,15 +209,6 @@ public class UIContextSwing extends UIContextCommon {
     } catch (WaitTimedOutError e) {
       throw new WaitTimedOutException("Timed out waiting for " + condition, e);
     }
-  }
-
-  @Override
-  public void pause(int milliseconds) {
-    if (threadMonitor != null) {
-      threadMonitor.expectDelay(milliseconds);
-    }
-    handleConditions();
-    getDriver().pause(milliseconds);
   }
 
   @Override

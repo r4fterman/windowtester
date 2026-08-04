@@ -27,6 +27,7 @@ public class JTextComponentRecorder extends JComponentRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int rtype) {
     super.init(rtype);
     target = null;
@@ -48,28 +49,31 @@ public class JTextComponentRecorder extends JComponentRecorder {
   /**
    * Coalesce initial click with subsequent drags to produce a selection.
    */
+  @Override
   protected boolean dragStarted(
       Component target, int x, int y, int modifiers, MouseEvent dragEvent) {
     Log.debug("Tracking text selection");
     setRecordingType(SE_DROP);
     this.target = (JTextComponent) target;
-    startIndex = this.target.viewToModel(new Point(x, y));
+    startIndex = this.target.viewToModel2D(new Point(x, y));
     // Concatenate drag/release with the original click
     return true;
   }
 
+  @Override
   protected boolean parseDrop(AWTEvent event) {
     boolean consumed = super.parseDrop(event);
     if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
       MouseEvent me = (MouseEvent) event;
-      endIndex = target.viewToModel(me.getPoint());
+      endIndex = target.viewToModel2D(me.getPoint());
     } else if (event.getID() == MouseEvent.MOUSE_RELEASED) {
-      endIndex = target.viewToModel(((MouseEvent) event).getPoint());
+      endIndex = target.viewToModel2D(((MouseEvent) event).getPoint());
       setFinished(true);
     }
     return consumed;
   }
 
+  @Override
   protected Step createStep() {
     Step step;
     if (getRecordingType() == SE_DROP) {
@@ -83,11 +87,12 @@ public class JTextComponentRecorder extends JComponentRecorder {
   /**
    * The text component click should click on the text index instead of a mouse coordinate.
    */
+  @Override
   protected Step createClick(Component comp, int x, int y, int mods, int count) {
-    if (mods == MouseEvent.BUTTON1_MASK && count == 1) {
+    if (mods == MouseEvent.BUTTON1_DOWN_MASK && count == 1) {
       ComponentReference cr = getResolver().addComponent(comp);
       JTextComponent tc = (JTextComponent) comp;
-      int index = tc.viewToModel(new Point(x, y));
+      int index = tc.viewToModel2D(new Point(x, y));
       return new Action(
           getResolver(),
           null,
@@ -101,6 +106,7 @@ public class JTextComponentRecorder extends JComponentRecorder {
     }
   }
 
+  @Override
   protected Step createDrop(Component comp, int start, int end) {
     ComponentReference cr = getResolver().addComponent(comp);
     return new Action(

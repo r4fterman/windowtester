@@ -10,9 +10,7 @@
  *******************************************************************************/
 package com.windowtester.internal.swing;
 
-import abbot.finder.Matcher;
 import com.windowtester.internal.swing.locator.IWidgetIdentifierStrategy;
-import com.windowtester.internal.swing.locator.MatcherFactory;
 import com.windowtester.internal.swing.locator.ScopedComponentIdentifierBuilder;
 import com.windowtester.runtime.swing.SwingWidgetLocator;
 import java.awt.Component;
@@ -22,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 
@@ -35,21 +32,7 @@ import javax.swing.JMenuItem;
  */
 public class WidgetLocatorService {
 
-  //	a list of keys which we want to propagate to locators
-  private static final String[] INTERESTING_KEYS = {};
-
   private final IWidgetIdentifierStrategy widgetIdentifier = new ScopedComponentIdentifierBuilder();
-
-  /**
-   * Generate a Matcher that can be used to identify the widget described by this WidgetLocator
-   * object.
-   *
-   * @return a Matcher that matches this object.
-   * @see Matcher
-   */
-  public static Matcher getMatcher(SwingWidgetLocator wl) {
-    return MatcherFactory.getMatcher(wl);
-  }
 
   /**
    * Get this widget's index relative to its parent widget.
@@ -159,71 +142,13 @@ public class WidgetLocatorService {
   }
 
   /**
-   * Create an (unelaborated) info object for this widget.
-   *
-   * @param component - the widget to describe.
-   * @return an info object that describes the widget.
-   */
-  private SwingWidgetLocator getInfo(Component component) {
-    if (component == null) {
-      // return new WidgetLocator(NullParent.class);
-      // TODO: handle NullParent case...
-      return null;
-    }
-    /**
-     * CCombos require special treatment as the chevron is a button and receives the click event.
-     * Instead of that button, we want to be identifying the combo itself (the button's parent).
-     */
-    //		if (component instanceof Button) {
-    //			Widget parent = new ButtonTester().getParent((Button)component);
-    //			if (parent instanceof CCombo)
-    //				component = parent;
-    //		}
-
-    var cls = component.getClass();
-    /**
-     * We don't want the combo text to be part of the identifying information since it
-     * is only set to the value AFTER it is selected...
-     * Text values are also too volatile to use as identifiers.
-     *
-     */
-    var text = getWidgetText(component);
-    var locator = getSwingWidgetLocator(text, cls);
-
-    setDataValues(locator, component);
-    return locator;
-  }
-
-  private static SwingWidgetLocator getSwingWidgetLocator(
-      String text, Class<? extends Component> cls) {
-    if (text != null) {
-      return new SwingWidgetLocator(cls, text);
-    }
-    return new SwingWidgetLocator(cls);
-  }
-
-  private void setDataValues(SwingWidgetLocator locator, Component component) {
-    //	propagate values of interest from the widget to the locator
-    Object value = null;
-    for (String interestingKey : INTERESTING_KEYS) {
-      if (component instanceof JComponent jComponent) {
-        value = jComponent.getClientProperty(interestingKey);
-      }
-      if (value != null) {
-        locator.setData(interestingKey, value.toString());
-      }
-    }
-  }
-
-  /**
    * Given a widget, infers the (minimal) WidgetLocator that uniquely identifies the widget.
    *
    * @param component - the target widget
    * @return the identifying WidgetLocator or null if there was an error in identification
    */
   public SwingWidgetLocator inferIdentifyingInfo(Component component) {
-
-    // pulling inference into separate strategy
+    // pulling inference into a separate strategy
     return widgetIdentifier.identify(component);
   }
 }

@@ -65,7 +65,7 @@ public class JTextComponentRecorder extends JComponentRecorder {
     Log.debug("Tracking text selection");
     setRecordingType(SE_DROP);
     this.target = (JTextComponent) target;
-    startIndex = this.target.viewToModel(new Point(x, y));
+    startIndex = this.target.viewToModel2D(new Point(x, y));
     // Concatenate drag/release with the original click
     return true;
   }
@@ -75,9 +75,9 @@ public class JTextComponentRecorder extends JComponentRecorder {
     boolean consumed = super.parseDrop(event);
     if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
       MouseEvent me = (MouseEvent) event;
-      endIndex = target.viewToModel(me.getPoint());
+      endIndex = target.viewToModel2D(me.getPoint());
     } else if (event.getID() == MouseEvent.MOUSE_RELEASED) {
-      endIndex = target.viewToModel(((MouseEvent) event).getPoint());
+      endIndex = target.viewToModel2D(((MouseEvent) event).getPoint());
       setFinished(true);
     }
     return consumed;
@@ -96,20 +96,13 @@ public class JTextComponentRecorder extends JComponentRecorder {
 
   @Override
   protected Step createClick(Component comp, int x, int y, int mods, int count) {
-    if (mods == InputEvent.BUTTON1_MASK && count == 1) {
-
-      // create windowtester semantic event
-      //	IUISemanticEvent semanticEvent =
-      //		UISemanticEventFactory.createWidgetSelectionEvent(comp,x,y,count,1);
-      //	notify(semanticEvent);
+    if (mods == InputEvent.BUTTON1_DOWN_MASK && count == 1) {
 
       ComponentReference cr = getResolver().addComponent(comp);
       JTextComponent tc = (JTextComponent) comp;
-      int index = tc.viewToModel(new Point(x, y));
-      // debug, check index
-      // System.out.println("Caret position "+ index);
+      int index = tc.viewToModel2D(new Point(x, y));
 
-      // create windowtester semantic event
+      // create a windowtester semantic event
       IUISemanticEvent semanticEvent =
           UISemanticEventFactory.createTextComponentSelectionEvent(comp, x, y, count, 1, index);
       notify(semanticEvent);

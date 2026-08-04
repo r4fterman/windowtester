@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -25,7 +26,7 @@ public class JTextComponentTester extends JComponentTester {
   public void actionEnterText(Component c, String text) {
     scrollToVisible(c, 0);
     actionActionMap(c, DefaultEditorKit.selectAllAction);
-    if (text == null || "".equals(text)) {
+    if (text == null || text.isEmpty()) {
       actionActionMap(c, DefaultEditorKit.deletePrevCharAction);
     } else {
       actionKeyString(c, text);
@@ -33,7 +34,7 @@ public class JTextComponentTester extends JComponentTester {
   }
 
   /**
-   * Click at the given index position.
+   * Click on the given index position.
    */
   public void actionClick(Component tc, int index) {
     Point where = scrollToVisible(tc, index);
@@ -53,34 +54,36 @@ public class JTextComponentTester extends JComponentTester {
     JTextComponent tc = (JTextComponent) c;
     try {
       Rectangle visible = tc.getVisibleRect();
-      Rectangle rect = tc.modelToView(index);
+      Rectangle2D rect = tc.modelToView2D(index);
       Log.debug("visible=" + visible + ", index=" + index + " is at " + rect);
       if (rect == null) {
         String msg = Strings.get("tester.zero_size");
         throw new ActionFailedException(msg);
       }
       // Autoscroll on JTextComponent is a bit flakey
-      if (!visible.contains(rect.x, rect.y)) {
-        scrollRectToVisible(tc, rect);
+      if (!visible.contains(rect.getX(), rect.getY())) {
+        scrollRectToVisible(tc, rect.getBounds());
         visible = tc.getVisibleRect();
-        rect = tc.modelToView(index);
+        rect = tc.modelToView2D(index);
         Log.debug("visible=" + visible + " caret=" + rect);
-        if (!visible.contains(rect.x, rect.y)) {
+        if (!visible.contains(rect.getX(), rect.getY())) {
           String msg =
               Strings.get(
                   "tester.JComponent.not_visible",
                   new Object[] {
-                    new Integer(rect.x), new Integer(rect.y), tc,
+                    rect.getX(), rect.getY(), tc,
                   });
           throw new ActionFailedException(msg);
         }
       }
-      return new Point(rect.x + rect.width / 2, rect.y + rect.height / 2);
-    } catch (BadLocationException ble) {
+      int x = (int) (rect.getX() + rect.getWidth() / 2);
+      int y = (int) (rect.getY() + rect.getHeight() / 2);
+      return new Point(x, y);
+    } catch (BadLocationException e) {
       String msg =
           Strings.get(
               "tester.JTextComponent.bad_location",
-              new Object[] {ble.getMessage(), new Integer(index), tc.getText()});
+              new Object[] {e.getMessage(), index, tc.getText()});
       throw new ActionFailedException(msg);
     }
   }
@@ -126,11 +129,9 @@ public class JTextComponentTester extends JComponentTester {
     // part of a selection (OSX has setDragEnabled true by default).
     if (tc.getSelectionStart() != tc.getSelectionEnd()) {
       invokeAndWait(
-          new Runnable() {
-            public void run() {
-              tc.setCaretPosition(0);
-              tc.moveCaretPosition(0);
-            }
+          () -> {
+            tc.setCaretPosition(0);
+            tc.moveCaretPosition(0);
           });
     }
     Point where = scrollToVisible(comp, index);
@@ -164,18 +165,9 @@ public class JTextComponentTester extends JComponentTester {
 
   /**
    * Select the given text range.
-   *
-   * @deprecated Use actionSelectText instead.
-   */
-  public void actionSelect(Component comp, int start, int end) {
-    actionSelectText(comp, start, end);
-  }
-
-  /**
-   * Select the given text range.
    */
   public void actionSelectText(Component comp, int start, int end) {
-    // An idle wait is sometimes required, otherwise the mouse press is
+    // An idle wait is sometimes required; otherwise the mouse press is
     // never registered (w32, 1.4)
     actionStartSelection(comp, start);
     actionEndSelection(comp, end);
@@ -188,10 +180,7 @@ public class JTextComponentTester extends JComponentTester {
           Strings.get(
               "tester.JTextComponent.selection_failed",
               new Object[] {
-                new Integer(start),
-                new Integer(end),
-                new Integer(tc.getSelectionStart()),
-                new Integer(tc.getSelectionEnd()),
+                start, end, tc.getSelectionStart(), tc.getSelectionEnd(),
               });
       throw new ActionFailedException(msg);
     }

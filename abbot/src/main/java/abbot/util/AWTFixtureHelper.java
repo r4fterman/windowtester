@@ -2,7 +2,6 @@ package abbot.util;
 
 import abbot.Log;
 import abbot.tester.Robot;
-import java.awt.AWTEvent;
 import java.awt.event.AWTEventListener;
 
 /**
@@ -10,7 +9,6 @@ import java.awt.event.AWTEventListener;
  * and catching exceptions on the AWT event dispatch thread (EDT). This class should be used at setup and teardown of
  * your chosen fixture.
  *
- * @see junit.extensions.abbot.ComponentTestFixture
  * @see abbot.script.StepRunner
  */
 public class AWTFixtureHelper {
@@ -45,11 +43,9 @@ public class AWTFixtureHelper {
 
       Log.log("Using mask value " + mask);
       listener =
-          new AWTEventListener() {
-            public void eventDispatched(AWTEvent event) {
-              if (listener != null) {
-                Log.log(Robot.toString(event));
-              }
+          event -> {
+            if (listener != null) {
+              Log.log(Robot.toString(event));
             }
           };
       new WeakAWTEventListener(listener, mask);
@@ -81,6 +77,5 @@ public class AWTFixtureHelper {
     // Encourage GC of unused components, which reduces the load on
     // future tests.
     System.gc();
-    System.runFinalization();
   }
 }

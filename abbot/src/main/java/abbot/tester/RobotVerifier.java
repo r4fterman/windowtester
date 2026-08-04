@@ -60,7 +60,7 @@ public class RobotVerifier {
             }
           }
         });
-    w.show();
+    w.setVisible(true);
     robot.waitForIdle();
     WindowTracker tracker = WindowTracker.getTracker();
     while (!tracker.isWindowReady(w)) {
@@ -78,6 +78,7 @@ public class RobotVerifier {
           try {
             flag.wait(500);
           } catch (InterruptedException e) {
+            // ignore
           }
         }
       } while (!flag.flag && System.currentTimeMillis() - start < AWT_WAIT_TIMEOUT);

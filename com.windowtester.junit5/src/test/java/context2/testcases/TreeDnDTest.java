@@ -14,7 +14,6 @@ import com.windowtester.junit5.SwingUIContext;
 import com.windowtester.junit5.UIUnderTest;
 import com.windowtester.junit5.WindowtesterExtension;
 import com.windowtester.runtime.IUIContext;
-import com.windowtester.runtime.WidgetSearchException;
 import com.windowtester.runtime.swing.locator.JTreeItemLocator;
 import com.windowtester.runtime.swing.locator.NamedWidgetLocator;
 import javax.swing.JTree;
@@ -28,7 +27,7 @@ class TreeDnDTest {
   @UIUnderTest private TreeDnD panel = new TreeDnD();
 
   @Test
-  void testTreeDnD(@SwingUIContext IUIContext ui) throws WidgetSearchException {
+  void testTreeDnD(@SwingUIContext IUIContext ui) throws Exception {
     ui.click(
         new JTreeItemLocator("JTree/colors/blue", new NamedWidgetLocator(JTree.class, "tree1")));
     ui.dragTo(new JTreeItemLocator("JTree/sports", new NamedWidgetLocator(JTree.class, "tree2")));

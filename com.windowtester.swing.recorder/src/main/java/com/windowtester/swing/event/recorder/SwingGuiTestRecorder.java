@@ -55,7 +55,6 @@ public class SwingGuiTestRecorder implements IEventRecorder {
 
   @Override
   public void start() {
-    WindowTesterSecurityManager.install();
     startListening();
     recorder.start();
   }
@@ -145,7 +144,7 @@ public class SwingGuiTestRecorder implements IEventRecorder {
   }
 
   /**
-   * The  events are sent to the recorder.
+   * The events are sent to the recorder.
    */
   public void startRecordingEvent(AWTEvent event) {
     Object src = event.getSource();
@@ -158,13 +157,11 @@ public class SwingGuiTestRecorder implements IEventRecorder {
     }
 
     if (recorder != null) {
-      // System.out.println("recorder process event");
       try {
         recorder.record(event);
       } catch (RecordingFailedException e) {
-        // Stop recording, but keep what we've got so far
+        // Stop recording but keep what we've got so far
         recorder.stop();
-        e.printStackTrace();
       }
     }
   }

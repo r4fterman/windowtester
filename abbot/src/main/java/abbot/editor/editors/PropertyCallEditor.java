@@ -11,7 +11,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.swing.JComboBox;
 
@@ -32,7 +31,7 @@ public abstract class PropertyCallEditor extends CallEditor {
     component.setName(TAG_COMPONENT);
   }
 
-  protected Class getComponentTargetClass(Class cls) {
+  protected Class<?> getComponentTargetClass(Class<?> cls) {
     String[] args = getCall().getArguments();
     if (args.length == 1) {
       String id = args[0];
@@ -41,17 +40,19 @@ public abstract class PropertyCallEditor extends CallEditor {
         try {
           return getCall().resolveClass(ref.getRefClassName());
         } catch (ClassNotFoundException e) {
+          // ignore
         }
       }
     }
     return null;
   }
 
-  protected Map getMethods(Class cls, int mask) {
+  @Override
+  protected Map<String, Method> getMethods(Class<?> cls, int mask) {
     boolean isTester = ComponentTester.class.isAssignableFrom(cls);
     boolean isComponent = Component.class.isAssignableFrom(cls);
-    Class componentClass = isTester ? getComponentTargetClass(cls) : (isComponent ? cls : null);
-    Class testerClass =
+    Class<?> componentClass = isTester ? getComponentTargetClass(cls) : (isComponent ? cls : null);
+    Class<?> testerClass =
         isTester
             ? cls
             : (isComponent ? ComponentTester.getTester(componentClass).getClass() : null);
@@ -59,11 +60,9 @@ public abstract class PropertyCallEditor extends CallEditor {
       return super.getMethods(cls, mask);
     }
 
-    Map map = new HashMap();
+    Map<String, Method> map = new HashMap<>();
     if (componentClass != null) {
-      Iterator iter = super.getMethods(componentClass, mask).values().iterator();
-      while (iter.hasNext()) {
-        Method m = (Method) iter.next();
+      for (Method m : super.getMethods(componentClass, mask).values()) {
         if (PropertyCall.isPropertyMethod(m)) {
           map.put(m.getName(), m);
         }
@@ -75,22 +74,21 @@ public abstract class PropertyCallEditor extends CallEditor {
       ComponentTester tester =
           componentClass != null
               ? ComponentTester.getTester(componentClass)
-              : (ComponentTester) testerClass.newInstance();
-      Iterator iter = getComponentTesterMethods(tester).iterator();
-      while (iter.hasNext()) {
-        Method m = (Method) iter.next();
+              : (ComponentTester) testerClass.getDeclaredConstructor().newInstance();
+      for (Method m : getComponentTesterMethods(tester)) {
         map.put(m.getName(), m);
       }
     } catch (Exception e) {
+      // ignore
     }
     return map;
   }
 
-  protected boolean includeMethod(Class cls, Method m) {
+  protected boolean includeMethod(Class<?> cls, Method m) {
     return true;
   }
 
-  protected Collection getComponentTesterMethods(ComponentTester tester) {
+  protected Collection<Method> getComponentTesterMethods(ComponentTester tester) {
     return Arrays.asList(tester.getPropertyMethods());
   }
 
@@ -98,6 +96,7 @@ public abstract class PropertyCallEditor extends CallEditor {
     component.setSelectedItem(call.getComponentID());
   }
 
+  @Override
   public void actionPerformed(ActionEvent ev) {
     Object src = ev.getSource();
     if (src == component) {
@@ -109,7 +108,7 @@ public abstract class PropertyCallEditor extends CallEditor {
         id = null;
       }
       ComponentReference ref = call.getResolver().getComponentReference(id);
-      String tcn = ref != null ? ref.getRefClassName() : Component.class.getClass().getName();
+      String tcn = ref != null ? ref.getRefClassName() : Component.class.getName();
       call.setComponentID(id);
 
       call.setTargetClassName(tcn);
@@ -123,12 +122,12 @@ public abstract class PropertyCallEditor extends CallEditor {
       // When the method changes to or from a ComponentTester
       // pseudo-property method, we need to change the target class.
       try {
-        Class cls = call.getTargetClass();
+        Class<?> cls = call.getTargetClass();
         String methodName = (String) method.getSelectedItem();
-        Map methods = getMethods(cls, Modifier.PUBLIC);
-        Method m = (Method) methods.get(methodName);
+        Map<String, Method> methods = getMethods(cls, Modifier.PUBLIC);
+        Method m = methods.get(methodName);
         if (m != null) {
-          Class newClass = m.getDeclaringClass();
+          Class<?> newClass = m.getDeclaringClass();
           if (ComponentTester.class.isAssignableFrom(newClass)
               && Component.class.isAssignableFrom(cls)) {
             String id = call.getComponentID();

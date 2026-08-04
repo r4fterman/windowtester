@@ -37,6 +37,7 @@ import com.windowtester.recorder.event.user.TreeEventType;
 import com.windowtester.recorder.event.user.UISemanticEvent;
 import com.windowtester.recorder.event.user.UISemanticEvent.EventInfo;
 import com.windowtester.runtime.WidgetLocator;
+import com.windowtester.runtime.swing.SwingWidgetLocator;
 import com.windowtester.runtime.swing.locator.AbstractPathLocator;
 import com.windowtester.runtime.swing.locator.JComboBoxLocator;
 import com.windowtester.runtime.swing.locator.JListLocator;
@@ -59,41 +60,26 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
 
-/***
- *
+/**
  * Factory for creating semantic events from AWT events using the new widgetLocator
  * scheme.
  */
 public class UISemanticEventFactory {
-
-  ////////////////////////////////////////////////////////////////////////////
-  //
-  // Cached references
-  //
-  ////////////////////////////////////////////////////////////////////////////
 
   // the last seen widget --- whereby seen we mean has had info extracted...
   private static Component _lastWidget;
   // the last calculated widget locator
   private static WidgetLocator _lastWidgetLocator;
 
-  //	private static Hierarchy _hierarchy = AWTHierarchy.getDefault();
   private static final ComponentTester _menuItemTester = ComponentTester.getTester(JMenuItem.class);
   private static final ComponentTester _treeTester = ComponentTester.getTester(JTree.class);
-
-  ////////////////////////////////////////////////////////////////////////////
-  //
-  // Public factory methods
-  //
-  ////////////////////////////////////////////////////////////////////////////
 
   /**
    * Construct a SemanticKeyDownEvent
    *
    * @return a semantic event
    */
-  public static SemanticKeyDownEvent createKeyDownEvent(Component comp, char keychar, int mods) {
-
+  public static SemanticKeyDownEvent createKeyDownEvent(Component comp, char keychar) {
     EventInfo info = extractInfo(comp, 0, 0, 1);
     SemanticKeyDownEvent keyDown = new SemanticKeyDownEvent(info);
 
@@ -123,7 +109,6 @@ public class UISemanticEventFactory {
     JMenuItem item = (JMenuItem) menuItem;
     String label = ComponentAccessor.extractMenuItemLabel(item);
     String pathString = ComponentAccessor.extractMenuPath(item) + "/" + label;
-    // JMenu root = getRootMenu(item);
 
     EventInfo info = new EventInfo();
     // NOTE: we use the root to find
@@ -148,10 +133,6 @@ public class UISemanticEventFactory {
 
   /**
    * Create a context menu selection event
-   *
-   * @param invoker
-   * @param x
-   * @param y
    * @param item    - menu item
    * @return SemanticMenuSelectionEvent
    */
@@ -161,7 +142,6 @@ public class UISemanticEventFactory {
     pathString = TextUtils.fixTabs(pathString);
 
     EventInfo info = new EventInfo();
-    //		info.toString      = getTrimmedDescription(event);
     info.cls = invoker.getClass().getName();
     info.hierarchyInfo = inferIdentifyingInfo(invoker);
     info.button = 3;
@@ -178,21 +158,10 @@ public class UISemanticEventFactory {
 
   /**
    * Create a tree selection semantic event
-   *
-   * @param invoker
-   * @param x
-   * @param y
-   * @param mask
-   * @param clkCount
-   * @param button
-   * @return
    */
   public static UISemanticEvent createTreeItemSelectionEvent(
       JTree invoker, int x, int y, String mask, int clkCount, int button) {
 
-    /*
-     * Calculate path string
-     */
     ComponentLocation location = _treeTester.getLocation(invoker, new Point(x, y));
     TreePath path = ((JTreeLocation) location).getPath(invoker);
 
@@ -203,12 +172,12 @@ public class UISemanticEventFactory {
     EventInfo info = extractInfo(invoker, x, y, button);
     /*
      * Extract guarantees uniqueness.
-     * Now we can set up a JTreeItemLocator based on the infered tree locator.
+     * Now we can set up a JTreeItemLocator based on the inferred tree locator.
      */
     IWidgetIdentifier locator = info.hierarchyInfo;
-    com.windowtester.runtime.swing.SwingWidgetLocator parent = getParentInfo(locator);
+    SwingWidgetLocator parent = getParentInfo(locator);
     int index = getIndex(info.hierarchyInfo);
-    // check if tree is named
+    // check if a tree is named
     String name = invoker.getName();
     if (name != null) {
       parent = new NamedWidgetLocator(name);
@@ -236,11 +205,9 @@ public class UISemanticEventFactory {
     return treeItemSelect;
   }
 
-  private static com.windowtester.runtime.swing.SwingWidgetLocator getParentInfo(
-      IWidgetIdentifier locator) {
-    if (locator instanceof com.windowtester.runtime.swing.SwingWidgetLocator) { // ugh
-      return (com.windowtester.runtime.swing.SwingWidgetLocator)
-          ((com.windowtester.runtime.swing.SwingWidgetLocator) locator).getParentInfo();
+  private static SwingWidgetLocator getParentInfo(IWidgetIdentifier locator) {
+    if (locator instanceof SwingWidgetLocator) { // ugh
+      return (SwingWidgetLocator) ((SwingWidgetLocator) locator).getParentInfo();
     }
     return null;
   }
@@ -254,12 +221,6 @@ public class UISemanticEventFactory {
 
   /**
    * Create a context menu selection on a tree item
-   *
-   * @param invoker
-   * @param x
-   * @param y
-   * @param item
-   * @return
    */
   public static UISemanticEvent createTreeItemContextMenuSelectionEvent(
       JTree invoker, int x, int y, JMenuItem item) {
@@ -276,11 +237,6 @@ public class UISemanticEventFactory {
 
   /**
    * Create a context menu selection on a tree item
-   *
-   * @param invoker
-   * @param row
-   * @param item
-   * @return
    */
   public static UISemanticEvent createTreeItemContextMenuSelectionEvent(
       JTree invoker, int row, JMenuItem item) {
@@ -312,17 +268,16 @@ public class UISemanticEventFactory {
     EventInfo info = extractInfo(invoker, x, y, 1);
     String tabLabel = invoker.getTitleAt(index);
 
-    //	swap in custom tabbed pane locator
-    com.windowtester.runtime.swing.SwingWidgetLocator parentInfo =
-        getParentInfo(info.hierarchyInfo);
-    int indx = getIndex(info.hierarchyInfo);
-    // check whether component is named
+    //	swap in the custom tabbed pane locator
+    SwingWidgetLocator parentInfo = getParentInfo(info.hierarchyInfo);
+    int idx = getIndex(info.hierarchyInfo);
+    // check whether a component is named
     String name = invoker.getName();
     if (name != null) {
       parentInfo = new NamedWidgetLocator(name);
-      indx = WidgetLocator.UNASSIGNED;
+      idx = WidgetLocator.UNASSIGNED;
     }
-    info.hierarchyInfo = new JTabbedPaneLocator(tabLabel, indx, parentInfo);
+    info.hierarchyInfo = new JTabbedPaneLocator(tabLabel, idx, parentInfo);
 
     SemanticTabbedPaneSelectionEvent tabbedPaneEvent = new SemanticTabbedPaneSelectionEvent(info);
     tabbedPaneEvent.setIndex(index);
@@ -333,13 +288,6 @@ public class UISemanticEventFactory {
 
   /**
    * Create a table selection semantic event
-   *
-   * @param invoker
-   * @param x
-   * @param y
-   * @param clkCount
-   * @param button
-   * @return
    */
   public static UISemanticEvent createTableSelectionEvent(
       JTable invoker, int x, int y, String mask, int clkCount, int button) {
@@ -352,10 +300,9 @@ public class UISemanticEventFactory {
     String label = JTableTester.valueToString(invoker, row, col);
 
     // build and hook up table item locator
-    com.windowtester.runtime.swing.SwingWidgetLocator parentInfo =
-        getParentInfo(info.hierarchyInfo);
+    SwingWidgetLocator parentInfo = getParentInfo(info.hierarchyInfo);
     int index = getIndex(info.hierarchyInfo);
-    // check if table is named, if yes create named widget locator
+    // check if the table is named, if yes create named widget locator
     String name = invoker.getName();
     if (name != null) {
       parentInfo = new NamedWidgetLocator(name);
@@ -378,16 +325,9 @@ public class UISemanticEventFactory {
 
   /**
    * create a context menu selection for a table item.
-   *
-   * @param table
-   * @param x
-   * @param y
-   * @param item
-   * @return
    */
   public static UISemanticEvent createTableContextMenuSelectionEvent(
       JTable table, int x, int y, JMenuItem item) {
-    // String menuPath = ComponentAccessor.extractPopupMenuPath(item);;
     String menuPath = _menuItemTester.deriveTag(item);
     menuPath = TextUtils.fixTabs(menuPath);
 
@@ -400,17 +340,10 @@ public class UISemanticEventFactory {
 
   /**
    * Create a context menu selection for a table item.
-   *
-   * @param table
-   * @param item
-   * @param row
-   * @param col
-   * @return
    */
   public static UISemanticEvent createTableContextMenuSelectionEvent(
       JTable table, JMenuItem item, int row, int col) {
     // get menu label - not path
-    // String menuPath = ComponentAccessor.extractPopupMenuPath(item);
     String menuPath = _menuItemTester.deriveTag(item);
 
     menuPath = TextUtils.fixTabs(menuPath);
@@ -428,20 +361,15 @@ public class UISemanticEventFactory {
 
   /**
    * Create a combo box selection semantic event.
-   *
-   * @param combo
-   * @param label
-   * @return
    */
   public static SemanticComboSelectionEvent createComboSelectionEvent(
-      JComboBox combo, String label) {
+      JComboBox<?> combo, String label) {
 
     EventInfo info = extractInfo(combo, 1, 1, 1);
     // swap in our combo locator (post identification)
-    com.windowtester.runtime.swing.SwingWidgetLocator parentInfo =
-        getParentInfo(info.hierarchyInfo);
+    SwingWidgetLocator parentInfo = getParentInfo(info.hierarchyInfo);
     int index = getIndex(info.hierarchyInfo);
-    // check if combo is named
+    // check if a combo is named
     String name = combo.getName();
     if (name != null) {
       parentInfo = new NamedWidgetLocator(name);
@@ -457,14 +385,6 @@ public class UISemanticEventFactory {
 
   /**
    * create a list selection semantic event
-   *
-   * @param list
-   * @param x
-   * @param y
-   * @param mods
-   * @param count
-   * @param button
-   * @return
    */
   public static UISemanticEvent createListSelectionEvent(
       JList list, int x, int y, int mods, int count, int button) {
@@ -494,22 +414,21 @@ public class UISemanticEventFactory {
     } else {
       item = list.getModel().getElementAt(index).toString();
     }
-    // swap in custom list locator
-    com.windowtester.runtime.swing.SwingWidgetLocator parentInfo =
-        getParentInfo(info.hierarchyInfo);
-    int indx = getIndex(info.hierarchyInfo);
-    // check if name is set
+    // swap in the custom list locator
+    SwingWidgetLocator parentInfo = getParentInfo(info.hierarchyInfo);
+    int idx = getIndex(info.hierarchyInfo);
+    // check if the name is set
     String name = list.getName();
     if (name != null) { // create a named widget locator
       parentInfo = new NamedWidgetLocator(name);
-      indx = WidgetLocator.UNASSIGNED;
+      idx = WidgetLocator.UNASSIGNED;
     }
 
-    info.hierarchyInfo = new JListLocator(item, indx, parentInfo);
+    info.hierarchyInfo = new JListLocator(item, idx, parentInfo);
 
     SemanticListSelectionEvent listSelect = new SemanticListSelectionEvent(info);
     listSelect.setClicks(count);
-    if (mods != MouseEvent.BUTTON1_MASK) {
+    if (mods != MouseEvent.BUTTON1_DOWN_MASK) {
       listSelect.setMask(AWT.getMouseModifiers(mods));
     }
     listSelect.setItem(item);
@@ -519,13 +438,6 @@ public class UISemanticEventFactory {
 
   /**
    * create a widget selection semantic event
-   *
-   * @param widget
-   * @param x
-   * @param y
-   * @param count
-   * @param button
-   * @return
    */
   public static UISemanticEvent createWidgetSelectionEvent(
       Component widget, int x, int y, int count, int button) {
@@ -548,7 +460,7 @@ public class UISemanticEventFactory {
     info.x = x;
     info.y = y;
 
-    //	swap in custom list locator , if component is JTextPane
+    //	swap in custom list locator if component is JTextPane
     // com.windowtester.runtime.swing.SwingWidgetLocator parentInfo =
     // getParentInfo(info.hierarchyInfo);
     // set caret if necessary, a click not in the start of the field
@@ -572,52 +484,36 @@ public class UISemanticEventFactory {
   }
 
   /**
-   * Create a shell closing semantic event for window close AWT events
-   *
-   * @param window
-   * @return
+   * Create a shell-closing semantic event for the window close AWT events
    */
   public static UISemanticEvent createShellClosingEvent(Window window) {
     EventInfo info = extractInfo(window, 0, 0, 1);
-    String text = null;
-    text = ComponentAccessor.extractTitle(window);
+    var text = ComponentAccessor.extractTitle(window);
     return new SemanticShellClosingEvent(info, text);
   }
 
   /**
-   * Create a shell disposed semantic event for window close AWT events
-   *
-   * @param window
-   * @return
+   * Create a shell-disposed semantic event for window close AWT events
    */
   public static UISemanticEvent createShellDisposedEvent(Window window) {
     EventInfo info = extractInfo(window, 0, 0, 1);
-    String text = null;
-    text = ComponentAccessor.extractTitle(window);
+    var text = ComponentAccessor.extractTitle(window);
     return new SemanticShellDisposedEvent(info, text);
   }
 
   /**
    * Create a shell showing semantic event.
-   *
-   * @param window
-   * @return
    */
   public static UISemanticEvent createShellShowingEvent(Window window) {
     EventInfo info = extractInfo(window, 0, 0, 1);
-    String text = null;
-    text = ComponentAccessor.extractTitle(window);
+    var text = ComponentAccessor.extractTitle(window);
     return new SemanticShellShowingEvent(info, text);
   }
 
   /**
-   * Extract relevant info .
-   *
-   * @param event
-   * @return
+   * Extract relevant info.
    */
   private static EventInfo extractInfo(Component widget, int x, int y, int button) {
-
     EventInfo info = new EventInfo();
     info.cls = widget.getClass().getName();
     info.button = button;
@@ -639,15 +535,6 @@ public class UISemanticEventFactory {
   }
 
   private static WidgetLocator inferIdentifyingInfo(Component widget) {
-    WidgetLocator locator = new WidgetLocatorService().inferIdentifyingInfo(widget);
-
-    return locator;
+    return new WidgetLocatorService().inferIdentifyingInfo(widget);
   }
-
-  ////////////////////////////////////////////////////////////////////////////
-  //
-  // Construction helpers
-  //
-  ////////////////////////////////////////////////////////////////////////////
-
 }

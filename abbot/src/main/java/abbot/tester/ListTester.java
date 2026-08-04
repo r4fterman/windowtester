@@ -19,7 +19,7 @@ public class ListTester extends ComponentTester {
 
   private final int LIST_DELAY = Properties.getProperty("abbot.tester.list_delay", 30000, 0, 60000);
 
-  private class Listener implements AWTEventListener {
+  private static class Listener implements AWTEventListener {
     public volatile boolean selected;
     private int targetIndex = -1;
 
@@ -38,13 +38,6 @@ public class ListTester extends ComponentTester {
   }
 
   /**
-   * @deprecated Use actionSelectRow instead.
-   */
-  public void actionSelectIndex(Component c, int index) {
-    actionSelectRow(c, new ListLocation(index));
-  }
-
-  /**
    * Select the row corresponding to the given ListLocation.
    */
   public void actionSelectRow(Component c, ListLocation location) {
@@ -52,30 +45,27 @@ public class ListTester extends ComponentTester {
     try {
       int index = location.getIndex(list);
       if (index < 0 || index >= list.getItemCount()) {
-        String msg = Strings.get("tester.JList.invalid_index", new Object[] {new Integer(index)});
+        String msg = Strings.get("tester.JList.invalid_index", new Object[] {index});
         throw new ActionFailedException(msg);
       }
       if (list.getSelectedIndex() != index) {
-        setSelected(list, index, true);
+        setSelected(list, index);
       }
     } catch (LocationUnavailableException e) {
       actionClick(c, location);
     }
   }
 
-  protected void setSelected(List list, int index, boolean selected) {
-    Listener listener = new Listener(index, selected);
+  protected void setSelected(List list, int index) {
+    Listener listener = new Listener(index, true);
     new WeakAWTEventListener(listener, ItemEvent.ITEM_EVENT_MASK);
     list.select(index);
     ItemEvent ie =
         new ItemEvent(
-            list,
-            ItemEvent.ITEM_STATE_CHANGED,
-            list.getSelectedItem(),
-            selected ? ItemEvent.SELECTED : ItemEvent.DESELECTED);
+            list, ItemEvent.ITEM_STATE_CHANGED, list.getSelectedItem(), ItemEvent.SELECTED);
     postEvent(list, ie);
     long now = System.currentTimeMillis();
-    while (listener.selected != selected) {
+    while (!listener.selected) {
       if (System.currentTimeMillis() - now > LIST_DELAY) {
         throw new ActionFailedException("List didn't fire for " + "index " + index + " selection");
       }

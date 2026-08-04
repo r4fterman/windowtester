@@ -5,6 +5,7 @@ import abbot.i18n.Strings;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -128,16 +129,6 @@ public class Call extends Step {
     return map;
   }
 
-  /**
-   * Return the arguments as an array of String.
-   *
-   * @return the arguments as an array of String
-   * @deprecated use getArguments().
-   */
-  public String[] getArgs() {
-    return getArguments();
-  }
-
   public String[] getArguments() {
     return args;
   }
@@ -152,13 +143,13 @@ public class Call extends Step {
     }
   }
 
-  protected Object evaluateParameter(Method m, String param, Class type) throws Exception {
+  protected Object evaluateParameter(Method m, String param, Class<?> type) throws Exception {
     return ArgumentParser.eval(getResolver(), param, type);
   }
 
   protected Object[] evaluateParameters(Method m, String[] params) throws Exception {
     Object[] args = new Object[params.length];
-    Class[] types = m.getParameterTypes();
+    Class<?>[] types = m.getParameterTypes();
     for (int i = 0; i < args.length; i++) {
       args[i] = evaluateParameter(m, params[i], types[i]);
     }
@@ -215,14 +206,14 @@ public class Call extends Step {
     return resolveMethods(getMethodName(), getTargetClass(), null);
   }
 
-  public Class getTargetClass() throws ClassNotFoundException {
+  public Class<?> getTargetClass() throws ClassNotFoundException {
     return resolveClass(getTargetClassName());
   }
 
   protected Object getTarget(Method m) throws Throwable {
     if ((m.getModifiers() & Modifier.STATIC) == 0) {
       try {
-        return getTargetClass().newInstance();
+        return getTargetClass().getDeclaredConstructor().newInstance();
       } catch (Exception e) {
         setScriptError(
             new InvalidScriptException(
@@ -246,22 +237,21 @@ public class Call extends Step {
    * @throws NoSuchMethodException if no matching method is found
    * @see #getArguments()
    */
-  protected Method[] resolveMethods(String name, Class cls, Class returnType)
+  protected Method[] resolveMethods(String name, Class<?> cls, Class<?> returnType)
       throws NoSuchMethodException {
     // use getDeclaredMethods to include class methods
     Log.debug("Resolving methods on " + cls);
     Method[] mlist = cls.getMethods();
-    ArrayList found = new ArrayList();
-    for (int i = 0; i < mlist.length; i++) {
-      Method m = mlist[i];
-      Class[] params = m.getParameterTypes();
+    List<Method> found = new ArrayList<>();
+    for (Method m : mlist) {
+      Class<?>[] params = m.getParameterTypes();
       if (m.getName().equals(name)
           && params.length == args.length
           && (returnType == null || m.getReturnType().equals(returnType))) {
         found.add(m);
       }
     }
-    if (found.size() == 0) {
+    if (found.isEmpty()) {
       throw new NoSuchMethodException(
           Strings.get(
               "call.no_matching_method",
@@ -274,10 +264,7 @@ public class Call extends Step {
     }
 
     // TODO Now sort according to restrictiveness of method arguments
-    Method[] list = (Method[]) found.toArray(new Method[found.size()]);
-    // Arrays.sort(list);
-
-    return list;
+    return found.toArray(new Method[0]);
   }
 
   /**
@@ -291,7 +278,7 @@ public class Call extends Step {
    * @throws NoSuchMethodException if not exactly one match exists
    * @see #getArguments()
    */
-  protected Method resolveMethod(String name, Class cls, Class returnType)
+  protected Method resolveMethod(String name, Class<?> cls, Class<?> returnType)
       throws NoSuchMethodException {
     Method[] methods = resolveMethods(name, cls, returnType);
     if (methods.length != 1) {

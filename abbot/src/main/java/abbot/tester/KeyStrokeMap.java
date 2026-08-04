@@ -17,13 +17,14 @@ import java.util.Properties;
 import javax.swing.KeyStroke;
 
 /**
- * Provides read of local-specific mappings for virtual keycode-based KeyStrokes to characters and vice versa. The map
- * format is a properties file with each line containing an entry of the form<br>
+ * Provides read of local-specific mappings for virtual keycode-based KeyStrokes to characters and
+ * vice versa. The map format is a properties file with each line containing an entry of the
+ * form<br>
  * <code>VKNAME.MOD=VALUE</code><br>
- * The VKNAME is the String suffix of the KeyEvent VK_ keycode.  MOD is the integer value of the current modifier mask
- * (assumes only a single modifier has any effect on key output, interesting values are considered to be 0, 1, 2, 8).
- * VALUE is the char value of the KEY_TYPED keyChar corresponding to the VK_ keycode and modifiers, as an integer
- * value.
+ * The VKNAME is the String suffix of the KeyEvent VK_ keycode.  MOD is the integer value of the
+ * current modifier mask (assumes only a single modifier has any effect on key output, interesting
+ * values are considered to be 0, 1, 2, 8). VALUE is the char value of the KEY_TYPED keyChar
+ * corresponding to the VK_ keycode and modifiers, as an integer value.
  */
 public class KeyStrokeMap implements KeyStrokeMapProvider {
 
@@ -38,16 +39,16 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   private static final Map<KeyStroke, Character> chars = getCharacterMap();
 
   /**
-   * Return the keycode-based KeyStroke corresponding to the given character, as best we can guess it, or null if we
-   * don't know how to generate it.
+   * Return the keycode-based KeyStroke corresponding to the given character, as best we can guess
+   * it, or null if we don't know how to generate it.
    */
   public static KeyStroke getKeyStroke(char ch) {
     return keycodes.get(ch);
   }
 
   /**
-   * Given a keycode-based KeyStroke, return the equivalent character. Defined properly for US keyboards only.  Please
-   * contribute your own.
+   * Given a keycode-based KeyStroke, return the equivalent character. Defined properly for US
+   * keyboards only.  Please contribute your own.
    *
    * @return KeyEvent.VK_UNDEFINED if the result is unknown.
    */
@@ -68,7 +69,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   private static KeyStrokeMapProvider generator = null;
 
   /**
-   * If available, provide a dedicated class to provide mappings between keystrokes and generated characters.
+   * If available, provide a dedicated class to provide mappings between keystrokes and generated
+   * characters.
    */
   private static KeyStrokeMapProvider getGenerator() {
     if (generator == null) {
@@ -76,7 +78,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
         String gname =
             System.getProperty("abbot.keystroke_map_generator", "abbot.tester.KeyStrokeMap");
         if (gname != null) {
-          generator = (KeyStrokeMapProvider) Class.forName(gname).newInstance();
+          generator =
+              (KeyStrokeMapProvider) Class.forName(gname).getDeclaredConstructor().newInstance();
         }
       } catch (Exception e) {
         Log.warn(e);
@@ -110,9 +113,9 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Generate the mapping between characters and key codes.   This is invoked exactly once per VM invocation. We don't
-   * have complete coverage, so if you use this fallback map in AWT mode some events may be missing that would
-   * otherwise be generated in robot mode.
+   * Generate the mapping between characters and key codes.   This is invoked exactly once per VM
+   * invocation. We don't have complete coverage, so if you use this fallback map in AWT mode some
+   * events may be missing that would otherwise be generated in robot mode.
    */
   private static Map<Character, KeyStroke> generateKeyStrokeMappings() {
     Log.debug("Generating default keystroke mappings");
@@ -257,6 +260,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
       KeyStroke stroke = KeyStroke.getKeyStroke(entry[1], entry[2]);
       map.put((char) entry[0], stroke);
     }
+
     // Lowercase
     for (int i = 'a'; i <= 'z'; i++) {
       KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_A + i - 'a', 0);
@@ -267,6 +271,7 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
       // Make sure we don't overwrite something already there
       map.putIfAbsent(key, stroke);
     }
+
     // Capitals
     for (int i = 'A'; i <= 'Z'; i++) {
       KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_A + i - 'A', shift);
@@ -355,7 +360,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Load a map for the current locale to translate a character into a corresponding virtual keycode-based KeyStroke.
+   * Load a map for the current locale to translate a character into a corresponding virtual
+   * keycode-based KeyStroke.
    */
   public Map<KeyStroke, Character> loadCharacterMap() {
     loadMaps();
@@ -363,7 +369,8 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Load a map for the current locale to translate a virtual keycode into a character-based KeyStroke.
+   * Load a map for the current locale to translate a virtual keycode into a character-based
+   * KeyStroke.
    */
   public Map<Character, KeyStroke> loadKeyStrokeMap() {
     loadMaps();
@@ -386,8 +393,9 @@ public class KeyStrokeMap implements KeyStrokeMapProvider {
   }
 
   /**
-   * Return the keystroke map filenames that should be available for this locale/OS/VM version/architecture.  Assume
-   * most changes across locale, then OS, then VM version, then os version/architecture.
+   * Return the keystroke map filenames that should be available for this locale/OS/VM
+   * version/architecture.  Assume most changes across locale, then OS, then VM version, then os
+   * version/architecture.
    */
   private static String[] getMapStrings(boolean desc) {
     List<String> list = new ArrayList<>();

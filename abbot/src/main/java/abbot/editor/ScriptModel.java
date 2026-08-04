@@ -45,6 +45,7 @@ class ScriptModel extends AbstractTableModel {
     /**
      * What to display.
      */
+    @Override
     public String toString() {
       String str = step.toString();
       if ((step instanceof Script) && !step.getDescription().startsWith("Script")) {
@@ -53,13 +54,7 @@ class ScriptModel extends AbstractTableModel {
       return str;
     }
 
-    /**
-     * What to edit.
-     */
-    public String toEditableString() {
-      return step.toEditableString();
-    }
-
+    @Override
     public Element toXML() {
       return step.toXML();
     }
@@ -198,6 +193,7 @@ class ScriptModel extends AbstractTableModel {
     // Log.debug("Model has " + rows.size() + " rows");
   }
 
+  @Override
   public synchronized int getRowCount() {
     if (script == null) {
       return 0;
@@ -205,6 +201,7 @@ class ScriptModel extends AbstractTableModel {
     return rows.size();
   }
 
+  @Override
   public int getColumnCount() {
     return 1;
   }
@@ -225,6 +222,7 @@ class ScriptModel extends AbstractTableModel {
   /**
    * Returns the step at the given row.
    */
+  @Override
   public synchronized Object getValueAt(int row, int col) {
     validate(row, col);
     return getStepAt(row);
@@ -268,10 +266,12 @@ class ScriptModel extends AbstractTableModel {
     }
   }
 
+  @Override
   public String getColumnName(int col) {
     return "";
   }
 
+  @Override
   public Class<?> getColumnClass(int col) {
     if (col == 0) {
       return Entry.class;
@@ -291,7 +291,9 @@ class ScriptModel extends AbstractTableModel {
     validate(row, 0);
     Entry entry = getEntry(row);
     Sequence parent = entry.parent;
-    while (!(parent instanceof Script)) parent = getParent(parent);
+    while (!(parent instanceof Script)) {
+      parent = getParent(parent);
+    }
     return (Script) parent;
   }
 

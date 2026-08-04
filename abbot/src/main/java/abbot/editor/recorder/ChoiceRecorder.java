@@ -29,6 +29,7 @@ public class ChoiceRecorder extends ComponentRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int recordingType) {
     super.init(recordingType);
     choice = null;
@@ -39,6 +40,7 @@ public class ChoiceRecorder extends ComponentRecorder {
   /**
    * Also accept ItemEvents, since the ChoiceTester will not generate any explicit clicks to control the component.
    */
+  @Override
   protected boolean isClick(AWTEvent e) {
     if (e instanceof ItemEvent) {
       return true;
@@ -51,6 +53,7 @@ public class ChoiceRecorder extends ComponentRecorder {
    * press-&gt;drag-&gt;release produces an identical set of events<br> OSX 1.3.1:<br> MOUSE_PRESSED<br>
    * (ITEM_STATE_CHANGED)|MOUSE_RELEASED|KEY_RELEASED<br> The ItemEvent never makes it to the AWT listener.
    */
+  @Override
   protected boolean parseClick(AWTEvent event) {
     // Have to check here since we handle the ItemEvent artificially
     if (isFinished()) {
@@ -105,6 +108,7 @@ public class ChoiceRecorder extends ComponentRecorder {
     return true;
   }
 
+  @Override
   protected Step createStep() {
     Step step = null;
     if (getRecordingType() == SE_CLICK) {

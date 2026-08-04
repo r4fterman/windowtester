@@ -49,12 +49,14 @@ public class JInternalFrameRecorder extends JComponentRecorder {
     super(resolver);
   }
 
+  @Override
   protected void init(int rtype) {
     super.init(rtype);
     frame = null;
     type = UNKNOWN;
   }
 
+  @Override
   public boolean accept(AWTEvent event) {
     int id = event.getID();
     Log.debug("Source is " + event.getSource());
@@ -76,6 +78,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
     return false;
   }
 
+  @Override
   public boolean parse(AWTEvent event) {
     boolean consumed = true;
     switch (getRecordingType()) {
@@ -123,6 +126,7 @@ public class JInternalFrameRecorder extends JComponentRecorder {
     return true;
   }
 
+  @Override
   protected Step createStep() {
     Step step;
     switch (getRecordingType()) {

@@ -119,8 +119,6 @@ class JListTest {
     JList<?> jlist = (JList<?>) ((IWidgetReference) locator).getWidget();
     List<?> selectedValuesList = jlist.getSelectedValuesList();
 
-    System.out.println("JListTest.testCtrlClicks: " + selectedValuesList);
-
     assertContainsExactly(selectedValuesList, new String[] {"one", "seven", "four"});
   }
 
@@ -147,8 +145,6 @@ class JListTest {
 
     JList<?> jlist = (JList<?>) ((IWidgetReference) locator).getWidget();
     final List<?> selectedValuesList = jlist.getSelectedValuesList();
-
-    System.out.println("JListTest.testShiftClicks: " + selectedValuesList);
 
     assertContainsExactly(selectedValuesList, new String[] {"five", "six", "seven"});
   }

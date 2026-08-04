@@ -1,9 +1,9 @@
 # WindowTester Pro
 
-![GitHub release (v6.*)](https://img.shields.io/github/v/release/r4fterman/windowtester?filter=v6.*&display_name=tag)
-[![Maven Central Version](https://img.shields.io/maven-central/v/io.github.r4fterman/com.windowtester.runtime?strategy=highestVersion&filter=6*)](https://mvnrepository.com/search?q=windowtester)
-![Static Badge](https://img.shields.io/badge/Java-v21-blue)
-![Static Badge](https://img.shields.io/badge/Maven-v3.9.9-blue)
+[![Release](https://img.shields.io/github/v/release/r4fterman/windowtester?filter=v6.*&display_name=tag)](https://github.com/r4fterman/windowtester/releases/tag/v6.0.0)
+[![Central](https://img.shields.io/maven-central/v/io.github.r4fterman/com.windowtester.runtime?strategy=highestVersion&filter=6*)](https://mvnrepository.com/search?q=windowtester)
+[![Static Badge](https://img.shields.io/badge/Java-v21-blue)](https://adoptium.net/de/temurin/releases?version=21&os=any&arch=any)
+[![Static Badge](https://img.shields.io/badge/Maven-v3.9.9-blue)](https://maven.apache.org/)
 [![License](https://img.shields.io/badge/License-EPL--1.0-green.svg)](LICENSE.md)
 [![Build WindowTester](https://github.com/r4fterman/windowtester/actions/workflows/maven.yml/badge.svg)](https://github.com/r4fterman/windowtester/actions/workflows/maven.yml)
 [![codecov](https://codecov.io/gh/r4fterman/windowtester/graph/badge.svg?token=fEDTM853bU)](https://codecov.io/gh/r4fterman/windowtester)

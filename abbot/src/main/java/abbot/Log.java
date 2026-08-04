@@ -6,11 +6,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import javax.swing.SwingUtilities;
+import java.util.List;
 
 /**
  * Various logging, assertion, and debug routines.  Typical usage is to include the following code
@@ -58,10 +59,10 @@ public final class Log {
   private Log() {}
 
   /**
-   * Global final to determine whether debugging code is generated.  This should be changed to false
+   * Global final to determine whether debugging code is generated. This should be changed too false
    * to build production code.
    */
-  public static final boolean DEBUG_BUILD = true;
+  private static final boolean DEBUG_BUILD = true;
 
   /**
    * Mnemonic to print all lines of a stack trace.
@@ -69,16 +70,19 @@ public final class Log {
   public static final int FULL_STACK = 0;
 
   /**
-   * Mnemonic to print the default number of lines of stack trace.
+   * Mnemonic to print the default lines of a stack trace.
    */
   private static final int CLASS_STACK_DEPTH = -1;
 
   /**
-   * Basic warning categories.  FIXME use these. public static final int ERROR   = 0x0001; public
-   * static final int WARNING = 0x0002; public static final int DEBUG   = 0x0004; public static
-   * final int INFO    = 0x0008;
+   * Basic warning categories.
+   * FIXME: use these:
+   * public static final int ERROR   = 0x0001;
+   * public static final int WARNING = 0x0002;
+   * public static final int DEBUG   = 0x0004;
+   * public static final int INFO    = 0x0008;
    */
-  private static class LogSynchronizer extends Object {}
+  private static class LogSynchronizer {}
 
   /**
    * Synchronize message output.
@@ -89,16 +93,6 @@ public final class Log {
    * Whether any debugging output is enabled.
    */
   public static boolean expectDebugOutput;
-
-  /**
-   * Enable assert checks.
-   */
-  private static final boolean assertChecks = DEBUG_BUILD;
-
-  /**
-   * Whether to terminate on assertion failures.
-   */
-  private static final boolean exitOnAssertionFailure = false;
 
   /**
    * Whether to log messages. Default on so that we capture output until the log file has been set
@@ -131,19 +125,9 @@ public final class Log {
    */
   private static boolean showTimestamp = true;
 
-  private static final java.text.DateFormat timestampFormat =
-      new java.text.SimpleDateFormat("yyMMdd HH:mm:ss:SSS ");
-
   /**
-   * Strip this out of output, since it doesn't add information to see it repeatedly.  Some projects
-   * have
-   * <i>really</i> long prefixes.
-   */
-  private static final String COMMON_PREFIX = null;
-
-  /**
-   * Store which classes we want to see debug info for.  FIXME make it a map and make the value the
-   * debug level.
+   * Store which classes we want to see debug info for.
+   * FIXME: make it a map and make the value the debug level.
    */
   private static final HashMap<Class<?>, Integer> debugged = new HashMap<>();
 
@@ -160,15 +144,15 @@ public final class Log {
   /**
    * Treat inner/anonymous classes as outer class?
    */
-  private static final boolean debugInner = true;
+  private static final boolean DEBUG_INNER = true;
 
   private static final String DEFAULT_LOGFILE_NAME = "abbot.log";
   private static final ByteArrayOutputStream preInitLog = new ByteArrayOutputStream();
   private static PrintStream log = new PrintStream(preInitLog);
 
   // Save these for future use
-  static PrintStream systemOut = System.out;
-  static PrintStream systemErr = System.err;
+  private static final PrintStream SYSTEM_OUT = System.out;
+  private static final PrintStream SYSTEM_ERR = System.err;
 
   /**
    * Debug/log initialization, presumably from the command line.
@@ -199,59 +183,63 @@ public final class Log {
       System.setErr(nullStream);
       System.setOut(nullStream);
     }
-    ArrayList<String> newArgs = new ArrayList<>(args.length);
-    for (int i = 0; i < args.length; i++) {
-      if (args[i].equals("--enable-warnings")) {
-        printConsoleWarnings = true;
-      } else if (args[i].equals("--no-timestamp")) {
-        showTimestamp = false;
-      } else if (args[i].equals("--show-threads")) {
-        showThreads = true;
-      } else if (args[i].equals("--stack-depth")) {
-        if (++i < args.length) {
-          try {
-            debugStackDepth = Integer.parseInt(args[i]);
-          } catch (Exception exc) {
-          }
-        } else {
-          internalWarn("Ignoring --stack-depth with no argument");
-        }
-      } else if (args[i].equals("--exception-depth")) {
-        if (++i < args.length) {
-          try {
-            excStackDepth = Integer.parseInt(args[i]);
-          } catch (Exception exc) {
-          }
-        } else {
-          internalWarn("Ignoring --exception-depth with no argument");
-        }
-      } else if (args[i].equals("--debug") || args[i].equals("--no-debug")) {
-        // since we're enabling some debugging, set the other settings
-        // to debug defaults...
-        boolean exclude = args[i].startsWith("--no");
 
-        // Re-enable stdout/stderr if they were removed
-        if (!DEBUG_BUILD) {
-          System.setOut(systemOut);
-          System.setErr(systemErr);
-        }
-        if (++i < args.length) {
-          if (exclude) {
-            removeDebugClass(args[i]);
+    List<String> newArgs = new ArrayList<>(args.length);
+    for (int i = 0; i < args.length; i++) {
+      switch (args[i]) {
+        case "--enable-warnings" -> printConsoleWarnings = true;
+        case "--no-timestamp" -> showTimestamp = false;
+        case "--show-threads" -> showThreads = true;
+        case "--stack-depth" -> {
+          if (++i < args.length) {
+            try {
+              debugStackDepth = Integer.parseInt(args[i]);
+            } catch (Exception e) {
+              // ignore
+            }
           } else {
-            addDebugClass(args[i]);
+            internalWarn("Ignoring --stack-depth with no argument");
           }
-        } else {
-          internalWarn("Ignoring " + args[i - 1] + " with no argument");
         }
-      } else if (args[i].equals("--log")) {
-        String filename = DEFAULT_LOGFILE_NAME;
-        if (++i < args.length) {
-          filename = args[i];
+        case "--exception-depth" -> {
+          if (++i < args.length) {
+            try {
+              excStackDepth = Integer.parseInt(args[i]);
+            } catch (Exception e) {
+              // ignore
+            }
+          } else {
+            internalWarn("Ignoring --exception-depth with no argument");
+          }
         }
-        enableLogging(filename);
-      } else {
-        newArgs.add(args[i]);
+        case "--debug", "--no-debug" -> {
+          // since we're enabling some debugging, set the other settings
+          // to debug defaults...
+          boolean exclude = args[i].startsWith("--no");
+
+          // Re-enable stdout/stderr if they were removed
+          if (!DEBUG_BUILD) {
+            System.setOut(SYSTEM_OUT);
+            System.setErr(SYSTEM_ERR);
+          }
+          if (++i < args.length) {
+            if (exclude) {
+              removeDebugClass(args[i]);
+            } else {
+              addDebugClass(args[i]);
+            }
+          } else {
+            internalWarn("Ignoring " + args[i - 1] + " with no argument");
+          }
+        }
+        case "--log" -> {
+          String filename = DEFAULT_LOGFILE_NAME;
+          if (++i < args.length) {
+            filename = args[i];
+          }
+          enableLogging(filename);
+        }
+        default -> newArgs.add(args[i]);
       }
     }
     String[] result = new String[newArgs.size()];
@@ -274,7 +262,7 @@ public final class Log {
     logMessages = true;
     try {
       if (filename.equals("-")) {
-        log = systemOut;
+        log = SYSTEM_OUT;
       } else {
         log = new PrintStream(new FileOutputStream(filename), true);
       }
@@ -289,7 +277,7 @@ public final class Log {
         // Prefer output to go to the log on a release build, since
         // there may not be any console.
         if (expectDebugOutput) {
-          systemOut.println("Output redirected.  See the log " + "file for debug output.");
+          SYSTEM_OUT.println("Output redirected.  See the log " + "file for debug output.");
         }
         System.setErr(log);
         System.setOut(log);
@@ -305,10 +293,6 @@ public final class Log {
     } catch (FileNotFoundException exc) {
       internalWarn("Can't open log file " + filename);
     }
-  }
-
-  public static void setDebugStackDepth(int depth) {
-    debugStackDepth = depth;
   }
 
   public static void removeDebugClass(String id) {
@@ -332,7 +316,7 @@ public final class Log {
 
   public static void addDebugClass(Class<?> c, int depth) {
     expectDebugOutput = true;
-    debugged.put(c, new Integer(depth));
+    debugged.put(c, depth);
     notdebugged.remove(c);
     Log.debug("Debugging enabled for " + c);
   }
@@ -420,7 +404,6 @@ public final class Log {
   }
 
   private static String trimStackTrace(String trace, int lines) {
-    // Keep just as many lines as were requested
     int end = trace.indexOf(")") + 1;
     boolean all = (lines == FULL_STACK);
     while (all || --lines > 0) {
@@ -438,7 +421,7 @@ public final class Log {
   private static Class<?> extractClass(String trace) {
     String tmp = trace.substring(0, trace.indexOf("("));
     String cname = tmp.substring(0, tmp.lastIndexOf("."));
-    if (debugInner) {
+    if (DEBUG_INNER) {
       int sub = cname.indexOf("$");
       if (sub >= 0) {
         cname = cname.substring(0, sub);
@@ -466,11 +449,11 @@ public final class Log {
     if (cls == null || isClassDebugEnabled(cls)) {
       String stack = getStackTrace(2, FULL_STACK);
       if (cls != null || isClassDebugEnabled(cls = extractClass(stack))) {
-        String tname = showThreads ? ": [" + Thread.currentThread().getName() + "] " : ": ";
+        String threadName = showThreads ? ": [" + Thread.currentThread().getName() + "] " : ": ";
         if (lines == CLASS_STACK_DEPTH) {
           lines = getClassStackDepth(cls);
         }
-        internalWarn(trimStackTrace(stack, lines) + tname + msg);
+        internalWarn(trimStackTrace(stack, lines) + threadName + msg);
       }
     }
   }
@@ -505,8 +488,8 @@ public final class Log {
       String here = getStackTrace(1, debugStackDepth);
       String type = thr instanceof Error ? "Error" : "Exception thrown";
       internalDebug(null, type + " at " + where + ": " + thr + " (caught at " + here + ")", 1);
-      if (thr instanceof InvocationTargetException) {
-        thr = ((InvocationTargetException) thr).getTargetException();
+      if (thr instanceof InvocationTargetException exception) {
+        thr = exception.getTargetException();
         where = getStackTrace(0, excStackDepth, thr);
         internalDebug(null, "Target exception was " + thr + " at " + where, 1);
       }
@@ -519,17 +502,6 @@ public final class Log {
     }
   }
 
-  private static String abbreviate(String msg, String expr, String sub) {
-    StringBuilder sb = new StringBuilder(msg);
-    int index = sb.toString().indexOf(expr);
-    int len = expr.length();
-    while (index >= 0) {
-      sb.replace(index, index + len, sub);
-      index = sb.toString().indexOf(expr);
-    }
-    return sb.toString();
-  }
-
   private static String abbreviate(String msg) {
     return msg;
   }
@@ -537,7 +509,7 @@ public final class Log {
   private static void internalWarn(String message) {
     synchronized (synchronizer) {
       internalLog(message);
-      if (printConsoleWarnings && log != systemErr && log != systemOut) {
+      if (printConsoleWarnings && log != SYSTEM_ERR && log != SYSTEM_OUT) {
         System.err.println(abbreviate(message));
       }
     }
@@ -551,13 +523,8 @@ public final class Log {
     return getStackTrace(1, lines, thr);
   }
 
-  public static String getStack(Throwable thrown) {
-    return getStack(FULL_STACK, thrown);
-  }
-
   public static void warn(String message) {
-    String stack = getStackTrace(1, debugStackDepth);
-    internalWarn(stack + ": " + message);
+    warn(message, debugStackDepth);
   }
 
   public static void warn(String message, int lines) {
@@ -570,51 +537,11 @@ public final class Log {
     String here = getStackTrace(1, debugStackDepth);
     String type = thr instanceof Error ? "Error" : "Exception thrown";
     internalWarn(type + " at " + where + ": " + thr + " (caught at " + here + ")");
-    if (thr instanceof InvocationTargetException) {
-      thr = ((InvocationTargetException) thr).getTargetException();
+    if (thr instanceof InvocationTargetException exception) {
+      thr = exception.getTargetException();
       where = getStackTrace(0, excStackDepth, thr);
       internalWarn("Target exception was " + thr + " at " + where);
     }
-  }
-
-  private static void assertTrue(String desc, boolean test, int pop) {
-    if (assertChecks && !test) {
-      String stack = getStackTrace(pop + 1, excStackDepth);
-      String msg = "Assertion failed" + ((desc != null) ? ": " + desc : "");
-      internalWarn(msg);
-      internalWarn(" at " + stack);
-      if (exitOnAssertionFailure) {
-        System.exit(1);
-      }
-    }
-  }
-
-  public static void assertTrue(String desc, boolean test) {
-    assertTrue(desc, test, 1);
-  }
-
-  public static void assertTrue(boolean test) {
-    assertTrue(null, test, 1);
-  }
-
-  public static void assertSwing() {
-    assertTrue("Must be invoked in Swing Thread", SwingUtilities.isEventDispatchThread(), 1);
-  }
-
-  public static void warnIfNotSwing(int lines) {
-    if (!SwingUtilities.isEventDispatchThread()) {
-      warn("Warning:  Not running on Swing Thread.  Thread=" + Thread.currentThread(), lines);
-    }
-  }
-
-  public static void warnIfNotSwing() {
-    if (!SwingUtilities.isEventDispatchThread()) {
-      warn("Warning:  Not running on Swing Thread.  Thread=" + Thread.currentThread());
-    }
-  }
-
-  public static void assertNotSwing() {
-    assertTrue("Must not be invoked in Swing Thread", !SwingUtilities.isEventDispatchThread(), 1);
   }
 
   public static void log(Throwable thr) {
@@ -646,7 +573,8 @@ public final class Log {
     if (loggingEnabled()) {
       StringBuilder msg = new StringBuilder();
       if (showTimestamp) {
-        msg.append(timestampFormat.format(new Date()));
+        var dateFormat = new SimpleDateFormat("yyMMdd HH:mm:ss:SSS ");
+        msg.append(dateFormat.format(new Date()));
       }
       msg.append(abbreviate(event));
       synchronized (synchronizer) {
@@ -660,7 +588,8 @@ public final class Log {
       log("Log closed");
       try {
         log.close();
-      } catch (Exception exc) {
+      } catch (Exception e) {
+        // ignore
       }
     }
   }

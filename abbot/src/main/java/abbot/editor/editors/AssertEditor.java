@@ -57,6 +57,7 @@ public class AssertEditor extends PropertyCallEditor {
   /**
    * Add in assertXXX methods to the list already generated.
    */
+  @Override
   protected Collection getComponentTesterMethods(ComponentTester tester) {
 
     ArrayList list = new ArrayList(Arrays.asList(tester.getPropertyMethods()));

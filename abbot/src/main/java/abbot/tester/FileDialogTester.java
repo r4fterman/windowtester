@@ -13,7 +13,7 @@ import java.awt.event.KeyEvent;
  *
  * @author Vrata Venet, European Space Agency, Madrid-Spain (av@iso.vilspa.esa.es)
  * @author Tim Wall (twall:users.sf.net) NOTE: different platforms do different things when the dialog is hidden. w32
- * returns null for the file if FileDialog.hide is invoked; other platforms may leave the file as is.  OSX (as of 1.4.2)
+ * returns null for the file if FileDialog.setVisible(false) is invoked; other platforms may leave the file as is.  OSX (as of 1.4.2)
  * won't let you hide the dialog.
  */
 public class FileDialogTester extends DialogTester {
@@ -22,31 +22,21 @@ public class FileDialogTester extends DialogTester {
    * This sets the file path for the fd
    */
   public void actionSetFile(Component comp, final String file) {
-    if (null == file || "".equals(file)) {
+    if (null == file || file.isEmpty()) {
       throw new IllegalArgumentException(
           "File name in FileDialog should be non-null and non-empty");
     }
     final FileDialog dialog = (FileDialog) comp;
-    invokeAndWait(
-        new Runnable() {
-          public void run() {
-            dialog.setFile(file);
-          }
-        });
+    invokeAndWait(() -> dialog.setFile(file));
   }
 
   public void actionSetDirectory(Component comp, final String dir) {
-    if (null == dir || "".equals(dir)) {
+    if (null == dir || dir.isEmpty()) {
       throw new IllegalArgumentException(
           "File name in FileDialog should be non-null and non-empty");
     }
     final FileDialog dialog = (FileDialog) comp;
-    invokeAndWait(
-        new Runnable() {
-          public void run() {
-            dialog.setDirectory(dir);
-          }
-        });
+    invokeAndWait(() -> dialog.setDirectory(dir));
   }
 
   /**
@@ -74,12 +64,7 @@ public class FileDialogTester extends DialogTester {
         actionKeyStroke(KeyEvent.VK_ESCAPE);
       }
 
-      invokeAndWait(
-          new Runnable() {
-            public void run() {
-              fd.hide();
-            }
-          });
+      invokeAndWait(() -> fd.setVisible(false));
       waitForIdle();
       fd.setFile(file);
     } finally {
@@ -87,7 +72,7 @@ public class FileDialogTester extends DialogTester {
     }
   }
 
-  private class FileDialogQueue extends EventQueue {
+  private static class FileDialogQueue extends EventQueue {
     private boolean disposed = false;
     private boolean installed = false;
 
@@ -103,6 +88,7 @@ public class FileDialogTester extends DialogTester {
         try {
           pop();
         } catch (java.util.EmptyStackException es) {
+          // ignore
         }
       }
     }
@@ -117,7 +103,7 @@ public class FileDialogTester extends DialogTester {
       }
 
       // Ignore FileDialogPeer events while disposing the dialog
-      if (e.paramString().indexOf("FileDialogPeer") != -1) {
+      if (e.paramString().contains("FileDialogPeer")) {
         Log.debug("ignoring peer event: " + e);
         // Nothing else to handle, restore the original queue
         dispose();
@@ -141,12 +127,7 @@ public class FileDialogTester extends DialogTester {
       // the w32 native peer sets the file to null on dialog hide, but
       // other platforms might not, so do it explicitly.
       fd.setFile(null);
-      invokeAndWait(
-          new Runnable() {
-            public void run() {
-              fd.hide();
-            }
-          });
+      invokeAndWait(() -> fd.setVisible(false));
     }
   }
 }

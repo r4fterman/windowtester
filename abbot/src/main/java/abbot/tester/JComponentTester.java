@@ -3,12 +3,12 @@ package abbot.tester;
 import abbot.AssertionFailedError;
 import abbot.Log;
 import abbot.i18n.Strings;
-import abbot.util.AWT;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.Comparator;
 import javax.accessibility.AccessibleContext;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -44,30 +44,17 @@ public class JComponentTester extends ContainerTester {
     // If label.setLabelFor has been used, then this component has
     // a label; use its text
     JLabel label = (JLabel) ((JComponent) comp).getClientProperty(LABELED_BY_PROPERTY);
-    if (label != null && label.getText() != null && label.getText().length() > 0) {
+    if (label != null && label.getText() != null && !label.getText().isEmpty()) {
       tag = label.getText();
     }
-    if (tag == null || "".equals(tag)) {
+    if (tag == null || tag.equals("")) {
       AccessibleContext context = jComp.getAccessibleContext();
       tag = deriveAccessibleTag(context);
     }
-    if (tag == null || "".equals(tag)) {
+    if (tag == null || tag.equals("")) {
       tag = super.deriveTag(comp);
     }
     return tag;
-  }
-
-  /**
-   * Scrolls to ensure the substructure is in view before clicking.
-   * @param c component
-   * @param loc location
-   * @param buttons buttons
-   * @param count count
-   *
-   * @deprecated Use {@link #actionClick(Component, ComponentLocation, int, int)} instead.
-   */
-  public void actionClick(Component c, ComponentLocation loc, String buttons, int count) {
-    actionClick(c, loc, AWT.getModifiers(buttons), count);
   }
 
   /**
@@ -82,16 +69,6 @@ public class JComponentTester extends ContainerTester {
       scrollToVisible(c, location.getBounds(c));
     }
     super.actionClick(c, location, buttons, count);
-  }
-
-  /**
-   * @param c component
-   * @param location location
-   * @param mods modifiers
-   * @deprecated Use {@link #actionDrag(Component, ComponentLocation, int)} instead.
-   */
-  public void actionDrag(Component c, ComponentLocation location, String mods) {
-    actionDrag(c, location, AWT.getModifiers(mods));
   }
 
   public void actionDrag(Component c, ComponentLocation location, int modifiers) {
@@ -155,8 +132,7 @@ public class JComponentTester extends ContainerTester {
 
   /**
    * Scrolls the component so that the given rectangle is visible.  Has no effect if the component has no JViewport
-   * ancestor.  When this method returns, the requested rectangle's upper left corner will be visible (i.e. no {@link
-   * #waitForIdle} is required.
+   * ancestor.  When this method returns, the requested rectangle's upper left corner will be visible is required.
    *
    * @param comp the Component to scroll
    * @param rect the Rectangle to make visible.
@@ -206,9 +182,9 @@ public class JComponentTester extends ContainerTester {
     if (action == null) {
       Object[] keys = am.allKeys();
       for (int i = 0; keys != null && i < keys.length; i++) {
-        Object value = am.get(keys[i]);
-        if ((value instanceof Action)) {
-          String aname = (String) ((Action) value).getValue(Action.NAME);
+        Action value = am.get(keys[i]);
+        if (value != null) {
+          String aname = (String) value.getValue(Action.NAME);
           if (aname != null && aname.equals(name)) {
             action = value;
             break;
@@ -217,22 +193,21 @@ public class JComponentTester extends ContainerTester {
       }
     }
     if (action == null) {
-      String available = "Available actions are the following:";
+      StringBuilder available = new StringBuilder("Available actions are the following:");
       Object[] names = am.allKeys();
       if (names != null) {
         Arrays.sort(
             names,
-            new java.util.Comparator() {
-              public int compare(Object o1, Object o2) {
-                String n1 = o1.toString();
-                String n2 = o2.toString();
-                return n1.compareTo(n2);
-              }
-            });
-        for (int i = 0; i < names.length; i++) {
-          available += "\n" + names[i];
-          if (!(names[i] instanceof String)) {
-            available += " (" + names[i].getClass() + ")";
+            (Comparator)
+                (o1, o2) -> {
+                  String n1 = o1.toString();
+                  String n2 = o2.toString();
+                  return n1.compareTo(n2);
+                });
+        for (Object o : names) {
+          available.append("\n").append(o);
+          if (!(o instanceof String)) {
+            available.append(" (").append(o.getClass()).append(")");
           }
         }
       }
