@@ -38,6 +38,11 @@ public class WidgetMatcherAdapter implements IWidgetMatcher<Component> {
   }
 
   @Override
+  public void reset() {
+    matcher.reset();
+  }
+
+  @Override
   public String toString() {
     return matcher.toString();
   }

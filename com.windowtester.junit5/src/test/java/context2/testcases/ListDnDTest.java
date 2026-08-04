@@ -33,6 +33,6 @@ class ListDnDTest {
 
     ui.click(new JListLocator("1 (list 1)", new NamedWidgetLocator("list1")));
     ui.dragTo(new JListLocator("1 (list 2)", new NamedWidgetLocator("list2")));
-    ui.pause(10000);
+    ui.pause(1_000);
   }
 }
