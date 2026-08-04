@@ -13,6 +13,7 @@ package com.windowtester.internal.finder.swing;
 import abbot.finder.AWTHierarchy;
 import abbot.finder.Hierarchy;
 import abbot.finder.Matcher;
+import abbot.util.PerfTrace;
 import com.windowtester.internal.runtime.finder.IWidgetFinder;
 import com.windowtester.internal.runtime.matcher.AdapterFactory;
 import com.windowtester.runtime.locator.IWidgetLocator;
@@ -44,6 +45,7 @@ public class SwingWidgetFinder implements IWidgetFinder {
 
   @Override
   public IWidgetLocator[] findAll(IWidgetLocator locator) {
+    long perfStart = PerfTrace.start();
     var matcher = new AdapterFactory().adapt(locator);
     // clear any traversal-scoped matcher state (e.g. index counters) before this fresh search
     matcher.reset();
@@ -51,10 +53,14 @@ public class SwingWidgetFinder implements IWidgetFinder {
     var matchingComponents = new HashSet<Component>();
     addMatchingComponents(matcher, matchingComponents);
 
-    return matchingComponents.stream()
-        .map(WidgetReference::new)
-        .map(IWidgetLocator.class::cast)
-        .toArray(IWidgetLocator[]::new);
+    var result =
+        matchingComponents.stream()
+            .map(WidgetReference::new)
+            .map(IWidgetLocator.class::cast)
+            .toArray(IWidgetLocator[]::new);
+    PerfTrace.end(
+        perfStart, "SwingWidgetFinder.findAll " + locator + " -> " + result.length + " match(es)");
+    return result;
   }
 
   private void addMatchingComponents(Matcher matcher, HashSet<Component> found) {
