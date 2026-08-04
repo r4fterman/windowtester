@@ -73,7 +73,7 @@ public class WindowTracker {
 
   private java.awt.Robot robot;
   private static final int WINDOW_READY_DELAY =
-      Properties.getProperty("abbot.window_ready_delay", 5000, 0, 60000);
+      Properties.getProperty("abbot.window_ready_delay", 1000, 0, 60000);
   private final Timer windowReadyTimer;
 
   /**
@@ -145,6 +145,29 @@ public class WindowTracker {
       checkWindow(w, robot);
     }
     return false;
+  }
+
+  /**
+   * Explicitly mark the given window as ready for input, bypassing the event-based readiness
+   * detection and its {@link #WINDOW_READY_DELAY} fallback timeout.
+   * <p>
+   * Intended for callers (e.g. test harnesses) that have just shown a window and therefore know it
+   * is up: after calling this, {@link #isWindowReady(Window)} returns {@code true} immediately, so
+   * the first interaction with the window need not wait out the readiness timeout. Safe to call
+   * more than once and independent of window event ordering.
+   *
+   * @param w the window to mark ready (ignored if {@code null})
+   */
+  public void setWindowReady(Window w) {
+    if (w == null) {
+      return;
+    }
+    synchronized (openWindows) {
+      pendingWindows.remove(w);
+      closedWindows.remove(w);
+      hiddenWindows.remove(w);
+      openWindows.put(w, Boolean.TRUE);
+    }
   }
 
   /**
