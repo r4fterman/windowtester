@@ -23,4 +23,16 @@ public interface IWidgetMatcher<T> {
    * <code>false</code> otherwise
    */
   boolean matches(T widget);
+
+  /**
+   * Reset any traversal-scoped state before a fresh search.
+   * <p>
+   * Most matchers are stateless and use the default no-op. Order-dependent matchers (e.g. index
+   * matchers that count occurrences during a single tree traversal) must reset their counters here
+   * and propagate the reset to any delegate matchers, so that repeated searches with the same
+   * matcher instance (for example while polling a wait condition) start from a clean state.
+   */
+  default void reset() {
+    // no-op by default; stateful matchers override
+  }
 }

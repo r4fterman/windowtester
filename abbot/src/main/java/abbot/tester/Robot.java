@@ -12,6 +12,7 @@ import abbot.i18n.Strings;
 import abbot.script.Condition;
 import abbot.util.AWT;
 import abbot.util.Bugs;
+import abbot.util.PerfTrace;
 import abbot.util.Properties;
 import abbot.util.Reflector;
 import java.awt.AWTEvent;
@@ -572,6 +573,7 @@ public class Robot implements AWTConstants {
    * since in that case it may never return.
    */
   public void waitForIdle() {
+    long perfStart = PerfTrace.start();
     if (eventPostDelay > autoDelay) {
       delay(eventPostDelay - autoDelay);
     }
@@ -584,6 +586,7 @@ public class Robot implements AWTConstants {
         waitForIdle(eq);
       }
     }
+    PerfTrace.end(perfStart, "Robot.waitForIdle");
   }
 
   public Color sample(int x, int y) {

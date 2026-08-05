@@ -77,11 +77,11 @@ public final class HierarchyMatcher implements Matcher {
    */
   private static final int DEFAULT_INDEX = -1;
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  //
-  // Constructors
-  //
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * Stateless helper for index/child queries. Shared across all match calls to avoid allocating a
+   * new instance for every visited component.
+   */
+  private final WidgetLocatorService infoService = new WidgetLocatorService();
 
   /**
    * Create an instance.
@@ -171,8 +171,10 @@ public final class HierarchyMatcher implements Matcher {
       return false;
     }
 
-    var matches = false;
-    var infoService = new WidgetLocatorService();
+    // the target criteria must hold in every case; evaluate it once
+    if (!matcher.matches(component)) {
+      return false;
+    }
 
     Component parent = component.getParent();
     // If parent is  a JPopupMenu, get the parent menu
@@ -180,18 +182,21 @@ public final class HierarchyMatcher implements Matcher {
       parent = popupMenu.getInvoker();
     }
 
+    // no parent criteria to check: the target match alone decides
     if (parent == null || parentMatcher == null) {
-      matches = matcher.matches(component);
+      return true;
     }
 
-    if (parent != null
-        && matcher.matches(component)
-        && parentMatcher != null
-        && parentMatcher.matches(parent)) {
-      int indexRelativeToParent = infoService.getIndex(component, parent);
-      matches = indexRelativeToParent == index;
+    // parent criteria present: parent must match and the child must sit at the expected index
+    return parentMatcher.matches(parent) && infoService.getIndex(component, parent) == index;
+  }
+
+  @Override
+  public void reset() {
+    matcher.reset();
+    if (parentMatcher != null) {
+      parentMatcher.reset();
     }
-    return matches;
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

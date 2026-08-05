@@ -36,4 +36,9 @@ import java.awt.Component;
   public boolean matches(Component component) {
     return matcher.matches(component);
   }
+
+  @Override
+  public void reset() {
+    matcher.reset();
+  }
 }
