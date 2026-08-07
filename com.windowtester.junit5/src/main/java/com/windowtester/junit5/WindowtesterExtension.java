@@ -28,6 +28,15 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 public class WindowtesterExtension
     implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
+  /**
+   * Upper bound for {@link #waitUntilReadyForInput(Window)}. Generous on purpose: WindowTracker's
+   * own fallback normally ends the wait after {@code abbot.window_ready_delay}, so reaching this
+   * means readiness detection is broken rather than slow.
+   */
+  private static final long READY_TIMEOUT_MILLIS = 10_000;
+
+  private static final long READY_POLL_MILLIS = 20;
+
   private final SwingUIContextParameterResolver swingUIContextResolver;
 
   public WindowtesterExtension() {
@@ -137,11 +146,35 @@ public class WindowtesterExtension
     } catch (InvocationTargetException | InterruptedException e) {
       throw new RuntimeException("Fail to close window.", e);
     }
-    // The window is now shown and is the UI under test: mark it ready for input directly so the
-    // first interaction does not have to wait out the readiness fallback timeout (see
-    // WindowTracker#setWindowReady). The event-based fast path is unreliable when the window is
-    // not the focused/foreground window (e.g. headless-ish CI or background test runs).
-    abbot.tester.WindowTracker.getTracker().setWindowReady(window);
+    waitUntilReadyForInput(window);
+  }
+
+  /**
+   * Blocks until the window can actually receive OS level input, then lets the event queue settle.
+   *
+   * @see WindowReadiness
+   */
+  private static void waitUntilReadyForInput(Window window) {
+    var observed =
+        WindowReadiness.awaitReadyForInput(
+            window, WindowReadiness.windowTracker(), READY_TIMEOUT_MILLIS, READY_POLL_MILLIS);
+    if (!observed) {
+      return;
+    }
+
+    // Showing the window leaves layout and paint work behind. Let it finish, so the first
+    // interaction is computed against settled geometry.
+    drainEventQueue();
+  }
+
+  private static void drainEventQueue() {
+    try {
+      EventQueue.invokeAndWait(() -> {});
+    } catch (InvocationTargetException e) {
+      // Nothing was submitted that could fail.
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   private boolean isSwingUIContextParameter(
