@@ -50,7 +50,7 @@ The runtime library provides base functionality so WindowTester can operate on a
 <dependency>
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester.runtime</artifactId>
-    <version>6.1.2</version>
+    <version>6.1.2.1</version>
 </dependency>
 ```
 
@@ -60,7 +60,7 @@ The runtime library provides base functionality so WindowTester can operate on J
 <dependency>
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester.swing.runtime</artifactId>
-    <version>6.1.2</version>
+    <version>6.1.2.1</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Abbot provides robot functionality to interact with the UI:
 <dependency>
     <groupId>io.github.r4fterman</groupId>
     <artifactId>abbot</artifactId>
-    <version>6.1.2</version>
+    <version>6.1.2.1</version>
 </dependency>
 ```
 
@@ -80,7 +80,7 @@ The recorder library provides functionality to record a manual UI interaction an
 <dependency>
     <groupId>io.github.r4fterman</groupId>
     <artifactId>com.windowtester.swing.recorder</artifactId>
-    <version>6.1.2</version>
+    <version>6.1.2.1</version>
 </dependency>
 ```
 
