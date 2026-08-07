@@ -18,7 +18,7 @@ public @interface UIUnderTest {
 
   String title() default "";
 
-  int width() default 400;
+  int width() default -1;
 
-  int height() default 300;
+  int height() default -1;
 }

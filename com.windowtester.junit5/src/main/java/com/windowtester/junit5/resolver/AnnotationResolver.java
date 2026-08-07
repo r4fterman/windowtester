@@ -40,7 +40,7 @@ public class AnnotationResolver {
       return Optional.empty();
     }
 
-    var fieldInfo = annotatedFieldList.get(0);
+    var fieldInfo = annotatedFieldList.getFirst();
     return Optional.ofNullable(fieldInfo);
   }
 
@@ -70,16 +70,56 @@ public class AnnotationResolver {
   private Dimension getDimension(Field field, Class<? extends Annotation> annotationType) {
     Annotation annotation = field.getAnnotation(annotationType);
     if (annotation instanceof UIUnderTest uiUnderTest) {
-      return new Dimension(uiUnderTest.width(), uiUnderTest.height());
+      var width = getWidth(uiUnderTest);
+      var height = getHeight(uiUnderTest);
+      return new Dimension(width, height);
     }
     return new Dimension(400, 300);
   }
 
   private String getTitle(Field field, Class<? extends Annotation> annotationType) {
-    Annotation annotation = field.getAnnotation(annotationType);
+    var annotation = field.getAnnotation(annotationType);
     if (annotation instanceof UIUnderTest uiUnderTest) {
-      return uiUnderTest.title();
+      return getTitle(uiUnderTest);
     }
     return "";
+  }
+
+  private String getTitle(UIUnderTest uiUnderTest) {
+    var title = uiUnderTest.title();
+    if (title == null || title.isEmpty()) {
+      return "";
+    }
+    return title;
+  }
+
+  private int getHeight(UIUnderTest uiUnderTest) {
+    var height = uiUnderTest.height();
+    if (height > 0) {
+      return height;
+    }
+    return parseIntSystemProperty("windowtester.heigth", 800);
+  }
+
+  private int getWidth(UIUnderTest uiUnderTest) {
+    var width = uiUnderTest.width();
+    if (width > 0) {
+      return width;
+    }
+
+    return parseIntSystemProperty("windowtester.width", 600);
+  }
+
+  private int parseIntSystemProperty(String propertyName, int defaultValue) {
+    var potentialInteger = System.getProperty(propertyName);
+    try {
+      var i = Integer.parseInt(potentialInteger);
+      if (i > 0) {
+        return i;
+      }
+    } catch (NumberFormatException e) {
+      // Ignore
+    }
+    return defaultValue;
   }
 }
